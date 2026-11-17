@@ -61,6 +61,7 @@ class CardRepository extends ServiceEntityRepository
             ->andWhere('c.status != :done')
             ->setParameter('done', CardStatus::Done)
             ->orderBy('c.due', 'ASC')
+            ->addOrderBy('c.rank', 'ASC')
             ->addOrderBy('c.position', 'ASC');
     }
 
@@ -77,6 +78,7 @@ class CardRepository extends ServiceEntityRepository
             ->setParameter('done', CardStatus::Done)
             ->addOrderBy('CASE WHEN c.due IS NULL THEN 1 ELSE 0 END', 'ASC')
             ->addOrderBy('c.due', 'ASC')
+            ->addOrderBy('c.rank', 'ASC')
             ->addOrderBy('c.position', 'ASC')
             ->addOrderBy('c.id', 'ASC')
             ->getQuery()

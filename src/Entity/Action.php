@@ -37,6 +37,15 @@ class Action implements \Stringable
     #[ORM\Column(type: Types::JSON)]
     private array $params = [];
 
+    // What the action does, shown on hover, as the machine words it
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $help = null;
+
+    // Rank in the machine's list, the order its buttons show in
+    #[ORM\Column]
+    private int $position = 0;
+
     // Run on a card's own content (its note, its file), so never offered as a button of the project's page
     #[ORM\Column]
     private bool $cardOnly = false;
@@ -81,18 +90,30 @@ class Action implements \Stringable
         return $this->params;
     }
 
+    public function getHelp(): ?string
+    {
+        return $this->help;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
     public function isCardOnly(): bool
     {
         return $this->cardOnly;
     }
 
-    // What the machine says of the action at each call: its label, the parameters a card fills, whether it only makes sense on a card
+    // What the machine says of the action at each call: its label, the parameters a card fills, whether it only makes sense on a card, what it does and its rank
     /** @param list<string> $params */
-    public function declare(string $label, array $params, bool $cardOnly = false): static
+    public function declare(string $label, array $params, bool $cardOnly = false, ?string $help = null, int $position = 0): static
     {
         $this->label = $label;
         $this->params = $params;
         $this->cardOnly = $cardOnly;
+        $this->help = $help;
+        $this->position = $position;
 
         return $this;
     }

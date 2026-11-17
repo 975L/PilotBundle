@@ -68,6 +68,21 @@ class CardFlowTest extends TestCase
         $this->flow->cancel($this->card);
     }
 
+    // Ticking a step whose next one names an action hands the card to it; unticking or a plain next step does nothing
+    public function testTickLaunchesTheNextStepsAction(): void
+    {
+        $this->card->setChecklist([['t' => 'first'], ['t' => 'second', 'action' => 'hello', 'params' => ['text' => 'catalog']], ['t' => 'third']]);
+
+        $run = $this->flow->tick($this->card, 0);
+        $this->assertNotNull($run);
+        $this->assertSame('hello', $this->card->getAction());
+        $this->assertSame(['text' => 'catalog'], $this->card->getParams());
+        $this->assertSame(CardStatus::Running, $this->card->getStatus());
+
+        $this->assertNull($this->flow->tick($this->card, 1));
+        $this->assertNull($this->flow->tick($this->card, 0));
+    }
+
     // A finished run puts the card to validate, a failed one marks it failed
     public function testRunFinishedSetsReviewOrFailed(): void
     {

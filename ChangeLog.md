@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.3.0
+
+Characters, answers awaited and step costs in the piloting pages
+
+- A card can wait on someone's answer, listed under « Waiting for an answer » on the Planning (17/11/2026)
+- Characters shown as cards with their portrait, their sheet opening in the dialog with the portrait at full size to download (17/11/2026)
+- A file's picture kept under `private/pilot/docs`, declared to the offsite backup (17/11/2026)
+- A checklist step can spend a credit, shown against the balance left and in red when it is short (17/11/2026)
+- The dialog opens files as well as cards, their address kept as `#doc-<slug>` (17/11/2026)
+- Files' markdown rendered with tables and task lists, typed HTML escaped (17/11/2026)
+- Actions declared by a machine as a card's own never show as buttons of the project's page (17/11/2026)
+- Actions in the machine's order, with what they do shown on hover (17/11/2026)
+- Sections of the Planning and of a project's page folded by a click on their heading, remembered in the browser (17/11/2026)
+- A charter unfolded on its project's page (17/11/2026)
+- A checklist step can name a machine action, the card handed to it as soon as the step before is ticked (17/11/2026)
+- A card's file chosen among its project's, or a new one created, from its dialog; a file's title and two floors edited on its page (17/11/2026)
+- Cards ordered by hand inside a backlog or a day, by dragging them (17/11/2026)
+- A credit's monthly budget, compared on the Planning with what the planned steps spend each month (17/11/2026)
+- Guided project « Write a file »: a file found, opened on its own page, then rewritten (17/11/2026)
+- A project's objectives written at the top of its page, in a file of kind objectives created from there the first time and edited in the dialog (17/11/2026)
+- Guided project « Write a project's objectives » (17/11/2026)
+
 ## v0.2.0
 
 Projects listed in the piloting pages, runner API

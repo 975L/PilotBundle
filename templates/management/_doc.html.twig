@@ -1,16 +1,16 @@
 {# A file: its title and summary shown, its detail unfolded by a click on them (unfolded from the start when open is true, a charter) #}
-{% set download %}<a href="{{ path('management_pilot_doc_markdown', {slug: doc.slug}) }}" class="btn btn-sm btn-link p-0 ms-2 pilot-doc-download" title="{{ 'label.download_md'|trans({}, 'pilot') }}" aria-label="{{ 'label.download_md'|trans({}, 'pilot') }}"><i class="fas fa-download"></i></a>{% endset %}
+{% set download %}<a href="{{ path('management_pilot_doc', {slug: doc.slug}) }}" data-pilot-dialog="doc-{{ doc.slug }}" class="btn btn-sm btn-link p-0 ms-2 pilot-doc-edit" title="{{ 'label.doc_edit'|trans({}, 'pilot') }}" aria-label="{{ 'label.doc_edit'|trans({}, 'pilot') }}"><i class="fas fa-pen"></i></a><a href="{{ path('management_pilot_doc_markdown', {slug: doc.slug}) }}" class="btn btn-sm btn-link p-0 ms-2 pilot-doc-download" title="{{ 'label.download_md'|trans({}, 'pilot') }}" aria-label="{{ 'label.download_md'|trans({}, 'pilot') }}"><i class="fas fa-download"></i></a>{% endset %}
 <div class="mb-3">
     {% if doc.detail %}
         <details class="pilot-doc"{{ (open ?? false) ? ' open' }}>
             <summary>
                 <span class="h6">{{ doc.title }}</span>{{ download }}
-                {% if doc.summary %}<div class="small mt-1">{{ doc.summary|markdown_to_html }}</div>{% endif %}
+                {% if doc.summary %}<div class="small mt-1">{{ doc.summary|pilot_markdown }}</div>{% endif %}
             </summary>
-            <div class="small">{{ doc.detail|markdown_to_html }}</div>
+            <div class="small">{{ doc.detail|pilot_markdown }}</div>
         </details>
     {% else %}
         <h3 class="h6 mb-1">{{ doc.title }}{{ download }}</h3>
-        {% if doc.summary %}<div class="small">{{ doc.summary|markdown_to_html }}</div>{% endif %}
+        {% if doc.summary %}<div class="small">{{ doc.summary|pilot_markdown }}</div>{% endif %}
     {% endif %}
 </div>

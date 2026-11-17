@@ -77,6 +77,7 @@ class CreditCrudController extends AbstractCrudController
         yield TextField::new('key', t('label.credit_key', [], 'pilot'))->hideOnIndex()->setHelp(t('label.info_credit_key', [], 'pilot'));
         yield IntegerField::new('remaining', t('label.credit_remaining', [], 'pilot'));
         yield IntegerField::new('total', t('label.credit_total', [], 'pilot'));
+        yield IntegerField::new('monthly', t('label.credit_monthly', [], 'pilot'))->setHelp(t('label.info_credit_monthly', [], 'pilot'));
         yield TextField::new('unit', t('label.credit_unit', [], 'pilot'));
         yield DateField::new('renewsOn', t('label.credit_renews', [], 'pilot'));
         yield TextField::new('note', t('label.credit_note', [], 'pilot'))->hideOnIndex();

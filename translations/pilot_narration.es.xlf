@@ -2,6 +2,18 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="es" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="Va0v6od">
+                <source>narration.guided_step_pilot_doc_open</source>
+                <target>Haga clic en el lápiz junto al título del expediente.</target>
+            </trans-unit>
+            <trans-unit id="0ClZIvh">
+                <source>narration.guided_step_pilot_doc_search</source>
+                <target>Busquemos el expediente: escriba dos letras de su título.</target>
+            </trans-unit>
+            <trans-unit id="70tITfS">
+                <source>narration.guided_step_pilot_doc_write</source>
+                <target>Despliegue el formulario bajo el expediente, reescriba lo que ha cambiado y guarde.</target>
+            </trans-unit>
             <trans-unit id="f29gyCe">
                 <source>narration.guided_step_pilot_machine_list</source>
                 <target>Una máquina ejecuta las acciones por usted.</target>
@@ -17,6 +29,14 @@
             <trans-unit id="xs68zKz">
                 <source>narration.guided_step_pilot_machine_run</source>
                 <target>En la página del proyecto, un clic lanza la acción.</target>
+            </trans-unit>
+            <trans-unit id="N7NF8l2">
+                <source>narration.guided_step_pilot_objectives_open</source>
+                <target>Haga clic en el lápiz de la sección Objetivos, o en « Escribir los objetivos » la primera vez.</target>
+            </trans-unit>
+            <trans-unit id="1QPdq2S">
+                <source>narration.guided_step_pilot_objectives_project</source>
+                <target>Haga clic en un proyecto de la columna de la izquierda.</target>
             </trans-unit>
             <trans-unit id="ZnjnQVh">
                 <source>narration.guided_step_pilot_plan_new</source>

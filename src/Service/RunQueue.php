@@ -48,7 +48,7 @@ class RunQueue
     }
 
     // Gives the oldest queued run among the declared actions to the machine, null when there is nothing to do
-    /** @param array<string, array{label: string, params: list<string>, card?: bool}> $capabilities */
+    /** @param array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> $capabilities */
     public function claim(Machine $machine, array $capabilities): ?Run
     {
         $this->releaseExpired();

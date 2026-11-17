@@ -31,7 +31,7 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
 
     public function getGuidedProjects(): array
     {
-        return [$this->schedule(), $this->runner(), $this->plan(), $this->machine()];
+        return [$this->schedule(), $this->runner(), $this->plan(), $this->machine(), $this->doc(), $this->objectives()];
     }
 
     // A card found, opened, then dated: it leaves the backlog for the planning
@@ -189,6 +189,75 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
                     'description' => 'description.guided_step_pilot_machine_run',
                     'narration' => 'narration.guided_step_pilot_machine_run',
                     'highlight' => '.pilot-project-actions',
+                ],
+            ],
+        ];
+    }
+
+    // A file found, opened on its own page, then its title and two floors rewritten
+    /** @return array{slug: string, label: string, description: string, translation_domain: string, order: int, role: string, steps: list<array{label: string, description: string, narration: string, url?: string, highlight?: string}>} */
+    private function doc(): array
+    {
+        return [
+            'slug' => 'pilot-doc',
+            'label' => 'label.guided_project_pilot_doc',
+            'description' => 'description.guided_project_pilot_doc',
+            'translation_domain' => 'pilot',
+            'order' => 12050,
+            'role' => (string) $this->configService->get('site-role-admin'),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_pilot_doc_search',
+                    'description' => 'description.guided_step_pilot_schedule_search',
+                    'narration' => 'narration.guided_step_pilot_doc_search',
+                    'url' => $this->urlGenerator->generate(PilotController::SEARCH_ROUTE),
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_doc_open',
+                    'description' => 'description.guided_step_pilot_doc_open',
+                    'narration' => 'narration.guided_step_pilot_doc_open',
+                    'highlight' => '.pilot-doc-edit',
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_doc_write',
+                    'description' => 'description.guided_step_pilot_doc_write',
+                    'narration' => 'narration.guided_step_pilot_doc_write',
+                    'highlight' => '.pilot-doc-form',
+                ],
+            ],
+        ];
+    }
+
+    // A project opened, then its objectives written in the dialog, their document created the first time
+    /** @return array{slug: string, label: string, description: string, translation_domain: string, order: int, role: string, steps: list<array{label: string, description: string, narration: string, url?: string, highlight?: string}>} */
+    private function objectives(): array
+    {
+        return [
+            'slug' => 'pilot-objectives',
+            'label' => 'label.guided_project_pilot_objectives',
+            'description' => 'description.guided_project_pilot_objectives',
+            'translation_domain' => 'pilot',
+            'order' => 12060,
+            'role' => (string) $this->configService->get('site-role-admin'),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_pilot_objectives_project',
+                    'description' => 'description.guided_step_pilot_objectives_project',
+                    'narration' => 'narration.guided_step_pilot_objectives_project',
+                    'url' => $this->urlGenerator->generate(PilotController::WEEK_ROUTE),
+                    'highlight' => '.pilot-project-link',
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_objectives_open',
+                    'description' => 'description.guided_step_pilot_objectives_open',
+                    'narration' => 'narration.guided_step_pilot_objectives_open',
+                    'highlight' => '.pilot-objectives',
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_doc_write',
+                    'description' => 'description.guided_step_pilot_doc_write',
+                    'narration' => 'narration.guided_step_pilot_doc_write',
+                    'highlight' => '.pilot-doc-form',
                 ],
             ],
         ];

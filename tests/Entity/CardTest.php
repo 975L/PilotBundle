@@ -63,6 +63,12 @@ class CardTest extends TestCase
         $this->assertSame($cards[1], $plan->runnerCardBefore($cards[2]));
         $this->assertTrue($cards[2]->isValidation());
         $this->assertFalse($plan->isDone());
+
+        // A place given by hand leaves the chain of the plan as it was
+        $cards[0]->setRank(2);
+        $cards[1]->setRank(0);
+        $this->assertSame($cards[1], $plan->cardAfter($cards[0]));
+        $this->assertSame(2, $cards[0]->getRank());
     }
 
     // A run held by a machine is released when its lease is lost, then finished with its outputs

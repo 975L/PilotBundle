@@ -38,6 +38,10 @@ class Card implements \Stringable
     #[ORM\Column(options: ['default' => 0])]
     private int $position = 0;
 
+    // Place given by hand inside a backlog or a day, apart from the position that chains a plan
+    #[ORM\Column(options: ['default' => 0])]
+    private int $rank = 0;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $note = null;
 
@@ -66,8 +70,8 @@ class Card implements \Stringable
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
-    // Sub-steps ticked one by one: text, done and the day it was, and what a step spends of a credit (its key, the amount, whether it is a guess)
-    /** @var list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}}> */
+    // Sub-steps ticked one by one: text, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), and the machine action a step leaves for once the one before is ticked
+    /** @var list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>}> */
     #[ORM\Column(type: Types::JSON)]
     private array $checklist = [];
 
@@ -154,6 +158,18 @@ class Card implements \Stringable
     public function setPosition(int $position): static
     {
         $this->position = $position;
+
+        return $this;
+    }
+
+    public function getRank(): int
+    {
+        return $this->rank;
+    }
+
+    public function setRank(int $rank): static
+    {
+        $this->rank = $rank;
 
         return $this;
     }
@@ -260,7 +276,7 @@ class Card implements \Stringable
     }
 
     /**
-     * @return list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}}>
+     * @return list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>}>
      */
     public function getChecklist(): array
     {
@@ -268,7 +284,7 @@ class Card implements \Stringable
     }
 
     /**
-     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}}> $checklist
+     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>}> $checklist
      */
     public function setChecklist(array $checklist): static
     {

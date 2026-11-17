@@ -36,5 +36,8 @@ class ActionTest extends TestCase
         $action = new Action('study')->declare('Study', [], true);
         $this->assertTrue($action->isCardOnly());
         $this->assertFalse($action->declare('Study', [])->isCardOnly());
+        $action->declare('Study', [], true, 'Writes the file', 3);
+        $this->assertSame('Writes the file', $action->getHelp());
+        $this->assertSame(3, $action->getPosition());
     }
 }

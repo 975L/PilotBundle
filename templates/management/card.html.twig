@@ -2,7 +2,7 @@
 
 {% block pilot %}
     {# Wrapped so the dialog of the listing pages takes this content alone #}
-    <div class="pilot-card-page">
+    <div class="pilot-dialog-page">
         {% set token = csrf_token('management_pilot_card_gesture' ~ card.id) %}
         <h1>{{ card.title }}</h1>
         <p>
@@ -23,6 +23,18 @@
                 <label class="form-label mb-0">{{ 'label.card_waiting_on'|trans({}, 'pilot') }}
                     <input name="waitingOn" value="{{ card.waitingOn }}" maxlength="100" class="form-control" placeholder="{{ 'label.info_card_waiting_on'|trans({}, 'pilot') }}">
                 </label>
+                <div class="d-flex flex-wrap gap-2">
+                    <label class="form-label mb-0 flex-grow-1">{{ 'label.card_doc'|trans({}, 'pilot') }}
+                        <select name="doc" class="form-select">
+                            <option value="">{{ 'label.card_doc_none'|trans({}, 'pilot') }}</option>
+                            {% if card.doc and card.doc not in docs %}<option value="{{ card.doc.id }}" selected>{{ card.doc.title }}</option>{% endif %}
+                            {% for file in docs %}<option value="{{ file.id }}"{{ card.doc and card.doc.id == file.id ? ' selected' }}>{{ file.title }}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <label class="form-label mb-0 flex-grow-1">{{ 'label.card_doc_new'|trans({}, 'pilot') }}
+                        <input name="newDoc" maxlength="200" class="form-control" placeholder="{{ 'label.info_card_doc_new'|trans({}, 'pilot') }}">
+                    </label>
+                </div>
                 <label class="form-label mb-0">{{ 'label.card_note'|trans({}, 'pilot') }}
                     <textarea name="note" rows="5" class="form-control">{{ card.note }}</textarea>
                 </label>
@@ -130,7 +142,7 @@
                     <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'entrust'}) }}">
                         <input type="hidden" name="_token" value="{{ token }}">
                         <input type="hidden" name="action" value="{{ action.key }}">
-                        <button class="btn btn-sm btn-outline-primary" title="{{ action.machine }}">{{ action.label }}</button>
+                        <button class="btn btn-sm btn-outline-primary" title="{{ action.help ? action.help ~ ' · ' }}{{ action.machine }}">{{ action.label }}</button>
                     </form>
                 {% endfor %}
             </div>

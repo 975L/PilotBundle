@@ -96,6 +96,19 @@ class CardFlow
         return $this->launch($card);
     }
 
+    // Ticks or unticks a step; ticking one whose next step names a machine action hands the card to that action at once
+    public function tick(Card $card, int $index): ?Run
+    {
+        $card->toggleStep($index, $this->clock->now());
+        $steps = $card->getChecklist();
+        $next = $steps[$index + 1] ?? null;
+        if (!($steps[$index]['done'] ?? false) || null === $next || ($next['done'] ?? false) || !isset($next['action']) || \in_array($card->getStatus(), [CardStatus::Running, CardStatus::Done], true)) {
+            return null;
+        }
+
+        return $this->entrust($card, $next['action'], $next['params'] ?? []);
+    }
+
     // Withdraws the run a card waits on while no machine has taken it, the card back to do
     public function cancel(Card $card): Run
     {

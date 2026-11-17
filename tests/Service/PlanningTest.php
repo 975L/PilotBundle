@@ -42,4 +42,19 @@ class PlanningTest extends TestCase
         $this->assertSame(['2026-12-01', '2027-01-01'], array_keys($planning['later']));
         $this->assertCount(2, $planning['later']['2026-12-01']);
     }
+
+    // Steps still to do count in the month of their card's date, a late card in this month, a ticked step, one without cost or with an incomplete one not at all
+    public function testSpendByMonthAndCredit(): void
+    {
+        $project = new Project('catalog', 'Catalog');
+        $steps = [['t' => 'a', 'cost' => ['credit' => 'item-1', 'amount' => 10]], ['t' => 'b', 'done' => true, 'cost' => ['credit' => 'item-1', 'amount' => 99]], ['t' => 'c']];
+        $late = new Card($project, 'late')->setDue(new \DateTimeImmutable('2026-10-01'))->setChecklist($steps);
+        $next = new Card($project, 'next')->setDue(new \DateTimeImmutable('2026-12-12'))->setChecklist($steps);
+        $planning = new Planning($this->createStub(CardRepository::class), $this->createStub(ConfigServiceInterface::class), new MockClock('2026-11-17'));
+
+        // A cost imported without its amount, as the artifact may write it, past the entity's typed setter
+        new \ReflectionProperty(Card::class, 'checklist')->setValue($next, [...$steps, ['t' => 'd', 'cost' => ['credit' => 'item-1']]]);
+
+        $this->assertSame(['2026-11-01' => ['item-1' => 10], '2026-12-01' => ['item-1' => 10]], $planning->spend([$late, $next], new \DateTimeImmutable('2026-11-17')));
+    }
 }

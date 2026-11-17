@@ -1,0 +1,11 @@
+{# What the steps planned in a month spend of each credit, against its monthly budget when it has one, in red past it #}
+{% set month_spend = spend[month] ?? {} %}
+{% if month_spend is not empty %}
+    <div class="d-flex flex-wrap gap-1 small mb-2 pilot-spend">
+        {% for key, amount in month_spend %}
+            {% set credit = credits|filter(item => item.key == key)|first %}
+            {% set over = credit and credit.monthly is not null and amount > credit.monthly %}
+            <span class="badge {{ over ? 'text-bg-danger' : 'text-bg-light' }}">{{ credit ? credit.label : key }} {{ amount|format_number }}{% if credit and credit.monthly is not null %} / {{ credit.monthly|format_number }}{% endif %}</span>
+        {% endfor %}
+    </div>
+{% endif %}

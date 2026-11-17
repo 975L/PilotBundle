@@ -8,6 +8,7 @@
 import { startStimulusApp } from "@symfony/stimulus-bundle";
 import PilotCardDragController from "./js/pilot-card-drag.js";
 import PilotCardModalController from "./js/pilot-card-modal.js";
+import PilotFoldController from "./js/pilot-fold.js";
 import PilotProjectSortController from "./js/pilot-project-sort.js";
 
 // Back-office controllers of the piloting pages, joining the one Stimulus application every c975L barrel shares
@@ -16,4 +17,5 @@ const app = globalThis.c975lStimulusApp;
 
 app.register("pilot-card-drag", PilotCardDragController);
 app.register("pilot-card-modal", PilotCardModalController);
+app.register("pilot-fold", PilotFoldController);
 app.register("pilot-project-sort", PilotProjectSortController);

@@ -26,16 +26,17 @@ class ActionRepository extends ServiceEntityRepository
     }
 
     // Records what a machine declares, a new action being offered nowhere until its projects are chosen
-    /** @param array<string, array{label: string, params: list<string>, card?: bool}> $capabilities */
+    /** @param array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> $capabilities */
     public function declare(array $capabilities): void
     {
         $known = [];
         foreach ($this->findBy(['key' => array_keys($capabilities)]) as $action) {
             $known[$action->getKey()] = $action;
         }
+        $position = 0;
         foreach ($capabilities as $key => $capability) {
             $action = $known[$key] ?? new Action((string) $key);
-            $action->declare($capability['label'], $capability['params'], $capability['card'] ?? false);
+            $action->declare($capability['label'], $capability['params'], $capability['card'] ?? false, $capability['help'] ?? null, ++$position);
             $this->getEntityManager()->persist($action);
         }
     }
@@ -58,7 +59,8 @@ class ActionRepository extends ServiceEntityRepository
             ->andWhere('a.key IN (:keys)')
             ->setParameter('project', $project)
             ->setParameter('keys', $keys)
-            ->orderBy('a.label', 'ASC')
+            ->orderBy('a.position', 'ASC')
+            ->addOrderBy('a.label', 'ASC')
             ->getQuery()
             ->getResult();
     }

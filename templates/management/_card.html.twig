@@ -1,9 +1,9 @@
 {# A card as a tile in the project's colour, opened by a click anywhere on it, dragged with the mouse to another day or to the backlog: title, project (left out on the project's own page), date coloured by its nearness, steps ticked, status, the next action, one gesture. The rest is on its page #}
 {% set next = card.checklist|filter(step => not (step.done ?? false))|first %}
 {% set ticked = card.checklist|filter(step => step.done ?? false)|length %}
-<div class="card h-100 pilot-card pilot-ink-{{ card.project.slug }}" data-pilot-card-drag-target="card" data-schedule-url="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'schedule'}) }}" data-token="{{ csrf_token('management_pilot_card_gesture' ~ card.id) }}">
+<div class="card h-100 pilot-card pilot-ink-{{ card.project.slug }}" data-pilot-card-drag-target="card" data-card-id="{{ card.id }}" data-schedule-url="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'schedule'}) }}" data-token="{{ csrf_token('management_pilot_card_gesture' ~ card.id) }}">
     <div class="card-body d-flex flex-column gap-2 p-3">
-        <a href="{{ path('management_pilot_card', {id: card.id}) }}" draggable="false" data-card-id="{{ card.id }}" class="fw-semibold text-decoration-none text-body stretched-link pilot-card-open">{{ card.title }}</a>
+        <a href="{{ path('management_pilot_card', {id: card.id}) }}" draggable="false" data-pilot-dialog="card-{{ card.id }}" class="fw-semibold text-decoration-none text-body stretched-link pilot-card-open">{{ card.title }}</a>
         {% if next %}
             <div class="small text-body-secondary">{{ 'label.next'|trans({}, 'pilot') }} {{ next.t }}</div>
         {% endif %}

@@ -2,8 +2,8 @@
 {% for report in reports %}
     {% set token = csrf_token('management_pilot_report_run' ~ report.id) %}
     {% set page_project = project ?? null %}
-    <section class="mb-4 pilot-report">
-        <div class="d-flex flex-wrap align-items-center gap-2">
+    <section class="mb-4 pilot-report" data-pilot-fold="report-{{ report.key }}">
+        <div class="d-flex flex-wrap align-items-center gap-2 pilot-fold-head">
             <h2 class="h5 mb-0">{{ report.label }}</h2>
             <span class="small text-body-secondary">{{ 'label.report_scanned'|trans({'%date%': report.scannedAt|format_datetime('short', 'short')}, 'pilot') }}</span>
             {% for index, action in report.globals %}

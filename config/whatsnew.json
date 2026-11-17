@@ -41,6 +41,21 @@
                 "en": "Piloting: what the machines are doing shows under « Under way », a waiting order can be cancelled, and the tables they send (repositories, sites, publication series…) show with a button per row (push, update, extend).",
                 "fr": "Pilotage : ce que font les machines s'affiche sous « En cours », un ordre en attente s'annule, et les tableaux qu'elles envoient (dépôts, sites, séries de publications…) s'affichent avec un bouton par ligne (pousser, mettre à jour, prolonger).",
                 "es": "Pilotaje: lo que hacen las máquinas se muestra en « En curso », una orden en espera se anula, y las tablas que envían (repositorios, sitios, series de publicaciones…) se muestran con un botón por fila (subir, actualizar, prolongar)."
+            },
+            {
+                "en": "Piloting: a card can wait on someone's answer (listed on the Planning), characters show with their portrait and open in a window to download it, a story step shows what it spends against the credits left, and every section folds by a click on its heading.",
+                "fr": "Pilotage : une carte peut attendre la réponse de quelqu'un (listée sur le Planning), les personnages s'affichent avec leur portrait et s'ouvrent dans une fenêtre pour le télécharger, une étape montre ce qu'elle dépense face aux crédits restants, et chaque section se replie d'un clic sur son titre.",
+                "es": "Pilotaje: una tarjeta puede esperar la respuesta de alguien (listada en la Planificación), los personajes se muestran con su retrato y se abren en una ventana para descargarlo, un paso muestra lo que gasta frente a los créditos restantes, y cada sección se pliega con un clic en su título."
+            },
+            {
+                "en": "Piloting: a step ticked can launch the next one on a machine, a card's file is chosen, created and edited from its window, cards are ordered by dragging them within a backlog or a day, and the Planning compares each month's planned spending with the monthly budgets.",
+                "fr": "Pilotage : une étape cochée peut lancer la suivante sur une machine, le dossier d'une carte se choisit, se crée et se modifie depuis sa fenêtre, les cartes se rangent en les glissant dans un backlog ou une journée, et le Planning compare les dépenses prévues de chaque mois aux budgets mensuels.",
+                "es": "Pilotaje: un paso marcado puede lanzar el siguiente en una máquina, el expediente de una tarjeta se elige, se crea y se modifica desde su ventana, las tarjetas se ordenan arrastrándolas en pendientes o en un día, y la Planificación compara los gastos previstos de cada mes con los presupuestos mensuales."
+            },
+            {
+                "en": "Piloting: each project's page opens on its objectives, written and edited in the dialog.",
+                "fr": "Pilotage : la page de chaque projet s'ouvre sur ses objectifs, écrits et modifiés dans la fenêtre.",
+                "es": "Pilotaje: la página de cada proyecto se abre con sus objetivos, escritos y editados en la ventana."
             }
         ]
     }

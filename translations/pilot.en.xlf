@@ -2,9 +2,17 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="en" datatype="plaintext" original="pilot.en.xlf">
         <body>
+            <trans-unit id="poZvvnR">
+                <source>description.guided_project_pilot_doc</source>
+                <target>Find a file, open it on its own page, then rewrite its title, its summary for a human and its detail for Claude.</target>
+            </trans-unit>
             <trans-unit id="cNjx5cn">
                 <source>description.guided_project_pilot_machine</source>
                 <target>Give a machine its token, offer the actions it declares on your projects, then run one from a project's page.</target>
+            </trans-unit>
+            <trans-unit id="RyLb.eB">
+                <source>description.guided_project_pilot_objectives</source>
+                <target>Open a project, then write its objectives at the top of its page: what it aims at, at what pace, by when.</target>
             </trans-unit>
             <trans-unit id="G.IHxyv">
                 <source>description.guided_project_pilot_plan</source>
@@ -17,6 +25,14 @@
             <trans-unit id="nevRENI">
                 <source>description.guided_project_pilot_schedule</source>
                 <target>Give a backlog card a date: it moves into the Planning.</target>
+            </trans-unit>
+            <trans-unit id="jK5pb7k">
+                <source>description.guided_step_pilot_doc_open</source>
+                <target>The pen next to its title opens it on its own page.</target>
+            </trans-unit>
+            <trans-unit id="jQPj5pE">
+                <source>description.guided_step_pilot_doc_write</source>
+                <target>Unfold « Edit the file », change the title, the summary or the detail, then save.</target>
             </trans-unit>
             <trans-unit id="Vu1JcnP">
                 <source>description.guided_step_pilot_machine_list</source>
@@ -33,6 +49,14 @@
             <trans-unit id="RNr8Sop">
                 <source>description.guided_step_pilot_machine_run</source>
                 <target>On a project's page, its actions are buttons: one click hands a new card to the machine.</target>
+            </trans-unit>
+            <trans-unit id="7nj0XJN">
+                <source>description.guided_step_pilot_objectives_open</source>
+                <target>The pen of the Objectives section opens them, and creates them the first time.</target>
+            </trans-unit>
+            <trans-unit id="j0IR8u1">
+                <source>description.guided_step_pilot_objectives_project</source>
+                <target>Pick the project in the left column.</target>
             </trans-unit>
             <trans-unit id="QdWVHf5">
                 <source>description.guided_step_pilot_plan_new</source>
@@ -138,6 +162,18 @@
                 <source>label.card_add</source>
                 <target>Add the card</target>
             </trans-unit>
+            <trans-unit id="hFdwawk">
+                <source>label.card_doc</source>
+                <target>File</target>
+            </trans-unit>
+            <trans-unit id="DMWSP2p">
+                <source>label.card_doc_new</source>
+                <target>Or new file</target>
+            </trans-unit>
+            <trans-unit id="RnONm4c">
+                <source>label.card_doc_none</source>
+                <target>None</target>
+            </trans-unit>
             <trans-unit id="lnR41eV">
                 <source>label.card_edit</source>
                 <target>Edit</target>
@@ -162,9 +198,9 @@
                 <source>label.card_waiting_on</source>
                 <target>Waiting on</target>
             </trans-unit>
-            <trans-unit id="PkiyycY">
-                <source>label.character_sheet</source>
-                <target>Sheet</target>
+            <trans-unit id="EKG83VA">
+                <source>label.character_image</source>
+                <target>Download the portrait</target>
             </trans-unit>
             <trans-unit id="J2ePCOx">
                 <source>label.characters</source>
@@ -197,6 +233,10 @@
             <trans-unit id="tIm7yV.">
                 <source>label.credit_manual</source>
                 <target>Typed in by hand</target>
+            </trans-unit>
+            <trans-unit id="qXkHHzi">
+                <source>label.credit_monthly</source>
+                <target>Monthly budget</target>
             </trans-unit>
             <trans-unit id="PuOgz_o">
                 <source>label.credit_note</source>
@@ -237,6 +277,18 @@
             <trans-unit id="efSspGE">
                 <source>label.credits</source>
                 <target>Credits</target>
+            </trans-unit>
+            <trans-unit id="yAOLzB4">
+                <source>label.doc_detail</source>
+                <target>The detail (for Claude, in markdown)</target>
+            </trans-unit>
+            <trans-unit id="1kdh_SS">
+                <source>label.doc_edit</source>
+                <target>Edit the file</target>
+            </trans-unit>
+            <trans-unit id="PkNfbLn">
+                <source>label.doc_summary</source>
+                <target>The essentials (for a human)</target>
             </trans-unit>
             <trans-unit id="x65L0pA">
                 <source>label.docs</source>
@@ -282,9 +334,17 @@
                 <source>label.gesture_expired</source>
                 <target>The form expired, reload the page.</target>
             </trans-unit>
+            <trans-unit id="9HD1k6r">
+                <source>label.guided_project_pilot_doc</source>
+                <target>Write a file</target>
+            </trans-unit>
             <trans-unit id="jdyjshO">
                 <source>label.guided_project_pilot_machine</source>
                 <target>Register a machine</target>
+            </trans-unit>
+            <trans-unit id="Z8La6p6">
+                <source>label.guided_project_pilot_objectives</source>
+                <target>Write a project's objectives</target>
             </trans-unit>
             <trans-unit id="ngjJfq8">
                 <source>label.guided_project_pilot_plan</source>
@@ -297,6 +357,18 @@
             <trans-unit id="CE.J4Ir">
                 <source>label.guided_project_pilot_schedule</source>
                 <target>Schedule a card</target>
+            </trans-unit>
+            <trans-unit id="CXGhwMt">
+                <source>label.guided_step_pilot_doc_open</source>
+                <target>Open the file</target>
+            </trans-unit>
+            <trans-unit id="8hglhZ9">
+                <source>label.guided_step_pilot_doc_search</source>
+                <target>Find the file</target>
+            </trans-unit>
+            <trans-unit id="x5AtrJ4">
+                <source>label.guided_step_pilot_doc_write</source>
+                <target>Rewrite it</target>
             </trans-unit>
             <trans-unit id="505vekX">
                 <source>label.guided_step_pilot_machine_list</source>
@@ -313,6 +385,14 @@
             <trans-unit id="lmEsa5o">
                 <source>label.guided_step_pilot_machine_run</source>
                 <target>Run an action</target>
+            </trans-unit>
+            <trans-unit id="1yt7zDu">
+                <source>label.guided_step_pilot_objectives_open</source>
+                <target>Open its objectives</target>
+            </trans-unit>
+            <trans-unit id="2PSX.GO">
+                <source>label.guided_step_pilot_objectives_project</source>
+                <target>Open a project</target>
             </trans-unit>
             <trans-unit id="EoxjCAK">
                 <source>label.guided_step_pilot_plan_new</source>
@@ -362,6 +442,10 @@
                 <source>label.info_actions</source>
                 <target>The actions the machines can run, as they declare them. Choose on which projects each one is offered.</target>
             </trans-unit>
+            <trans-unit id="3pAySP6">
+                <source>label.info_card_doc_new</source>
+                <target>Title of the new file</target>
+            </trans-unit>
             <trans-unit id="y6Wak8E">
                 <source>label.info_card_new_due</source>
                 <target>Without a date, the card goes to the backlog</target>
@@ -377,6 +461,10 @@
             <trans-unit id="d4pk8IV">
                 <source>label.info_credit_manual</source>
                 <target>Ticked, the balance is typed in on the Planning and no machine overwrites it.</target>
+            </trans-unit>
+            <trans-unit id="ZIDm2rX">
+                <source>label.info_credit_monthly</source>
+                <target>What the planned steps may spend in a month, compared on the Planning (empty: no budget)</target>
             </trans-unit>
             <trans-unit id="FiOXjyB">
                 <source>label.info_credits</source>
@@ -396,7 +484,7 @@
             </trans-unit>
             <trans-unit id="3.31SY1">
                 <source>label.info_project</source>
-                <target>Its dated cards, then its backlog, its files and its done cards.</target>
+                <target>Its objectives, its dated cards, then its backlog, its files and its done cards.</target>
             </trans-unit>
             <trans-unit id="3DJqjm2">
                 <source>label.info_project_slug</source>
@@ -469,6 +557,18 @@
             <trans-unit id=".CLxfze">
                 <source>label.nothing_planned</source>
                 <target>Nothing planned in this period.</target>
+            </trans-unit>
+            <trans-unit id="kEt.QE2">
+                <source>label.objectives</source>
+                <target>Objectives</target>
+            </trans-unit>
+            <trans-unit id="mHcxwBG">
+                <source>label.objectives_empty</source>
+                <target>This project has no objectives yet.</target>
+            </trans-unit>
+            <trans-unit id="zleisC6">
+                <source>label.objectives_write</source>
+                <target>Write the objectives</target>
             </trans-unit>
             <trans-unit id="VYbxN1B">
                 <source>label.order_drag</source>
@@ -589,6 +689,10 @@
             <trans-unit id="qwwpZOD">
                 <source>label.send_back</source>
                 <target>Send back</target>
+            </trans-unit>
+            <trans-unit id="5eiyx0C">
+                <source>label.spend_month</source>
+                <target>Planned spending in %month%</target>
             </trans-unit>
             <trans-unit id="qWFPyfX">
                 <source>label.status_done</source>

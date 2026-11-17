@@ -31,7 +31,7 @@ class Planning
 
     // Late cards, the coming ones by day, then the later ones by month
     /**
-     * @return array{today: \DateTimeImmutable, horizon: int, late: list<Card>, days: array<string, list<Card>>, later: array<string, list<Card>>}
+     * @return array{today: \DateTimeImmutable, horizon: int, late: list<Card>, days: array<string, list<Card>>, later: array<string, list<Card>>, spend: array<string, array<string, int>>}
      */
     public function build(): array
     {
@@ -55,7 +55,31 @@ class Planning
             $days[$card->getDue()->format('Y-m-d')][] = $card;
         }
 
-        return ['today' => $today, 'horizon' => $horizon, 'late' => $late, 'days' => $days, 'later' => $later];
+        return ['today' => $today, 'horizon' => $horizon, 'late' => $late, 'days' => $days, 'later' => $later, 'spend' => $this->spend([...$late, ...array_merge(...array_values($days)), ...array_merge(...array_values($later))], $today)];
+    }
+
+    // What the steps still to do plan to spend, by month of their card's date (a late card counting in this month) and by credit
+    /**
+     * @param list<Card> $cards
+     *
+     * @return array<string, array<string, int>>
+     */
+    public function spend(array $cards, \DateTimeImmutable $today): array
+    {
+        $spend = [];
+        foreach ($cards as $card) {
+            $month = max($card->getDue() ?? $today, $today)->format('Y-m-01');
+            foreach ($card->getChecklist() as $step) {
+                // The steps come as the artifact wrote them, a cost without its credit or amount counting nothing
+                $credit = $step['cost']['credit'] ?? null;
+                if (\is_string($credit) && \is_int($step['cost']['amount'] ?? null) && !($step['done'] ?? false)) {
+                    $spend[$month][$credit] = ($spend[$month][$credit] ?? 0) + $step['cost']['amount'];
+                }
+            }
+        }
+        ksort($spend);
+
+        return $spend;
     }
 
     // Days shown, the default when the key is unset or not a positive number

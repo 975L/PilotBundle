@@ -186,7 +186,7 @@ class RunnerController extends AbstractController
     }
 
     // The actions a machine declares, key => label and parameter names, anything malformed dropped
-    /** @return array<string, array{label: string, params: list<string>, card?: bool}> */
+    /** @return array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> */
     private function capabilities(mixed $actions): array
     {
         $capabilities = [];
@@ -196,6 +196,7 @@ class RunnerController extends AbstractController
                     'label' => mb_substr(\is_string($action['label'] ?? null) ? $action['label'] : $key, 0, 100),
                     'params' => $this->names($action['params'] ?? [], '/^\w{1,30}$/'),
                     'card' => true === ($action['card'] ?? false),
+                    'help' => \is_string($action['help'] ?? null) ? mb_substr(trim($action['help']), 0, 255) : null,
                 ];
             }
         }

@@ -38,6 +38,10 @@ class Credit implements \Stringable
     #[Assert\PositiveOrZero]
     private ?int $total = null;
 
+    #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
+    private ?int $monthly = null;
+
     #[ORM\Column(length: 30, nullable: true)]
     #[Assert\Length(max: 30)]
     private ?string $unit = null;
@@ -111,6 +115,19 @@ class Credit implements \Stringable
     {
         $this->remaining = $remaining;
         $this->updatedAt = $now ?? new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    // Amount the planned steps may spend in a month, compared on the Planning with what they plan to
+    public function getMonthly(): ?int
+    {
+        return $this->monthly;
+    }
+
+    public function setMonthly(?int $monthly): static
+    {
+        $this->monthly = $monthly;
 
         return $this;
     }

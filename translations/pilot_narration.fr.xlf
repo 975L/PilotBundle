@@ -2,6 +2,18 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="fr" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="Va0v6od">
+                <source>narration.guided_step_pilot_doc_open</source>
+                <target>Cliquez sur le crayon à côté du titre du dossier.</target>
+            </trans-unit>
+            <trans-unit id="0ClZIvh">
+                <source>narration.guided_step_pilot_doc_search</source>
+                <target>Cherchons le dossier : tapez deux lettres de son titre.</target>
+            </trans-unit>
+            <trans-unit id="70tITfS">
+                <source>narration.guided_step_pilot_doc_write</source>
+                <target>Dépliez le formulaire sous le dossier, réécrivez ce qui a changé, puis enregistrez.</target>
+            </trans-unit>
             <trans-unit id="f29gyCe">
                 <source>narration.guided_step_pilot_machine_list</source>
                 <target>Une machine exécute les actions à votre place.</target>
@@ -17,6 +29,14 @@
             <trans-unit id="xs68zKz">
                 <source>narration.guided_step_pilot_machine_run</source>
                 <target>Sur la page du projet, un clic lance l'action.</target>
+            </trans-unit>
+            <trans-unit id="N7NF8l2">
+                <source>narration.guided_step_pilot_objectives_open</source>
+                <target>Cliquez sur le crayon de la section Objectifs, ou sur « Écrire les objectifs » la première fois.</target>
+            </trans-unit>
+            <trans-unit id="1QPdq2S">
+                <source>narration.guided_step_pilot_objectives_project</source>
+                <target>Cliquez sur un projet dans la colonne de gauche.</target>
             </trans-unit>
             <trans-unit id="ZnjnQVh">
                 <source>narration.guided_step_pilot_plan_new</source>

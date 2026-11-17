@@ -29,7 +29,7 @@ class Machine implements UserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    /** @var array<string, array{label: string, params: list<string>, card?: bool}> */
+    /** @var array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> */
     #[ORM\Column(type: Types::JSON)]
     private array $capabilities = [];
 
@@ -83,7 +83,7 @@ class Machine implements UserInterface
     }
 
     // Actions the machine declared at its last call: key, label and parameter names
-    /** @return array<string, array{label: string, params: list<string>, card?: bool}> */
+    /** @return array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> */
     public function getCapabilities(): array
     {
         return $this->capabilities;
@@ -96,7 +96,7 @@ class Machine implements UserInterface
     }
 
     // Records a call: capabilities and time
-    /** @param array<string, array{label: string, params: list<string>, card?: bool}> $capabilities */
+    /** @param array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> $capabilities */
     public function seen(array $capabilities, \DateTimeImmutable $now): static
     {
         $this->capabilities = $capabilities;

@@ -7,7 +7,7 @@
  */
 import { Controller } from "@hotwired/stimulus";
 
-// Opens a card over the page it was clicked on, its own page read and shown in a dialog; the address keeps it as #card-<id>, so a link or the back button reopen it
+// Opens a card or a file over the page it was clicked on, its own page read and shown in a dialog; the address keeps it as #card-<id> or #doc-<slug>, so a link or the back button reopen it
 export default class extends Controller {
     static targets = ["dialog", "body"];
     static values = { url: String };
@@ -31,16 +31,16 @@ export default class extends Controller {
         window.removeEventListener("popstate", this.onPopState);
     }
 
-    // A plain click on a card's title; a click asking for a new tab or window, or made during a guided project, keeps the browser's own behaviour
+    // A plain click on a card's title or a file's link (data-pilot-dialog naming it); a click asking for a new tab or window, or made during a guided project, keeps the browser's own behaviour
     click(event) {
-        const link = event.target.closest("a.pilot-card-open");
+        const link = event.target.closest("a[data-pilot-dialog]");
         if (!link || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
 
         // A guided project running keeps the card on its own page: a modal dialog would make its panel inert
         if (document.querySelector(".guided-project-panel")) return;
 
         event.preventDefault();
-        window.history.pushState(null, "", "#card-" + link.dataset.cardId);
+        window.history.pushState(null, "", "#" + link.dataset.pilotDialog);
         this.open(link.href);
     }
 
@@ -60,20 +60,23 @@ export default class extends Controller {
             .catch(() => form.submit());
     }
 
-    // The card the address names, or none
+    // What the address names: a link of the page naming it, a card by its id otherwise, or nothing
     follow() {
-        const match = /^#card-(\d+)$/.exec(window.location.hash);
-        if (match) this.open(this.urlValue.replace(/0$/, match[1]));
+        const name = window.location.hash.slice(1);
+        const link = /^(card-\d+|doc-[a-z0-9-]+)$/.test(name) ? this.element.querySelector(`a[data-pilot-dialog="${name}"]`) : null;
+        const card = /^card-(\d+)$/.exec(name);
+        if (link) this.open(link.href);
+        else if (card) this.open(this.urlValue.replace(/0$/, card[1]));
         else if (this.dialogTarget.open) this.dialogTarget.close();
     }
 
-    // The card's page fetched, its content alone kept; a failure falls back to the page itself
+    // The page fetched, its dialog part alone kept; a failure falls back to the page itself
     open(url) {
         this.current = url;
         fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
             .then((response) => (response.ok ? response.text() : Promise.reject(new Error(response.statusText))))
             .then((html) => {
-                const content = new DOMParser().parseFromString(html, "text/html").querySelector(".pilot-card-page");
+                const content = new DOMParser().parseFromString(html, "text/html").querySelector(".pilot-dialog-page");
                 if (!content) throw new Error(url);
                 this.bodyTarget.replaceChildren(...content.childNodes);
                 if (!this.dialogTarget.open) this.dialogTarget.showModal();
@@ -81,10 +84,10 @@ export default class extends Controller {
             .catch(() => { window.location.href = url; });
     }
 
-    // Closed by its button, Escape or a click beside it: the address no longer names the card, the page shows what changed in it
+    // Closed by its button, Escape or a click beside it: the address no longer names what it showed, the page shows what changed in it
     closed() {
         this.bodyTarget.replaceChildren();
-        if (window.location.hash.startsWith("#card-")) window.history.pushState(null, "", window.location.pathname + window.location.search);
+        if (/^#(card|doc)-/.test(window.location.hash)) window.history.pushState(null, "", window.location.pathname + window.location.search);
         if (this.changed) window.location.reload();
     }
 }

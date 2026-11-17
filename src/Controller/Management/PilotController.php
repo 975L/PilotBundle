@@ -59,12 +59,15 @@ class PilotController extends AbstractController
     public const string NEW_CARD_ROUTE = 'management_pilot_card_new';
     public const string REPORT_ROUTE = 'management_pilot_report_run';
     public const string DIALOG_HEADER = 'X-Pilot-Dialog';
+    public const string CARDS_ORDER_ROUTE = 'management_pilot_cards_order';
+    public const string OBJECTIVES_ROUTE = 'management_pilot_project_objectives';
 
     public function __construct(
         private readonly ConfigServiceInterface $configService,
         private readonly EntityManagerInterface $entityManager,
         private readonly CardRepository $cardRepository,
         private readonly ReportRepository $reportRepository,
+        private readonly DocRepository $docRepository,
         private readonly ProjectRepository $projectRepository,
         private readonly ClockInterface $clock,
         private readonly CardFlow $cardFlow,
@@ -96,9 +99,9 @@ class PilotController extends AbstractController
         return $this->redirectToRoute(self::WEEK_ROUTE);
     }
 
-    // A project: its open cards (dated, then the backlog), its files, its done cards folded
+    // A project: its objectives, its open cards (dated, then the backlog), its files, its done cards folded
     #[AdminRoute(path: '/pilot/project/{slug}', name: 'pilot_project')]
-    public function project(#[MapEntity(mapping: ['slug' => 'slug'])] Project $project, DocRepository $docRepository, PlanTemplateRepository $planTemplateRepository, MachineRepository $machineRepository, RunRepository $runRepository): Response
+    public function project(#[MapEntity(mapping: ['slug' => 'slug'])] Project $project, PlanTemplateRepository $planTemplateRepository, MachineRepository $machineRepository, RunRepository $runRepository): Response
     {
         $this->denyAccess();
 
@@ -109,9 +112,24 @@ class PilotController extends AbstractController
             'runs' => $runRepository->findActive($project),
             'reports' => $this->reportRepository->findShownOn($project),
             'cards' => $this->cardRepository->findOpen($project),
-            'docs' => $docRepository->findBy(['project' => $project], ['title' => 'ASC']),
+            'docs' => $this->docRepository->findBy(['project' => $project], ['title' => 'ASC']),
             'done' => $this->cardRepository->findDone($project),
         ]);
+    }
+
+    // The project's objectives opened for writing in the dialog, their document created the first time
+    #[AdminRoute(path: '/pilot/project/{slug}/objectives', name: 'pilot_project_objectives', options: ['methods' => ['POST']])]
+    public function objectives(#[MapEntity(mapping: ['slug' => 'slug'])] Project $project, Request $request): RedirectResponse
+    {
+        $this->denyAccess();
+        $url = $this->generateUrl(self::PROJECT_ROUTE, ['slug' => $project->getSlug()]);
+        if (!$this->isCsrfTokenValid('pilot_project_objectives' . $project->getId(), $request->request->getString('_token'))) {
+            return $this->redirect($url);
+        }
+        $doc = $this->docRepository->objectivesOf($project, $this->translator->trans('label.objectives', [], 'pilot'));
+        $this->entityManager->flush();
+
+        return $this->redirect($url . '#doc-' . $doc->getSlug());
     }
 
     // A recurring action launched from the project's page: a new card of the project, dated today, handed to the machine at once
@@ -194,7 +212,7 @@ class PilotController extends AbstractController
 
     // Cards and files holding the words, from two letters
     #[AdminRoute(path: '/pilot/search', name: 'pilot_search')]
-    public function search(Request $request, DocRepository $docRepository): Response
+    public function search(Request $request): Response
     {
         $this->denyAccess();
         $words = trim($request->query->getString('q'));
@@ -203,7 +221,7 @@ class PilotController extends AbstractController
         return $this->page('@c975LPilot/management/search.html.twig', [
             'words' => $words,
             'cards' => $searched ? $this->cardRepository->search($words) : [],
-            'docs' => $searched ? $docRepository->search($words) : [],
+            'docs' => $searched ? $this->docRepository->search($words) : [],
         ]);
     }
 
@@ -222,6 +240,27 @@ class PilotController extends AbstractController
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
 
+    // Cards put in the order they were dragged into, inside a backlog or a day, the token travelling as a header
+    #[AdminRoute(path: '/pilot/cards/order', name: 'pilot_cards_order', options: ['methods' => ['POST']])]
+    public function cardsOrder(Request $request): Response
+    {
+        $this->denyAccess();
+        if (!$this->isCsrfTokenValid(self::CARDS_ORDER_ROUTE, $request->headers->get('X-CSRF-Token'))) {
+            return new Response(null, Response::HTTP_FORBIDDEN);
+        }
+        $ids = array_values(array_map(intval(...), array_filter($request->request->all('ids'), is_numeric(...))));
+        $cards = [];
+        foreach ($this->cardRepository->findBy(['id' => $ids]) as $card) {
+            $cards[(int) $card->getId()] = $card;
+        }
+        foreach ($ids as $position => $id) {
+            ($cards[$id] ?? null)?->setRank($position);
+        }
+        $this->entityManager->flush();
+
+        return new Response(null, Response::HTTP_NO_CONTENT);
+    }
+
     // Everything about a card: note, checklist with what its steps spend against the balances, file, runs
     #[AdminRoute(path: '/pilot/card/{id}', name: 'pilot_card', options: ['requirements' => ['id' => '\d+']])]
     public function card(Card $card, MachineRepository $machineRepository, RunOutputs $runOutputs, CreditRepository $creditRepository): Response
@@ -235,12 +274,13 @@ class PilotController extends AbstractController
             'run' => $run,
             'outputs' => null === $run ? [] : $runOutputs->previews($run),
             'actions' => $this->actionsFor($card->getProject(), $machineRepository),
+            'docs' => $this->docRepository->findFiles($card->getProject()),
             'credits' => [] === $keys ? [] : array_column(array_map(static fn (Credit $credit): array => [$credit->getKey(), $credit], $creditRepository->findBy(['key' => $keys])), 1, 0),
         ]);
     }
 
     // The actions offered on the project that a machine online runs, each with that machine
-    /** @return list<array{key: string, label: string, params: list<string>, machine: string, card: bool}> */
+    /** @return list<array{key: string, label: string, params: list<string>, machine: string, card: bool, help: ?string}> */
     private function actionsFor(Project $project, MachineRepository $machineRepository): array
     {
         $runners = [];
@@ -251,10 +291,39 @@ class PilotController extends AbstractController
         }
         $actions = [];
         foreach ($this->actionRepository->findOffered($project, array_map(strval(...), array_keys($runners))) as $action) {
-            $actions[] = ['key' => $action->getKey(), 'label' => $action->getLabel(), 'params' => $action->getParams(), 'machine' => $runners[$action->getKey()], 'card' => $action->isCardOnly()];
+            $actions[] = ['key' => $action->getKey(), 'label' => $action->getLabel(), 'params' => $action->getParams(), 'machine' => $runners[$action->getKey()], 'card' => $action->isCardOnly(), 'help' => $action->getHelp()];
         }
 
         return $actions;
+    }
+
+    // A file on its own, a character with its portrait at full size to download (a reference for an image generator)
+    #[AdminRoute(path: '/pilot/doc/{slug}', name: 'pilot_doc', options: ['requirements' => ['slug' => '[a-z0-9-]+']])]
+    public function doc(#[MapEntity(mapping: ['slug' => 'slug'])] Doc $doc): Response
+    {
+        $this->denyAccess();
+
+        return $this->page('@c975LPilot/management/doc.html.twig', ['doc' => $doc, 'project' => $doc->getProject()]);
+    }
+
+    // A file's title and two floors written on its page; in the dialog the answer says only whether it was kept
+    #[AdminRoute(path: '/pilot/doc/{slug}/edit', name: 'pilot_doc_edit', options: ['methods' => ['POST'], 'requirements' => ['slug' => '[a-z0-9-]+']])]
+    public function docEdit(#[MapEntity(mapping: ['slug' => 'slug'])] Doc $doc, Request $request): Response
+    {
+        $this->denyAccess();
+        $kept = $this->isCsrfTokenValid('pilot_doc_edit' . $doc->getId(), $request->request->getString('_token'));
+        if ($kept) {
+            $title = trim($request->request->getString('title'));
+            $summary = trim($request->request->getString('summary'));
+            $detail = trim($request->request->getString('detail'));
+            $doc->setTitle('' !== $title ? mb_substr($title, 0, 200) : $doc->getTitle())->write('' !== $summary ? $summary : null, '' !== $detail ? $detail : null);
+            $this->entityManager->flush();
+        }
+        if ($request->headers->has(self::DIALOG_HEADER)) {
+            return $kept ? new Response(null, Response::HTTP_NO_CONTENT) : new Response($this->translator->trans('label.gesture_expired', [], 'pilot'), Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return $this->redirect($this->back($request, $this->generateUrl('management_pilot_doc', ['slug' => $doc->getSlug()])));
     }
 
     // A file as one markdown download, to hand over or keep
@@ -346,7 +415,7 @@ class PilotController extends AbstractController
             'reopen' => $card->markDone(null),
             'schedule' => $card->setDue($this->day($request->request->getString('due'))),
             'edit' => $this->edit($card, $request),
-            'step' => $card->toggleStep($request->request->getInt('index', -1), $this->clock->now()),
+            'step' => $this->cardFlow->tick($card, $request->request->getInt('index', -1)),
             'entrust' => $this->cardFlow->entrust($card, $request->request->getString('action'), $this->params($request)),
             'launch' => $this->cardFlow->launch($card),
             'cancel' => $this->cardFlow->cancel($card),
@@ -358,13 +427,25 @@ class PilotController extends AbstractController
         }
     }
 
-    // The title, the note and who an answer is awaited from, typed on the card's page, an empty title keeping the one it had
+    // The title, the note, who an answer is awaited from and the file, set on the card's page, an empty title keeping the one it had
     private function edit(Card $card, Request $request): Card
     {
         $title = trim($request->request->getString('title'));
         $note = trim($request->request->getString('note'));
 
-        return $card->setTitle('' !== $title ? $title : $card->getTitle())->setNote('' !== $note ? $note : null)->setWaitingOn($request->request->getString('waitingOn'));
+        return $card->setTitle('' !== $title ? $title : $card->getTitle())->setNote('' !== $note ? $note : null)->setWaitingOn($request->request->getString('waitingOn'))->setDoc($this->chosenDoc($card, $request));
+    }
+
+    // The file chosen for the card among its project's, a new one when a title is typed for it, none when emptied
+    private function chosenDoc(Card $card, Request $request): ?Doc
+    {
+        $title = trim($request->request->getString('newDoc'));
+        if ('' !== $title) {
+            return $this->docRepository->newFile($card->getProject(), $title);
+        }
+        $doc = $this->docRepository->find($request->request->getInt('doc'));
+
+        return null !== $doc && $doc->getProject() === $card->getProject() ? $doc : null;
     }
 
     // Parameter values posted with an action, empty ones dropped

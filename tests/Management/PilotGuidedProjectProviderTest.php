@@ -57,14 +57,14 @@ class PilotGuidedProjectProviderTest extends TestCase
         }
     }
 
-    // The four projects in their order, each opening on its own screen
+    // The six projects in their order, each opening on its own screen
     public function testProjectsOpenOnTheirScreen(): void
     {
         $projects = $this->projects();
 
-        $this->assertSame(['pilot-schedule', 'pilot-runner', 'pilot-plan', 'pilot-machine'], array_column($projects, 'slug'));
-        $this->assertSame([12010, 12020, 12030, 12040], array_column($projects, 'order'));
-        $this->assertSame(['/' . PilotController::SEARCH_ROUTE, '/' . PilotController::SEARCH_ROUTE, '/crud/' . PlanTemplateCrudController::class, '/crud/' . MachineCrudController::class], array_map(static fn (array $project): ?string => $project['steps'][0]['url'] ?? null, $projects));
+        $this->assertSame(['pilot-schedule', 'pilot-runner', 'pilot-plan', 'pilot-machine', 'pilot-doc', 'pilot-objectives'], array_column($projects, 'slug'));
+        $this->assertSame([12010, 12020, 12030, 12040, 12050, 12060], array_column($projects, 'order'));
+        $this->assertSame(['/' . PilotController::SEARCH_ROUTE, '/' . PilotController::SEARCH_ROUTE, '/crud/' . PlanTemplateCrudController::class, '/crud/' . MachineCrudController::class, '/' . PilotController::SEARCH_ROUTE, '/' . PilotController::WEEK_ROUTE], array_map(static fn (array $project): ?string => $project['steps'][0]['url'] ?? null, $projects));
     }
 
     // Only the opening step carries an url; the others highlight what the templates still declare, an EasyAdmin button or a form field

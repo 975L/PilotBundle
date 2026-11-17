@@ -2,9 +2,17 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="es" datatype="plaintext" original="pilot.en.xlf">
         <body>
+            <trans-unit id="poZvvnR">
+                <source>description.guided_project_pilot_doc</source>
+                <target>Encuentre un expediente, ábralo en su página y reescriba su título, su resumen para una persona y su detalle para Claude.</target>
+            </trans-unit>
             <trans-unit id="cNjx5cn">
                 <source>description.guided_project_pilot_machine</source>
                 <target>Dé su token a una máquina, ofrezca en sus proyectos las acciones que declara y luego lance una desde la página de un proyecto.</target>
+            </trans-unit>
+            <trans-unit id="RyLb.eB">
+                <source>description.guided_project_pilot_objectives</source>
+                <target>Abra un proyecto y escriba sus objetivos al principio de su página: lo que busca, a qué ritmo y para cuándo.</target>
             </trans-unit>
             <trans-unit id="G.IHxyv">
                 <source>description.guided_project_pilot_plan</source>
@@ -17,6 +25,14 @@
             <trans-unit id="nevRENI">
                 <source>description.guided_project_pilot_schedule</source>
                 <target>Dé una fecha a una tarjeta pendiente: pasará a la Planificación.</target>
+            </trans-unit>
+            <trans-unit id="jK5pb7k">
+                <source>description.guided_step_pilot_doc_open</source>
+                <target>El lápiz junto a su título lo abre en su página.</target>
+            </trans-unit>
+            <trans-unit id="jQPj5pE">
+                <source>description.guided_step_pilot_doc_write</source>
+                <target>Despliegue « Modificar el expediente », cambie el título, el resumen o el detalle y guarde.</target>
             </trans-unit>
             <trans-unit id="Vu1JcnP">
                 <source>description.guided_step_pilot_machine_list</source>
@@ -33,6 +49,14 @@
             <trans-unit id="RNr8Sop">
                 <source>description.guided_step_pilot_machine_run</source>
                 <target>En la página de un proyecto, sus acciones son botones: un clic confía una nueva tarjeta a la máquina.</target>
+            </trans-unit>
+            <trans-unit id="7nj0XJN">
+                <source>description.guided_step_pilot_objectives_open</source>
+                <target>El lápiz de la sección Objetivos los abre y los crea la primera vez.</target>
+            </trans-unit>
+            <trans-unit id="j0IR8u1">
+                <source>description.guided_step_pilot_objectives_project</source>
+                <target>Elija el proyecto en la columna de la izquierda.</target>
             </trans-unit>
             <trans-unit id="QdWVHf5">
                 <source>description.guided_step_pilot_plan_new</source>
@@ -138,6 +162,18 @@
                 <source>label.card_add</source>
                 <target>Añadir la tarjeta</target>
             </trans-unit>
+            <trans-unit id="hFdwawk">
+                <source>label.card_doc</source>
+                <target>Expediente</target>
+            </trans-unit>
+            <trans-unit id="DMWSP2p">
+                <source>label.card_doc_new</source>
+                <target>O nuevo expediente</target>
+            </trans-unit>
+            <trans-unit id="RnONm4c">
+                <source>label.card_doc_none</source>
+                <target>Ninguno</target>
+            </trans-unit>
             <trans-unit id="lnR41eV">
                 <source>label.card_edit</source>
                 <target>Modificar</target>
@@ -162,9 +198,9 @@
                 <source>label.card_waiting_on</source>
                 <target>En espera de</target>
             </trans-unit>
-            <trans-unit id="PkiyycY">
-                <source>label.character_sheet</source>
-                <target>Ficha</target>
+            <trans-unit id="EKG83VA">
+                <source>label.character_image</source>
+                <target>Descargar el retrato</target>
             </trans-unit>
             <trans-unit id="J2ePCOx">
                 <source>label.characters</source>
@@ -197,6 +233,10 @@
             <trans-unit id="tIm7yV.">
                 <source>label.credit_manual</source>
                 <target>Escrito a mano</target>
+            </trans-unit>
+            <trans-unit id="qXkHHzi">
+                <source>label.credit_monthly</source>
+                <target>Presupuesto mensual</target>
             </trans-unit>
             <trans-unit id="PuOgz_o">
                 <source>label.credit_note</source>
@@ -237,6 +277,18 @@
             <trans-unit id="efSspGE">
                 <source>label.credits</source>
                 <target>Créditos</target>
+            </trans-unit>
+            <trans-unit id="yAOLzB4">
+                <source>label.doc_detail</source>
+                <target>El detalle (para Claude, en markdown)</target>
+            </trans-unit>
+            <trans-unit id="1kdh_SS">
+                <source>label.doc_edit</source>
+                <target>Modificar el expediente</target>
+            </trans-unit>
+            <trans-unit id="PkNfbLn">
+                <source>label.doc_summary</source>
+                <target>Lo esencial (para una persona)</target>
             </trans-unit>
             <trans-unit id="x65L0pA">
                 <source>label.docs</source>
@@ -282,9 +334,17 @@
                 <source>label.gesture_expired</source>
                 <target>El formulario caducó, recarga la página.</target>
             </trans-unit>
+            <trans-unit id="9HD1k6r">
+                <source>label.guided_project_pilot_doc</source>
+                <target>Redactar un expediente</target>
+            </trans-unit>
             <trans-unit id="jdyjshO">
                 <source>label.guided_project_pilot_machine</source>
                 <target>Registrar una máquina</target>
+            </trans-unit>
+            <trans-unit id="Z8La6p6">
+                <source>label.guided_project_pilot_objectives</source>
+                <target>Escribir los objetivos de un proyecto</target>
             </trans-unit>
             <trans-unit id="ngjJfq8">
                 <source>label.guided_project_pilot_plan</source>
@@ -297,6 +357,18 @@
             <trans-unit id="CE.J4Ir">
                 <source>label.guided_project_pilot_schedule</source>
                 <target>Planificar una tarjeta</target>
+            </trans-unit>
+            <trans-unit id="CXGhwMt">
+                <source>label.guided_step_pilot_doc_open</source>
+                <target>Abrir el expediente</target>
+            </trans-unit>
+            <trans-unit id="8hglhZ9">
+                <source>label.guided_step_pilot_doc_search</source>
+                <target>Encontrar el expediente</target>
+            </trans-unit>
+            <trans-unit id="x5AtrJ4">
+                <source>label.guided_step_pilot_doc_write</source>
+                <target>Reescribirlo</target>
             </trans-unit>
             <trans-unit id="505vekX">
                 <source>label.guided_step_pilot_machine_list</source>
@@ -313,6 +385,14 @@
             <trans-unit id="lmEsa5o">
                 <source>label.guided_step_pilot_machine_run</source>
                 <target>Lanzar una acción</target>
+            </trans-unit>
+            <trans-unit id="1yt7zDu">
+                <source>label.guided_step_pilot_objectives_open</source>
+                <target>Abrir sus objetivos</target>
+            </trans-unit>
+            <trans-unit id="2PSX.GO">
+                <source>label.guided_step_pilot_objectives_project</source>
+                <target>Abrir un proyecto</target>
             </trans-unit>
             <trans-unit id="EoxjCAK">
                 <source>label.guided_step_pilot_plan_new</source>
@@ -362,6 +442,10 @@
                 <source>label.info_actions</source>
                 <target>Las acciones que las máquinas saben hacer, declaradas por ellas. Elija en qué proyectos se propone cada una.</target>
             </trans-unit>
+            <trans-unit id="3pAySP6">
+                <source>label.info_card_doc_new</source>
+                <target>Título del nuevo expediente</target>
+            </trans-unit>
             <trans-unit id="y6Wak8E">
                 <source>label.info_card_new_due</source>
                 <target>Sin fecha, la tarjeta va a pendientes</target>
@@ -377,6 +461,10 @@
             <trans-unit id="d4pk8IV">
                 <source>label.info_credit_manual</source>
                 <target>Marcado, el saldo se escribe en la Planificación y ninguna máquina lo sobrescribe.</target>
+            </trans-unit>
+            <trans-unit id="ZIDm2rX">
+                <source>label.info_credit_monthly</source>
+                <target>Lo que los pasos previstos pueden gastar al mes, comparado en la Planificación (vacío: sin presupuesto)</target>
             </trans-unit>
             <trans-unit id="FiOXjyB">
                 <source>label.info_credits</source>
@@ -396,7 +484,7 @@
             </trans-unit>
             <trans-unit id="3.31SY1">
                 <source>label.info_project</source>
-                <target>Sus tarjetas con fecha, luego sus pendientes, sus expedientes y sus tarjetas terminadas.</target>
+                <target>Sus objetivos, sus tarjetas con fecha, luego sus pendientes, sus expedientes y sus tarjetas terminadas.</target>
             </trans-unit>
             <trans-unit id="3DJqjm2">
                 <source>label.info_project_slug</source>
@@ -469,6 +557,18 @@
             <trans-unit id=".CLxfze">
                 <source>label.nothing_planned</source>
                 <target>Nada previsto en este periodo.</target>
+            </trans-unit>
+            <trans-unit id="kEt.QE2">
+                <source>label.objectives</source>
+                <target>Objetivos</target>
+            </trans-unit>
+            <trans-unit id="mHcxwBG">
+                <source>label.objectives_empty</source>
+                <target>Este proyecto aún no tiene objetivos.</target>
+            </trans-unit>
+            <trans-unit id="zleisC6">
+                <source>label.objectives_write</source>
+                <target>Escribir los objetivos</target>
             </trans-unit>
             <trans-unit id="VYbxN1B">
                 <source>label.order_drag</source>
@@ -589,6 +689,10 @@
             <trans-unit id="qwwpZOD">
                 <source>label.send_back</source>
                 <target>Devolver</target>
+            </trans-unit>
+            <trans-unit id="5eiyx0C">
+                <source>label.spend_month</source>
+                <target>Gastos previstos en %month%</target>
             </trans-unit>
             <trans-unit id="qWFPyfX">
                 <source>label.status_done</source>
