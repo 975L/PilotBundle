@@ -1,0 +1,26 @@
+{# The machine work under way: waiting in the queue or held by a machine, with its progress; one still waiting can be withdrawn #}
+{% if runs is not empty %}
+    <section class="mb-4 pilot-runs">
+        <h2 class="h5">{{ 'label.runs_active'|trans({}, 'pilot') }}</h2>
+        <ul class="list-group">
+            {% for run in runs %}
+                {% set card = run.card %}
+                <li class="list-group-item d-flex flex-wrap align-items-center gap-2">
+                    <span class="rounded-circle flex-shrink-0 pilot-dot pilot-color-{{ card.project.slug }}"></span>
+                    <a href="{{ path('management_pilot_card', {id: card.id}) }}" data-card-id="{{ card.id }}" class="pilot-card-open">{{ card.title }}</a>
+                    <span class="badge text-bg-light">{{ run.status.label|trans }}</span>
+                    {% if run.machine %}<span class="small text-body-secondary">{{ run.machine.name }}</span>{% endif %}
+                    <span class="small text-body-secondary">{{ card.action }} · {{ 'label.runs_since'|trans({'%date%': run.createdAt|format_datetime('short', 'short')}, 'pilot') }}</span>
+                    {% if run.message %}<span class="small">{{ run.message }}</span>{% endif %}
+                    {% if run.status.value == 'claimed' %}<progress class="flex-grow-1" max="100" value="{{ run.progress }}">{{ run.progress }} %</progress>{% endif %}
+                    {% if run.status.value == 'queued' %}
+                        <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'cancel'}) }}" class="ms-auto">
+                            <input type="hidden" name="_token" value="{{ csrf_token('management_pilot_card_gesture' ~ card.id) }}">
+                            <button class="btn btn-sm btn-outline-secondary">{{ 'label.run_cancel'|trans({}, 'pilot') }}</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endif %}

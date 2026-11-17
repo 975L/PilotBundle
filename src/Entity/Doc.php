@@ -21,6 +21,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'pilot_doc')]
 class Doc implements \Stringable
 {
+    // Heading of the summary section, the one the Pilotage artifact writes and the import splits on
+    public const string SUMMARY_HEADING = "## L'essentiel";
+
+    // Where the pictures of the files are kept, from the project's root
+    public const string IMAGE_DIRECTORY = 'private/pilot/docs';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -38,6 +44,11 @@ class Doc implements \Stringable
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $detail = null;
+
+    // File name of its picture (a character's portrait), kept under IMAGE_DIRECTORY
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
+    private ?string $image = null;
 
     #[ORM\Column]
     private \DateTimeImmutable $updatedAt;
@@ -114,12 +125,57 @@ class Doc implements \Stringable
         return $this->detail;
     }
 
+    // The whole document as one markdown file: title, the summary under its heading, then the detail
+    public function toMarkdown(): string
+    {
+        $parts = ['# ' . $this->title];
+        if (null !== $this->summary && '' !== trim($this->summary)) {
+            $parts[] = self::SUMMARY_HEADING . "\n\n" . trim($this->summary);
+        }
+        if (null !== $this->detail && '' !== trim($this->detail)) {
+            $parts[] = trim($this->detail);
+        }
+
+        return implode("\n\n", $parts) . "\n";
+    }
+
+    // Reads back a markdown file shaped as toMarkdown() writes it: the title, the summary under its heading, the rest as the detail
+    public function fromMarkdown(string $markdown): static
+    {
+        $text = trim(str_replace("\r\n", "\n", $markdown));
+        if (1 === preg_match('/^# (.+)$/m', $text, $title, PREG_OFFSET_CAPTURE) && 0 === $title[0][1]) {
+            $this->title = mb_substr(trim($title[1][0]), 0, 200);
+            $text = trim(substr($text, \strlen($title[0][0])));
+        }
+        $summary = null;
+        if (str_starts_with($text, self::SUMMARY_HEADING)) {
+            $rest = trim(substr($text, \strlen(self::SUMMARY_HEADING)));
+            $parts = preg_split('/^(?=#{1,2} )/m', $rest, 2) ?: [$rest];
+            $summary = trim($parts[0]);
+            $text = trim($parts[1] ?? '');
+        }
+
+        return $this->write('' === $summary ? null : $summary, '' === $text ? null : $text);
+    }
+
     // Both floors at once, the date following
     public function write(?string $summary, ?string $detail): static
     {
         $this->summary = $summary;
         $this->detail = $detail;
         $this->updatedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
 
         return $this;
     }

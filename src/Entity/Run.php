@@ -176,7 +176,7 @@ class Run
         $this->machine = null;
         $this->leaseUntil = null;
         $this->progress = 0;
-        $this->message = 'Machine perdue, action remise en attente';
+        $this->message = null;
 
         return $this;
     }
@@ -196,5 +196,11 @@ class Run
         }
 
         return $this;
+    }
+
+    // Withdraws a run still waiting in the queue
+    public function cancel(\DateTimeImmutable $now): static
+    {
+        return $this->finish(RunStatus::Failed, null, [], null, $now);
     }
 }

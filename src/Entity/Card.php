@@ -66,14 +66,19 @@ class Card implements \Stringable
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
-    // Sub-steps ticked one by one: text, done and the day it was
-    /** @var list<array{t: string, done?: bool, doneAt?: string}> */
+    // Sub-steps ticked one by one: text, done and the day it was, and what a step spends of a credit (its key, the amount, whether it is a guess)
+    /** @var list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}}> */
     #[ORM\Column(type: Types::JSON)]
     private array $checklist = [];
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Doc $doc = null;
+
+    // Who an answer is awaited from (a company, a person), the card waiting on them until it is cleared
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
+    private ?string $waitingOn = null;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $doneAt = null;
@@ -255,7 +260,7 @@ class Card implements \Stringable
     }
 
     /**
-     * @return list<array{t: string, done?: bool, doneAt?: string}>
+     * @return list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}}>
      */
     public function getChecklist(): array
     {
@@ -263,11 +268,29 @@ class Card implements \Stringable
     }
 
     /**
-     * @param list<array{t: string, done?: bool, doneAt?: string}> $checklist
+     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}}> $checklist
      */
     public function setChecklist(array $checklist): static
     {
         $this->checklist = $checklist;
+
+        return $this;
+    }
+
+    // Ticks a step of the checklist on a day, or unticks it; an index out of the list changes nothing
+    public function toggleStep(int $index, \DateTimeImmutable $day): static
+    {
+        if (!isset($this->checklist[$index])) {
+            return $this;
+        }
+        $step = $this->checklist[$index];
+        if ($step['done'] ?? false) {
+            unset($step['done'], $step['doneAt']);
+        } else {
+            $step['done'] = true;
+            $step['doneAt'] = $day->format('Y-m-d');
+        }
+        $this->checklist[$index] = $step;
 
         return $this;
     }
@@ -280,6 +303,20 @@ class Card implements \Stringable
     public function setDoc(?Doc $doc): static
     {
         $this->doc = $doc;
+
+        return $this;
+    }
+
+    public function getWaitingOn(): ?string
+    {
+        return $this->waitingOn;
+    }
+
+    // Sets who an answer is awaited from, an empty value ending the wait
+    public function setWaitingOn(?string $waitingOn): static
+    {
+        $waitingOn = null === $waitingOn ? '' : trim($waitingOn);
+        $this->waitingOn = '' === $waitingOn ? null : mb_substr($waitingOn, 0, 100);
 
         return $this;
     }

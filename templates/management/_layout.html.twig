@@ -1,0 +1,56 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{# The piloting pages: the projects in a column on the left from a medium screen, above the page on a phone #}
+{% block main %}
+    {# Project colours as classes: the back office's Content-Security-Policy refuses style attributes, a nonced <style> is the one way in #}
+    <style {% guard function csp_nonce %}nonce="{{ csp_nonce('style') }}"{% endguard %}>
+        .pilot-dot { width: .6rem; height: .6rem; }
+        .pilot-note { white-space: pre-line; }
+        .pilot-dot, .pilot-badge { background-color: #6c757d; }
+        .pilot-cards { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
+        .pilot-card { --pilot-ink: #6c757d; border-top: 4px solid var(--pilot-ink); transition: border-color .15s, box-shadow .15s, transform .15s; }
+        .pilot-card:hover, .pilot-card:focus-within { border-color: var(--pilot-ink); box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .12); transform: translateY(-2px); }
+        .pilot-card .pilot-card-gesture { position: relative; z-index: 2; }
+        .pilot-dialog { width: min(48rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); border: 0; border-radius: .75rem; padding: 0; box-shadow: 0 1rem 3rem rgba(0, 0, 0, .3); background: var(--bs-body-bg); color: var(--bs-body-color); }
+        .pilot-dialog::backdrop { background: rgba(0, 0, 0, .45); }
+        .pilot-dialog-close { position: sticky; top: 0; float: right; z-index: 3; }
+        .pilot-sort-handle { cursor: grab; }
+        .pilot-drop { min-height: 3.5rem; border-radius: .5rem; }
+        .pilot-characters { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); }
+        .pilot-character-image { aspect-ratio: 1; object-fit: cover; }
+        .pilot-character-initial { place-items: center; font-size: 2.4rem; background: var(--bs-tertiary-bg); }
+        .pilot-dragging .pilot-drop { outline: 2px dashed var(--bs-border-color); outline-offset: 4px; }
+        {% for item in pilot_projects|filter(item => item.color matches '/^#[0-9a-fA-F]{3,8}$/') %}
+        .pilot-color-{{ item.slug }} { background-color: {{ item.color }}; }
+        .pilot-ink-{{ item.slug }} { --pilot-ink: {{ item.color }}; }
+        {% endfor %}
+    </style>
+    <div class="row g-4" data-controller="pilot-card-modal pilot-card-drag" data-pilot-card-drag-failed-label-value="{{ 'label.drag_failed'|trans({}, 'pilot') }}" data-pilot-card-modal-url-value="{{ path('management_pilot_card', {id: 0}) }}">
+        <nav class="col-md-3 col-xl-2 pilot-projects" aria-label="{{ 'label.projects'|trans({}, 'pilot') }}">
+            <div class="list-group list-group-flush small">
+                <a href="{{ path('management_pilot_week') }}" class="list-group-item list-group-item-action{{ app.request.attributes.get('_route') == 'management_pilot_week' ? ' active' }}"><i class="fas fa-calendar-week me-2"></i>{{ 'label.week'|trans({}, 'pilot') }}</a>
+                <a href="{{ path('management_pilot_search') }}" class="list-group-item list-group-item-action{{ app.request.attributes.get('_route') == 'management_pilot_search' ? ' active' }}"><i class="fas fa-magnifying-glass me-2"></i>{{ 'label.search'|trans({}, 'pilot') }}</a>
+            </div>
+            <h2 class="h6 text-body-secondary mt-3 mb-1 px-3">{{ 'label.projects'|trans({}, 'pilot') }}</h2>
+            <div class="list-group list-group-flush small" data-controller="pilot-project-sort" data-pilot-project-sort-target="list" data-pilot-project-sort-url-value="{{ path('management_pilot_projects_order') }}" data-pilot-project-sort-token-value="{{ csrf_token('management_pilot_projects_order') }}" data-pilot-project-sort-failed-label-value="{{ 'label.order_failed'|trans({}, 'pilot') }}">
+                {% set current = project ?? card.project ?? null %}
+                {% for item in pilot_projects %}
+                    <a href="{{ path('management_pilot_project', {slug: item.slug}) }}" draggable="false" data-pilot-project-sort-target="item" data-project-id="{{ item.id }}" class="list-group-item list-group-item-action d-flex align-items-center gap-2{{ current and current.id == item.id ? ' active' }}">
+                        <span class="text-body-secondary pilot-sort-handle" data-pilot-project-sort-handle title="{{ 'label.order_drag'|trans({}, 'pilot') }}"><i class="fas fa-grip-vertical"></i></span>
+                        <span class="rounded-circle flex-shrink-0 pilot-dot pilot-color-{{ item.slug }}"></span>
+                        <span class="flex-grow-1">{{ item.name }}</span>
+                        {% if pilot_open[item.id] is defined %}<span class="badge text-bg-light">{{ pilot_open[item.id] }}</span>{% endif %}
+                    </a>
+                {% endfor %}
+            </div>
+        </nav>
+        <div class="col-md-9 col-xl-10">
+            {% block pilot %}{% endblock %}
+        </div>
+        {# A card opened from a tile shows here, over the page it was clicked on #}
+        <dialog class="pilot-dialog" data-pilot-card-modal-target="dialog" aria-label="{{ 'label.card'|trans({}, 'pilot') }}">
+            <form method="dialog" class="pilot-dialog-close p-2"><button class="btn-close" aria-label="{{ 'label.close'|trans({}, 'pilot') }}"></button></form>
+            <div class="p-4 pt-2" data-pilot-card-modal-target="body"></div>
+        </dialog>
+    </div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{# A character as a card: portrait, name and role, the sheet unfolded on demand #}
+<div class="card h-100 pilot-character">
+    {% if doc.image %}
+        <img src="{{ path('management_pilot_doc_image', {slug: doc.slug}) }}" alt="{{ doc.title }}" class="card-img-top pilot-character-image" loading="lazy">
+    {% else %}
+        <div class="card-img-top d-grid pilot-character-image pilot-character-initial">{{ doc.title|first|upper }}</div>
+    {% endif %}
+    <div class="card-body p-2">
+        <div class="fw-semibold">{{ doc.title }}</div>
+        {% if doc.summary %}<div class="small text-body-secondary">{{ doc.summary }}</div>{% endif %}
+        {% if doc.detail %}
+            <details class="small mt-1">
+                <summary>{{ 'label.character_sheet'|trans({}, 'pilot') }}</summary>
+                {{ doc.detail|markdown_to_html }}
+            </details>
+        {% endif %}
+    </div>
+</div>

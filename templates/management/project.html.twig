@@ -1,38 +1,81 @@
-{% extends '@EasyAdmin/page/content.html.twig' %}
+{% extends '@c975LPilot/management/_layout.html.twig' %}
 
-{% block main %}
-    <h1><span class="badge" style="background-color: {{ project.color }}">&nbsp;</span> {{ project.name }}</h1>
+{% block pilot %}
+    <h1><span class="badge pilot-color-{{ project.slug }}">&nbsp;</span> {{ project.name }}</h1>
     <p class="text-body-secondary">{{ 'label.info_project'|trans({}, 'pilot') }}</p>
     {% for site in project.sites %}
         <a href="https://{{ site }}" target="_blank" rel="noopener" class="me-2">{{ site }}</a>
     {% endfor %}
+
+    {% set recurring = actions|filter(action => not action.card) %}
+    {% if recurring is not empty %}
+        <div class="d-flex flex-wrap gap-2 mt-3 pilot-project-actions">
+            {% for action in recurring %}
+                <form method="post" action="{{ path('management_pilot_project_run', {slug: project.slug}) }}" class="d-flex gap-1 align-items-end">
+                    <input type="hidden" name="_token" value="{{ csrf_token('pilot_project_run' ~ project.id) }}">
+                    <input type="hidden" name="action" value="{{ action.key }}">
+                    {% for name in action.params %}
+                        <input name="params[{{ name }}]" placeholder="{{ name }}" aria-label="{{ name }}" class="form-control form-control-sm">
+                    {% endfor %}
+                    <button class="btn btn-sm btn-primary" title="{{ action.machine }}"><i class="fas fa-play me-1"></i>{{ action.label }}</button>
+                </form>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="mt-3">{% include '@c975LPilot/management/_runs.html.twig' %}</div>
+
+    {% if templates is not empty %}
+        <form method="get" action="{{ path('management_pilot_plan_new', {slug: project.slug}) }}" class="d-flex gap-2 align-items-end mt-3 pilot-plan-start">
+            <label class="form-label mb-0">{{ 'label.plan_new'|trans({}, 'pilot') }}
+                <select name="template" class="form-select form-select-sm">
+                    {% for template in templates %}<option value="{{ template.id }}">{{ template.name }}</option>{% endfor %}
+                </select>
+            </label>
+            <button class="btn btn-sm btn-outline-primary">{{ 'label.plan_next'|trans({}, 'pilot') }}</button>
+        </form>
+    {% endif %}
+
+    <h2 class="h5 mt-4">{{ 'label.card_new'|trans({}, 'pilot') }}</h2>
+    {% include '@c975LPilot/management/_card_new.html.twig' with {new_project: project} %}
 
     {% set dated = cards|filter(card => card.due) %}
     {% set backlog = cards|filter(card => not card.due) %}
 
     {% if dated is not empty %}
         <h2 class="h5 mt-4">{{ 'label.planned'|trans({}, 'pilot') }}</h2>
-        <ul class="list-group">
+        <div class="pilot-cards">
             {% for card in dated %}{% include '@c975LPilot/management/_card.html.twig' %}{% endfor %}
-        </ul>
+        </div>
     {% endif %}
 
     <h2 class="h5 mt-4">{{ 'label.backlog'|trans({}, 'pilot') }}</h2>
-    <ul class="list-group">
-        {% for card in backlog %}{% include '@c975LPilot/management/_card.html.twig' %}{% else %}<li class="list-group-item text-body-secondary">{{ 'label.backlog_empty'|trans({}, 'pilot') }}</li>{% endfor %}
-    </ul>
+    <div class="pilot-cards pilot-drop" data-pilot-card-drag-target="zone" data-due="">
+        {% for card in backlog %}{% include '@c975LPilot/management/_card.html.twig' %}{% else %}<p class="text-body-secondary">{{ 'label.backlog_empty'|trans({}, 'pilot') }}</p>{% endfor %}
+    </div>
 
-    {% if docs is not empty %}
+    <div class="mt-4">{% include '@c975LPilot/management/_reports.html.twig' %}</div>
+
+    {% set characters = docs|filter(doc => doc.kind.value == 'character') %}
+    {% if characters is not empty %}
+        <h2 class="h5 mt-4">{{ 'label.characters'|trans({}, 'pilot') }}</h2>
+        <div class="pilot-characters">
+            {% for doc in characters %}{% include '@c975LPilot/management/_character.html.twig' %}{% endfor %}
+        </div>
+    {% endif %}
+
+    {% set files = docs|filter(doc => doc.kind.value != 'character') %}
+    {% if files is not empty %}
         <h2 class="h5 mt-4">{{ 'label.docs'|trans({}, 'pilot') }}</h2>
-        {% for doc in docs %}{% include '@c975LPilot/management/_doc.html.twig' %}{% endfor %}
+        {% for doc in files %}{% include '@c975LPilot/management/_doc.html.twig' with {open: doc.kind.value == 'charter'} %}{% endfor %}
     {% endif %}
 
     {% if done is not empty %}
         <details class="mt-4">
             <summary>{{ 'label.done_cards'|trans({'%count%': done|length}, 'pilot') }}</summary>
-            <ul class="list-group mt-2">
+            <div class="pilot-cards mt-2">
                 {% for card in done %}{% include '@c975LPilot/management/_card.html.twig' %}{% endfor %}
-            </ul>
+            </div>
         </details>
     {% endif %}
 {% endblock %}

@@ -10,6 +10,10 @@
 
 namespace c975L\PilotBundle\Enum;
 
+use Symfony\Contracts\Translation\TranslatableInterface;
+
+use function Symfony\Component\Translation\t;
+
 // Life of an execution: queued until a machine claims it, then finished as done, failed or blocked
 enum RunStatus: string
 {
@@ -18,6 +22,18 @@ enum RunStatus: string
     case Done = 'done';
     case Failed = 'failed';
     case Blocked = 'blocked';
+
+    // Word shown on the card, translatable
+    public function label(): TranslatableInterface
+    {
+        return match ($this) {
+            self::Queued => t('label.run_queued', [], 'pilot'),
+            self::Claimed => t('label.run_claimed', [], 'pilot'),
+            self::Done => t('label.run_done', [], 'pilot'),
+            self::Failed => t('label.run_failed', [], 'pilot'),
+            self::Blocked => t('label.run_blocked', [], 'pilot'),
+        };
+    }
 
     // Whether the run is over
     public function isFinished(): bool

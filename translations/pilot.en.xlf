@@ -2,9 +2,61 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="en" datatype="plaintext" original="pilot.en.xlf">
         <body>
+            <trans-unit id="cNjx5cn">
+                <source>description.guided_project_pilot_machine</source>
+                <target>Give a machine its token, offer the actions it declares on your projects, then run one from a project's page.</target>
+            </trans-unit>
+            <trans-unit id="G.IHxyv">
+                <source>description.guided_project_pilot_plan</source>
+                <target>Write the steps of a template once, offer it on its projects, then start a plan from a project's page: its cards follow each other.</target>
+            </trans-unit>
+            <trans-unit id="n.wECQG">
+                <source>description.guided_project_pilot_runner</source>
+                <target>A machine runs the card, then you validate its result or send it back with a comment.</target>
+            </trans-unit>
             <trans-unit id="nevRENI">
                 <source>description.guided_project_pilot_schedule</source>
-                <target>Give a backlog card a date: it moves into « This week » when the time comes.</target>
+                <target>Give a backlog card a date: it moves into the Planning.</target>
+            </trans-unit>
+            <trans-unit id="Vu1JcnP">
+                <source>description.guided_step_pilot_machine_list</source>
+                <target>The machines that run the actions, with their last call.</target>
+            </trans-unit>
+            <trans-unit id="oud4LXF">
+                <source>description.guided_step_pilot_machine_new</source>
+                <target>Name it: its token is shown once, to copy into the runner.</target>
+            </trans-unit>
+            <trans-unit id="zmGlAvo">
+                <source>description.guided_step_pilot_machine_projects</source>
+                <target>Once the machine has called, open each of its actions in the Actions screen and choose the projects offering it.</target>
+            </trans-unit>
+            <trans-unit id="RNr8Sop">
+                <source>description.guided_step_pilot_machine_run</source>
+                <target>On a project's page, its actions are buttons: one click hands a new card to the machine.</target>
+            </trans-unit>
+            <trans-unit id="QdWVHf5">
+                <source>description.guided_step_pilot_plan_new</source>
+                <target>Name it and write its steps, a {variable} being asked when the plan is created.</target>
+            </trans-unit>
+            <trans-unit id="ez9oqdZ">
+                <source>description.guided_step_pilot_plan_projects</source>
+                <target>Choose the projects whose page offers this template, then save.</target>
+            </trans-unit>
+            <trans-unit id="E.fh3mH">
+                <source>description.guided_step_pilot_plan_start</source>
+                <target>On one of these projects' page, choose the template and fill in its title and values.</target>
+            </trans-unit>
+            <trans-unit id="ne5jQTp">
+                <source>description.guided_step_pilot_plan_template</source>
+                <target>The templates list the steps a plan repeats, by hand or by a machine.</target>
+            </trans-unit>
+            <trans-unit id="oswwmeb">
+                <source>description.guided_step_pilot_runner_entrust</source>
+                <target>Pick an action of a machine online, fill in its parameters and hand it over.</target>
+            </trans-unit>
+            <trans-unit id="ni2dKdz">
+                <source>description.guided_step_pilot_runner_validate</source>
+                <target>Once the result is in, validate it, or send it back with a comment for another pass.</target>
             </trans-unit>
             <trans-unit id="LWkGxtg">
                 <source>description.guided_step_pilot_schedule_due</source>
@@ -16,11 +68,59 @@
             </trans-unit>
             <trans-unit id="GQ73Hzr">
                 <source>description.guided_step_pilot_schedule_save</source>
-                <target>The card shows in « This week » once its date enters the horizon.</target>
+                <target>The card shows in the Planning on its date.</target>
             </trans-unit>
             <trans-unit id="EY0fTPI">
                 <source>description.guided_step_pilot_schedule_search</source>
                 <target>Type two letters of its title.</target>
+            </trans-unit>
+            <trans-unit id="Eah7mrY">
+                <source>flash.machine_created</source>
+                <target>Machine added. Its token, shown this once only: %token%</target>
+            </trans-unit>
+            <trans-unit id="vby6Ztt">
+                <source>flow.comment_dash</source>
+                <target>The comment cannot start with a dash, the machine would refuse it.</target>
+            </trans-unit>
+            <trans-unit id="uKJGNhQ">
+                <source>flow.comment_needed</source>
+                <target>A comment is needed to send back.</target>
+            </trans-unit>
+            <trans-unit id="Kkrj897">
+                <source>flow.file_refused</source>
+                <target>File refused.</target>
+            </trans-unit>
+            <trans-unit id="nU4eMAs">
+                <source>flow.not_held</source>
+                <target>This run is no longer held by this machine.</target>
+            </trans-unit>
+            <trans-unit id="xUcdrDB">
+                <source>flow.not_now</source>
+                <target>This gesture does not apply to this card now.</target>
+            </trans-unit>
+            <trans-unit id="Kf88JWX">
+                <source>flow.unknown_status</source>
+                <target>Unknown end status.</target>
+            </trans-unit>
+            <trans-unit id="5ZMPsA1">
+                <source>label.action</source>
+                <target>Action</target>
+            </trans-unit>
+            <trans-unit id="niB3CEw">
+                <source>label.action_key</source>
+                <target>Key</target>
+            </trans-unit>
+            <trans-unit id="9AC8jW0">
+                <source>label.action_label</source>
+                <target>Label</target>
+            </trans-unit>
+            <trans-unit id="YDD2CRE">
+                <source>label.action_params</source>
+                <target>Parameters</target>
+            </trans-unit>
+            <trans-unit id="n7uNUhj">
+                <source>label.actions</source>
+                <target>Actions</target>
             </trans-unit>
             <trans-unit id="I6PzVva">
                 <source>label.backlog</source>
@@ -30,9 +130,113 @@
                 <source>label.backlog_empty</source>
                 <target>No card without a date.</target>
             </trans-unit>
-            <trans-unit id="0.g7Tcu">
-                <source>label.detail</source>
-                <target>Detail</target>
+            <trans-unit id="CkGng16">
+                <source>label.card</source>
+                <target>Card</target>
+            </trans-unit>
+            <trans-unit id="DKY562D">
+                <source>label.card_add</source>
+                <target>Add the card</target>
+            </trans-unit>
+            <trans-unit id="lnR41eV">
+                <source>label.card_edit</source>
+                <target>Edit</target>
+            </trans-unit>
+            <trans-unit id="tHxpxtn">
+                <source>label.card_new</source>
+                <target>New card</target>
+            </trans-unit>
+            <trans-unit id="xkhswWQ">
+                <source>label.card_note</source>
+                <target>Note</target>
+            </trans-unit>
+            <trans-unit id="p5RuA6w">
+                <source>label.card_save</source>
+                <target>Save</target>
+            </trans-unit>
+            <trans-unit id="iQQCggk">
+                <source>label.card_title</source>
+                <target>Title</target>
+            </trans-unit>
+            <trans-unit id="F0j36T8">
+                <source>label.card_waiting_on</source>
+                <target>Waiting on</target>
+            </trans-unit>
+            <trans-unit id="PkiyycY">
+                <source>label.character_sheet</source>
+                <target>Sheet</target>
+            </trans-unit>
+            <trans-unit id="J2ePCOx">
+                <source>label.characters</source>
+                <target>Characters</target>
+            </trans-unit>
+            <trans-unit id="CzzpYWY">
+                <source>label.close</source>
+                <target>Close</target>
+            </trans-unit>
+            <trans-unit id="L2R_cZ8">
+                <source>label.comment</source>
+                <target>Comment</target>
+            </trans-unit>
+            <trans-unit id="Deu35w3">
+                <source>label.credit</source>
+                <target>Credit</target>
+            </trans-unit>
+            <trans-unit id="TIK_l8.">
+                <source>label.credit_key</source>
+                <target>Key</target>
+            </trans-unit>
+            <trans-unit id="n4wGtiv">
+                <source>label.credit_label</source>
+                <target>Service</target>
+            </trans-unit>
+            <trans-unit id="qDNOXCO">
+                <source>label.credit_left</source>
+                <target>%left% left</target>
+            </trans-unit>
+            <trans-unit id="tIm7yV.">
+                <source>label.credit_manual</source>
+                <target>Typed in by hand</target>
+            </trans-unit>
+            <trans-unit id="PuOgz_o">
+                <source>label.credit_note</source>
+                <target>Note</target>
+            </trans-unit>
+            <trans-unit id="jb3aExt">
+                <source>label.credit_remaining</source>
+                <target>Left</target>
+            </trans-unit>
+            <trans-unit id="WYxhn8j">
+                <source>label.credit_renews</source>
+                <target>Renewal</target>
+            </trans-unit>
+            <trans-unit id="M8WJB8n">
+                <source>label.credit_renews_on</source>
+                <target>Renewed on %date%</target>
+            </trans-unit>
+            <trans-unit id="50KBNbF">
+                <source>label.credit_save</source>
+                <target>Save the balance</target>
+            </trans-unit>
+            <trans-unit id="DYbDizo">
+                <source>label.credit_total</source>
+                <target>Total</target>
+            </trans-unit>
+            <trans-unit id="wpPSoiI">
+                <source>label.credit_type_in</source>
+                <target>Balance</target>
+            </trans-unit>
+            <trans-unit id="BtktdRf">
+                <source>label.credit_unit</source>
+                <target>Unit</target>
+            </trans-unit>
+            <trans-unit id="KJcEKeo">
+                <source>label.credit_updated</source>
+                <target>Updated</target>
+            </trans-unit>
+            <trans-unit id="efSspGE">
+                <source>label.credits</source>
+                <target>Credits</target>
             </trans-unit>
             <trans-unit id="x65L0pA">
                 <source>label.docs</source>
@@ -46,13 +250,93 @@
                 <source>label.done_cards</source>
                 <target>Done (%count%)</target>
             </trans-unit>
+            <trans-unit id="0BbQM_y">
+                <source>label.download_md</source>
+                <target>Download as Markdown</target>
+            </trans-unit>
+            <trans-unit id="WwsyAGo">
+                <source>label.drag_failed</source>
+                <target>The new date of the card could not be saved.</target>
+            </trans-unit>
             <trans-unit id="iS0d92j">
                 <source>label.due</source>
                 <target>Date</target>
             </trans-unit>
+            <trans-unit id="jKsIt3R">
+                <source>label.entrust</source>
+                <target>Hand to a machine</target>
+            </trans-unit>
+            <trans-unit id="X2Xki9R">
+                <source>label.entrust_go</source>
+                <target>Hand over</target>
+            </trans-unit>
+            <trans-unit id="hLzCk5U">
+                <source>label.executor_human</source>
+                <target>By hand</target>
+            </trans-unit>
+            <trans-unit id="KmVPWwb">
+                <source>label.executor_runner</source>
+                <target>A machine</target>
+            </trans-unit>
+            <trans-unit id="_J1nX.h">
+                <source>label.gesture_expired</source>
+                <target>The form expired, reload the page.</target>
+            </trans-unit>
+            <trans-unit id="jdyjshO">
+                <source>label.guided_project_pilot_machine</source>
+                <target>Register a machine</target>
+            </trans-unit>
+            <trans-unit id="ngjJfq8">
+                <source>label.guided_project_pilot_plan</source>
+                <target>Start a plan from a template</target>
+            </trans-unit>
+            <trans-unit id="P7mCZPo">
+                <source>label.guided_project_pilot_runner</source>
+                <target>Hand a card to a machine</target>
+            </trans-unit>
             <trans-unit id="CE.J4Ir">
                 <source>label.guided_project_pilot_schedule</source>
                 <target>Schedule a card</target>
+            </trans-unit>
+            <trans-unit id="505vekX">
+                <source>label.guided_step_pilot_machine_list</source>
+                <target>Machines</target>
+            </trans-unit>
+            <trans-unit id="8o8n4pq">
+                <source>label.guided_step_pilot_machine_new</source>
+                <target>Add a machine</target>
+            </trans-unit>
+            <trans-unit id="4i09Gyy">
+                <source>label.guided_step_pilot_machine_projects</source>
+                <target>Offer its actions</target>
+            </trans-unit>
+            <trans-unit id="lmEsa5o">
+                <source>label.guided_step_pilot_machine_run</source>
+                <target>Run an action</target>
+            </trans-unit>
+            <trans-unit id="EoxjCAK">
+                <source>label.guided_step_pilot_plan_new</source>
+                <target>Create a template</target>
+            </trans-unit>
+            <trans-unit id="pMYnaTu">
+                <source>label.guided_step_pilot_plan_projects</source>
+                <target>Its projects</target>
+            </trans-unit>
+            <trans-unit id="i8iLAFb">
+                <source>label.guided_step_pilot_plan_start</source>
+                <target>Start the plan</target>
+            </trans-unit>
+            <trans-unit id="Mgs9DrL">
+                <source>label.guided_step_pilot_plan_template</source>
+                <target>Plan templates</target>
+            </trans-unit>
+            <trans-unit id="Aq0KFvR">
+                <source>label.guided_step_pilot_runner_entrust</source>
+                <target>Hand the card over</target>
+            </trans-unit>
+            <trans-unit id="lD6H0Mc">
+                <source>label.guided_step_pilot_runner_validate</source>
+                <target>Validate or send back</target>
             </trans-unit>
             <trans-unit id="Fw9sp6x">
                 <source>label.guided_step_pilot_schedule_due</source>
@@ -70,21 +354,109 @@
                 <source>label.guided_step_pilot_schedule_search</source>
                 <target>Find the card</target>
             </trans-unit>
+            <trans-unit id="Oek4bfM">
+                <source>label.info_action_projects</source>
+                <target>The cards and page of these projects offer this action.</target>
+            </trans-unit>
+            <trans-unit id="VRlFpmt">
+                <source>label.info_actions</source>
+                <target>The actions the machines can run, as they declare them. Choose on which projects each one is offered.</target>
+            </trans-unit>
+            <trans-unit id="y6Wak8E">
+                <source>label.info_card_new_due</source>
+                <target>Without a date, the card goes to the backlog</target>
+            </trans-unit>
+            <trans-unit id="YUG81Yr">
+                <source>label.info_card_waiting_on</source>
+                <target>Who must answer (empty: nothing awaited)</target>
+            </trans-unit>
+            <trans-unit id="ZENpb63">
+                <source>label.info_credit_key</source>
+                <target>Lowercase letters, digits and dashes; the one a machine uses for this service.</target>
+            </trans-unit>
+            <trans-unit id="d4pk8IV">
+                <source>label.info_credit_manual</source>
+                <target>Ticked, the balance is typed in on the Planning and no machine overwrites it.</target>
+            </trans-unit>
+            <trans-unit id="FiOXjyB">
+                <source>label.info_credits</source>
+                <target>The balances of the paid services, shown on the Planning. Those a machine reads appear on their own; add a service without an API here and type its balance in on the Planning.</target>
+            </trans-unit>
+            <trans-unit id="FxX95j_">
+                <source>label.info_entrust</source>
+                <target>A machine (the runner on your computer) runs one of its actions for this card, a script for instance, then shows its result to validate or send back with a comment.</target>
+            </trans-unit>
+            <trans-unit id="tda0gjO">
+                <source>label.info_machines</source>
+                <target>The computers running the runner. A machine added gets its token once, to copy into the runner configuration.</target>
+            </trans-unit>
+            <trans-unit id="oxNNeWJ">
+                <source>label.info_pilot</source>
+                <target>The piloting of every project: the planning, the search and the page of each project.</target>
+            </trans-unit>
             <trans-unit id="3.31SY1">
                 <source>label.info_project</source>
                 <target>Its dated cards, then its backlog, its files and its done cards.</target>
+            </trans-unit>
+            <trans-unit id="3DJqjm2">
+                <source>label.info_project_slug</source>
+                <target>Lowercase letters, digits and dashes; used in the address of the project page.</target>
+            </trans-unit>
+            <trans-unit id="_8BfrVA">
+                <source>label.info_projects</source>
+                <target>The piloting projects: their name, colour, sites and place in the column.</target>
             </trans-unit>
             <trans-unit id="LnVyCF1">
                 <source>label.info_search</source>
                 <target>Find a card or a file, even a done one.</target>
             </trans-unit>
+            <trans-unit id="nkRHf1s">
+                <source>label.info_step_params</source>
+                <target>One "name=value" per line.</target>
+            </trans-unit>
+            <trans-unit id="IaYl.9w">
+                <source>label.info_template_projects</source>
+                <target>The page of these projects offers this template.</target>
+            </trans-unit>
+            <trans-unit id="OCHL2hS">
+                <source>label.info_templates</source>
+                <target>A reusable series of steps, each done by hand or by a machine. A {name} in a title or a parameter is asked when the plan is created, on the page of the chosen projects.</target>
+            </trans-unit>
             <trans-unit id="dTTDxsg">
                 <source>label.info_week</source>
-                <target>Late cards, then those of the coming days.</target>
+                <target>Late cards, then the coming deadlines: day by day over the next days, then month by month.</target>
             </trans-unit>
             <trans-unit id=".c3ER3G">
                 <source>label.late</source>
                 <target>Late</target>
+            </trans-unit>
+            <trans-unit id="5JTxGnV">
+                <source>label.later</source>
+                <target>Then</target>
+            </trans-unit>
+            <trans-unit id="qhB25G1">
+                <source>label.launch</source>
+                <target>Run again</target>
+            </trans-unit>
+            <trans-unit id="IFUxhVi">
+                <source>label.log</source>
+                <target>Log</target>
+            </trans-unit>
+            <trans-unit id="VCOHhjm">
+                <source>label.machine</source>
+                <target>Machine</target>
+            </trans-unit>
+            <trans-unit id="ATUEV3C">
+                <source>label.machine_name</source>
+                <target>Name</target>
+            </trans-unit>
+            <trans-unit id="RB30CoG">
+                <source>label.machine_seen</source>
+                <target>Last call</target>
+            </trans-unit>
+            <trans-unit id="S_IZlqu">
+                <source>label.machines</source>
+                <target>Machines</target>
             </trans-unit>
             <trans-unit id="C62419s">
                 <source>label.next</source>
@@ -98,17 +470,109 @@
                 <source>label.nothing_planned</source>
                 <target>Nothing planned in this period.</target>
             </trans-unit>
+            <trans-unit id="VYbxN1B">
+                <source>label.order_drag</source>
+                <target>Drag to reorder</target>
+            </trans-unit>
+            <trans-unit id="hT45Qr2">
+                <source>label.order_failed</source>
+                <target>The order of the projects could not be saved.</target>
+            </trans-unit>
+            <trans-unit id="fKU3y1e">
+                <source>label.output_elsewhere</source>
+                <target>Left on the machine (too heavy to be sent)</target>
+            </trans-unit>
             <trans-unit id="f8icqBu">
                 <source>label.pilot</source>
                 <target>Piloting</target>
+            </trans-unit>
+            <trans-unit id="Tj2fHkm">
+                <source>label.plan_create</source>
+                <target>Create the plan</target>
+            </trans-unit>
+            <trans-unit id="P3BJJH3">
+                <source>label.plan_new</source>
+                <target>New plan</target>
+            </trans-unit>
+            <trans-unit id="ADK6G3M">
+                <source>label.plan_next</source>
+                <target>Continue</target>
+            </trans-unit>
+            <trans-unit id="ybu4fs_">
+                <source>label.plan_title</source>
+                <target>Plan title</target>
             </trans-unit>
             <trans-unit id="lDMgngM">
                 <source>label.planned</source>
                 <target>Planned</target>
             </trans-unit>
+            <trans-unit id="1QBj5KM">
+                <source>label.project</source>
+                <target>Project</target>
+            </trans-unit>
+            <trans-unit id="MK9Jb7Q">
+                <source>label.project_color</source>
+                <target>Colour</target>
+            </trans-unit>
+            <trans-unit id="y6Vndkw">
+                <source>label.project_name</source>
+                <target>Name</target>
+            </trans-unit>
+            <trans-unit id="gD5I_dt">
+                <source>label.project_position</source>
+                <target>Order</target>
+            </trans-unit>
+            <trans-unit id="y19Qah8">
+                <source>label.project_sites</source>
+                <target>Sites</target>
+            </trans-unit>
+            <trans-unit id="MzQFe_D">
+                <source>label.project_slug</source>
+                <target>Identifier</target>
+            </trans-unit>
+            <trans-unit id="v68JX1X">
+                <source>label.projects</source>
+                <target>Projects</target>
+            </trans-unit>
             <trans-unit id="xLyncAl">
                 <source>label.reopen</source>
                 <target>Not done after all</target>
+            </trans-unit>
+            <trans-unit id="zs.Us5J">
+                <source>label.report_scanned</source>
+                <target>read on %date%</target>
+            </trans-unit>
+            <trans-unit id="E0DKyG1">
+                <source>label.run_blocked</source>
+                <target>Refused by the machine</target>
+            </trans-unit>
+            <trans-unit id="L_C7OBF">
+                <source>label.run_cancel</source>
+                <target>Cancel the order</target>
+            </trans-unit>
+            <trans-unit id="n07TsR8">
+                <source>label.run_claimed</source>
+                <target>Running</target>
+            </trans-unit>
+            <trans-unit id="wy3NeoC">
+                <source>label.run_done</source>
+                <target>Done</target>
+            </trans-unit>
+            <trans-unit id="o8wnYRr">
+                <source>label.run_failed</source>
+                <target>Failed</target>
+            </trans-unit>
+            <trans-unit id="6VKEpHg">
+                <source>label.run_queued</source>
+                <target>Queued</target>
+            </trans-unit>
+            <trans-unit id="xSMG8Sj">
+                <source>label.runs_active</source>
+                <target>Under way</target>
+            </trans-unit>
+            <trans-unit id="wKs_dOO">
+                <source>label.runs_since</source>
+                <target>since %date%</target>
             </trans-unit>
             <trans-unit id="RJcbCnz">
                 <source>label.schedule</source>
@@ -122,6 +586,10 @@
                 <source>label.search_placeholder</source>
                 <target>A card, a file…</target>
             </trans-unit>
+            <trans-unit id="qwwpZOD">
+                <source>label.send_back</source>
+                <target>Send back</target>
+            </trans-unit>
             <trans-unit id="qWFPyfX">
                 <source>label.status_done</source>
                 <target>Done</target>
@@ -134,6 +602,10 @@
                 <source>label.status_ready</source>
                 <target>To do</target>
             </trans-unit>
+            <trans-unit id="k0mrUZw">
+                <source>label.status_review</source>
+                <target>To validate</target>
+            </trans-unit>
             <trans-unit id="17Ds0dr">
                 <source>label.status_running</source>
                 <target>Running</target>
@@ -142,9 +614,57 @@
                 <source>label.status_todo</source>
                 <target>Waiting</target>
             </trans-unit>
+            <trans-unit id="zmp1swB">
+                <source>label.step_action</source>
+                <target>Machine action</target>
+            </trans-unit>
+            <trans-unit id="NVK7xLn">
+                <source>label.step_executor</source>
+                <target>Who</target>
+            </trans-unit>
+            <trans-unit id="CG_YnR.">
+                <source>label.step_params</source>
+                <target>Parameters</target>
+            </trans-unit>
+            <trans-unit id="uYvwX94">
+                <source>label.step_title</source>
+                <target>Title</target>
+            </trans-unit>
+            <trans-unit id="5UPyb9h">
+                <source>label.steps_done</source>
+                <target>Steps done</target>
+            </trans-unit>
+            <trans-unit id="3C4wOwQ">
+                <source>label.template</source>
+                <target>Plan template</target>
+            </trans-unit>
+            <trans-unit id="W7kzvfO">
+                <source>label.template_name</source>
+                <target>Name</target>
+            </trans-unit>
+            <trans-unit id="Na.SF7b">
+                <source>label.template_steps</source>
+                <target>Steps</target>
+            </trans-unit>
+            <trans-unit id="Gwnseqp">
+                <source>label.templates</source>
+                <target>Plan templates</target>
+            </trans-unit>
+            <trans-unit id="M2GHic6">
+                <source>label.validate</source>
+                <target>Validate</target>
+            </trans-unit>
+            <trans-unit id="TCdmg3c">
+                <source>label.waiting</source>
+                <target>Waiting for an answer</target>
+            </trans-unit>
+            <trans-unit id="b9ybHZB">
+                <source>label.waiting_on</source>
+                <target>waits on %who%</target>
+            </trans-unit>
             <trans-unit id="X7KFWgH">
                 <source>label.week</source>
-                <target>This week</target>
+                <target>Planning</target>
             </trans-unit>
         </body>
     </file>

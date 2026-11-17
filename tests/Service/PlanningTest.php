@@ -20,50 +20,26 @@ use Symfony\Component\Clock\MockClock;
 
 class PlanningTest extends TestCase
 {
-    /** @var list<\DateTimeImmutable> */
-    private array $asked = [];
-
-    // Planning on a fixed day, over the cards given, the horizon read from the config
-    /**
-     * @param list<Card> $cards
-     */
-    private function planning(array $cards, mixed $horizon): Planning
+    // Late cards first, every coming day listed with its cards, the cards past the horizon by month
+    public function testLateDaysAndLaterMonths(): void
     {
-        $repository = $this->createStub(CardRepository::class);
-        $repository->method('findDatedUntil')->willReturnCallback(function (\DateTimeImmutable $last) use ($cards): array {
-            $this->asked[] = $last;
-
-            return $cards;
-        });
+        $project = new Project('catalog', 'Catalog');
+        $card = static fn (string $due): Card => new Card($project, 'item-' . $due)->setDue(new \DateTimeImmutable($due));
+        $cards = $this->createStub(CardRepository::class);
+        $cards->method('findDatedUntil')->willReturn([$card('2026-11-10'), $card('2026-11-18')]);
+        $cards->method('findDatedAfter')->willReturn([$card('2026-12-01'), $card('2026-12-12'), $card('2027-01-02')]);
         $config = $this->createStub(ConfigServiceInterface::class);
-        $config->method('get')->willReturn($horizon);
+        $config->method('get')->willReturn(7);
 
-        return new Planning($repository, $config, new MockClock('2026-11-17 15:00:00'));
-    }
+        $planning = new Planning($cards, $config, new MockClock('2026-11-17 10:00'))->build();
 
-    private function card(string $due): Card
-    {
-        return new Card(new Project('catalog', 'Catalog'), 'Item ' . $due)->setDue(new \DateTimeImmutable($due));
-    }
-
-    // Late cards apart, the others by day, as many as there are
-    public function testLateApartComingByDay(): void
-    {
-        $plan = $this->planning([$this->card('2026-11-10'), $this->card('2026-11-17'), $this->card('2026-11-20'), $this->card('2026-11-20')], '5');
-
-        $built = $plan->build();
-
-        $this->assertCount(1, $built['late']);
-        $this->assertSame(['2026-11-17', '2026-11-20'], array_keys($built['days']));
-        $this->assertCount(2, $built['days']['2026-11-20']);
-        $this->assertSame(5, $built['horizon']);
-        $this->assertSame('2026-11-22', $this->asked[0]->format('Y-m-d'));
-    }
-
-    // An unset or wrong horizon falls back to a week
-    public function testHorizonDefaultsToAWeek(): void
-    {
-        $this->assertSame(7, $this->planning([], null)->build()['horizon']);
-        $this->assertSame(7, $this->planning([], '-3')->build()['horizon']);
+        $this->assertCount(1, $planning['late']);
+        $this->assertCount(8, $planning['days']);
+        $this->assertSame('2026-11-17', array_key_first($planning['days']));
+        $this->assertSame('2026-11-24', array_key_last($planning['days']));
+        $this->assertSame([], $planning['days']['2026-11-17']);
+        $this->assertCount(1, $planning['days']['2026-11-18']);
+        $this->assertSame(['2026-12-01', '2027-01-01'], array_keys($planning['later']));
+        $this->assertCount(2, $planning['later']['2026-12-01']);
     }
 }

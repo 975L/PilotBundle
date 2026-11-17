@@ -29,7 +29,7 @@ class Machine implements UserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    /** @var list<string> */
+    /** @var array<string, array{label: string, params: list<string>, card?: bool}> */
     #[ORM\Column(type: Types::JSON)]
     private array $capabilities = [];
 
@@ -39,6 +39,7 @@ class Machine implements UserInterface
     // A machine with its name and the sha256 of its token
     public function __construct(
         #[ORM\Column(length: 100, unique: true)]
+        #[Assert\NotBlank]
         #[Assert\Length(max: 100)]
         private string $name,
         #[ORM\Column(length: 64, unique: true)]
@@ -59,21 +60,43 @@ class Machine implements UserInterface
         return $this->name;
     }
 
+    public function setName(?string $name): static
+    {
+        $this->name = $name ?? '';
+
+        return $this;
+    }
+
+    // Draws a new token, keeps its hash and returns it, the only time it is readable
+    public function newToken(): string
+    {
+        $token = bin2hex(random_bytes(32));
+        $this->tokenHash = hash('sha256', $token);
+
+        return $token;
+    }
+
     // Hash of the token, the token itself is never stored
     public function getTokenHash(): string
     {
         return $this->tokenHash;
     }
 
-    // Action keys the machine declared at its last call
-    /** @return list<string> */
+    // Actions the machine declared at its last call: key, label and parameter names
+    /** @return array<string, array{label: string, params: list<string>, card?: bool}> */
     public function getCapabilities(): array
     {
         return $this->capabilities;
     }
 
+    // Labels of the actions declared, for the list of machines
+    public function getDeclaredActions(): string
+    {
+        return implode(', ', array_column($this->capabilities, 'label'));
+    }
+
     // Records a call: capabilities and time
-    /** @param list<string> $capabilities */
+    /** @param array<string, array{label: string, params: list<string>, card?: bool}> $capabilities */
     public function seen(array $capabilities, \DateTimeImmutable $now): static
     {
         $this->capabilities = $capabilities;

@@ -11,29 +11,40 @@
 namespace c975L\PilotBundle\Entity;
 
 use c975L\PilotBundle\Repository\PlanTemplateRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-// Reusable model of a plan, its steps kept as a list of definitions
+// Reusable model of a plan, its steps kept as a list of definitions, offered on the projects chosen for it
 #[ORM\Entity(repositoryClass: PlanTemplateRepository::class)]
 #[ORM\Table(name: 'pilot_plan_template')]
 class PlanTemplate
 {
+    use OfferedToProjectsTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    /** @var Collection<int, Project> */
+    #[ORM\ManyToMany(targetEntity: Project::class)]
+    #[ORM\JoinTable(name: 'pilot_plan_template_project')]
+    private Collection $projects;
+
     // Each step: title, executor (human|runner), kind (task|validate), action key and params for a runner step
     /** @param list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>}> $steps */
     public function __construct(
         #[ORM\Column(length: 100, unique: true)]
+        #[Assert\NotBlank]
         #[Assert\Length(max: 100)]
         private string $name,
         #[ORM\Column(type: Types::JSON)]
         private array $steps,
     ) {
+        $this->projects = new ArrayCollection();
     }
 
     // Template id
@@ -46,6 +57,13 @@ class PlanTemplate
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function setName(?string $name): static
+    {
+        $this->name = $name ?? '';
+
+        return $this;
     }
 
     // Step definitions

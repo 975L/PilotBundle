@@ -2,6 +2,50 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="fr" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="f29gyCe">
+                <source>narration.guided_step_pilot_machine_list</source>
+                <target>Une machine exécute les actions à votre place.</target>
+            </trans-unit>
+            <trans-unit id="cTbRdn3">
+                <source>narration.guided_step_pilot_machine_new</source>
+                <target>Ajoutez-la et copiez son jeton, affiché une seule fois.</target>
+            </trans-unit>
+            <trans-unit id="V_N3l7f">
+                <source>narration.guided_step_pilot_machine_projects</source>
+                <target>Choisissez les projets où chacune de ses actions est proposée.</target>
+            </trans-unit>
+            <trans-unit id="xs68zKz">
+                <source>narration.guided_step_pilot_machine_run</source>
+                <target>Sur la page du projet, un clic lance l'action.</target>
+            </trans-unit>
+            <trans-unit id="ZnjnQVh">
+                <source>narration.guided_step_pilot_plan_new</source>
+                <target>Créez le modèle et écrivez ses étapes.</target>
+            </trans-unit>
+            <trans-unit id="HFS_ulM">
+                <source>narration.guided_step_pilot_plan_projects</source>
+                <target>Choisissez les projets qui le proposeront.</target>
+            </trans-unit>
+            <trans-unit id="hcKcisw">
+                <source>narration.guided_step_pilot_plan_start</source>
+                <target>Sur la page du projet, lancez le plan : sa première carte s'ouvre.</target>
+            </trans-unit>
+            <trans-unit id="b7TMLlX">
+                <source>narration.guided_step_pilot_plan_template</source>
+                <target>Un plan répète les mêmes étapes : écrivez-les une fois dans un modèle.</target>
+            </trans-unit>
+            <trans-unit id="QtDoT_j">
+                <source>narration.guided_step_pilot_runner_entrust</source>
+                <target>Choisissez ce que la machine doit faire, puis confiez-lui la carte.</target>
+            </trans-unit>
+            <trans-unit id="OzFYcxd">
+                <source>narration.guided_step_pilot_runner_search</source>
+                <target>Pour confier une carte à une machine, commencez par la retrouver.</target>
+            </trans-unit>
+            <trans-unit id="H9l0NXy">
+                <source>narration.guided_step_pilot_runner_validate</source>
+                <target>Quand la machine a fini, validez son travail ou renvoyez-le avec un commentaire.</target>
+            </trans-unit>
             <trans-unit id="p4Wt.p1">
                 <source>narration.guided_step_pilot_schedule_due</source>
                 <target>Choisissez le jour où elle doit être faite.</target>

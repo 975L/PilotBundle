@@ -10,11 +10,11 @@
 
 namespace c975L\PilotBundle\Service;
 
+use c975L\PilotBundle\Entity\Doc;
+
 // Reads an export of the Pilotage artifact database (one JSON file per document, under a folder per collection) into plain rows, without touching the database
 class ArtifactReader
 {
-    private const string SUMMARY = "## L'essentiel";
-
     // Projects, files and cards found in the export folder
     /**
      * @return array{projects: list<array{slug: string, name: string, color: ?string, sites: list<string>, position: int}>, docs: list<array{slug: string, title: string, project: ?string, kind: string, summary: ?string, detail: ?string}>, cards: list<array{id: string, project: string, title: string, note: ?string, due: ?string, doc: ?string, doneAt: ?string, checklist: list<array{t: string, done?: bool, doneAt?: string}>}>}
@@ -26,7 +26,7 @@ class ArtifactReader
         }
 
         $docs = array_merge($this->docs($dir), $this->characters($dir));
-        $cards = $this->cards($dir);
+        $cards = [...$this->cards($dir), ...$this->deadlines($dir)];
         $projects = $this->projects($dir, array_merge(array_column($docs, 'project'), array_column($cards, 'project')));
 
         return ['projects' => $projects, 'docs' => $docs, 'cards' => $cards];
@@ -82,7 +82,7 @@ class ArtifactReader
         $rows = [];
         foreach ($this->files($dir . '/characters') as $id => $character) {
             $lines = [];
-            foreach ([['Description', $character['desc'] ?? null], ...array_map(static fn (array $info): array => [$info[0], $info[1]], $character['info'] ?? []), ['Running gags', $character['gags'] ?? null], ['Punchlines', $character['punchlines'] ?? null], ['Prompt Leonardo', $character['prompt'] ?? null], ['Image', $character['img'] ?? null]] as [$label, $value]) {
+            foreach ([['Description', $character['desc'] ?? null], ...array_map(static fn (array $info): array => [$info[0], $info[1]], $character['info'] ?? []), ['Running gags', $character['gags'] ?? null], ['Punchlines', $character['punchlines'] ?? null], ['Prompt Leonardo', $character['prompt'] ?? null]] as [$label, $value]) {
                 if (null !== $value && '' !== $value) {
                     $lines[] = '**' . $label . '** : ' . $value;
                 }
@@ -118,17 +118,39 @@ class ArtifactReader
         return $rows;
     }
 
+    // The dated deadlines of the planning collection, each a card whose note says what is left to do
+    /** @return list<array{id: string, project: string, title: string, note: ?string, due: ?string, doc: ?string, doneAt: ?string, checklist: list<array{t: string, done?: bool, doneAt?: string}>}> */
+    private function deadlines(string $dir): array
+    {
+        $rows = [];
+        foreach ($this->files($dir . '/planning') as $id => $deadline) {
+            $note = implode("\n\n", array_filter([$deadline['todo'] ?? null, $deadline['note'] ?? null]));
+            $rows[] = [
+                'id' => 'planning-' . $id,
+                'project' => (string) ($deadline['project'] ?? ''),
+                'title' => (string) ($deadline['title'] ?? $id),
+                'note' => '' === $note ? null : $note,
+                'due' => $deadline['date'] ?? null,
+                'doc' => $deadline['doc'] ?? null,
+                'doneAt' => null,
+                'checklist' => [],
+            ];
+        }
+
+        return $rows;
+    }
+
     // Summary and detail of a markdown: the "L'essentiel" section, then the rest without its folding tags
     /**
      * @return array{?string, ?string}
      */
     private function split(string $markdown): array
     {
-        $start = strpos($markdown, self::SUMMARY);
+        $start = strpos($markdown, Doc::SUMMARY_HEADING);
         if (false === $start) {
             return [null, '' === trim($markdown) ? null : trim($markdown)];
         }
-        $after = substr($markdown, $start + \strlen(self::SUMMARY));
+        $after = substr($markdown, $start + \strlen(Doc::SUMMARY_HEADING));
         $end = strpos($after, '<details>');
         $summary = trim(false === $end ? $after : substr($after, 0, $end));
         $detail = trim(substr($markdown, 0, $start) . (false === $end ? '' : substr($after, $end)));

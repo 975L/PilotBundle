@@ -23,4 +23,11 @@ class ProjectRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Project::class);
     }
+
+    // Every project in the order chosen, then by name
+    /** @return list<Project> */
+    public function findOrdered(): array
+    {
+        return $this->findBy([], ['position' => 'ASC', 'name' => 'ASC']);
+    }
 }

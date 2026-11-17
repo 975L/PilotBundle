@@ -23,4 +23,22 @@ class MachineRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Machine::class);
     }
+
+    // The machine holding this token, null for an unknown one
+    public function findOneByToken(string $token): ?Machine
+    {
+        return '' === $token ? null : $this->findOneBy(['tokenHash' => hash('sha256', $token)]);
+    }
+
+    // Machines that called recently, with the actions they declared
+    /** @return list<Machine> */
+    public function findOnline(\DateTimeImmutable $now): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.lastSeenAt >= :since')
+            ->setParameter('since', $now->modify('-' . Machine::ONLINE_SECONDS . ' seconds'))
+            ->orderBy('m.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

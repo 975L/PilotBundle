@@ -86,4 +86,25 @@ class CardTest extends TestCase
         $this->assertSame(100, $run->getProgress());
         $this->assertTrue($run->getStatus()->isFinished());
     }
+
+    // A step ticked keeps its day, unticked loses it, and an index out of the list changes nothing
+    public function testToggleStep(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'first'], ['t' => 'second']]);
+        $day = new \DateTimeImmutable('2026-11-17');
+
+        $card->toggleStep(1, $day)->toggleStep(5, $day);
+        $this->assertSame([['t' => 'first'], ['t' => 'second', 'done' => true, 'doneAt' => '2026-11-17']], $card->getChecklist());
+
+        $card->toggleStep(1, $day);
+        $this->assertSame([['t' => 'first'], ['t' => 'second']], $card->getChecklist());
+    }
+
+    // Who an answer is awaited from is trimmed, and an empty value ends the wait
+    public function testWaitingOn(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setWaitingOn('  Catalog  ');
+        $this->assertSame('Catalog', $card->getWaitingOn());
+        $this->assertNull($card->setWaitingOn(' ')->getWaitingOn());
+    }
 }

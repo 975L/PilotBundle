@@ -2,6 +2,50 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="es" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="f29gyCe">
+                <source>narration.guided_step_pilot_machine_list</source>
+                <target>Una máquina ejecuta las acciones por usted.</target>
+            </trans-unit>
+            <trans-unit id="cTbRdn3">
+                <source>narration.guided_step_pilot_machine_new</source>
+                <target>Añádala y copie su token, que solo se muestra una vez.</target>
+            </trans-unit>
+            <trans-unit id="V_N3l7f">
+                <source>narration.guided_step_pilot_machine_projects</source>
+                <target>Elija los proyectos donde se ofrece cada una de sus acciones.</target>
+            </trans-unit>
+            <trans-unit id="xs68zKz">
+                <source>narration.guided_step_pilot_machine_run</source>
+                <target>En la página del proyecto, un clic lanza la acción.</target>
+            </trans-unit>
+            <trans-unit id="ZnjnQVh">
+                <source>narration.guided_step_pilot_plan_new</source>
+                <target>Cree la plantilla y escriba sus pasos.</target>
+            </trans-unit>
+            <trans-unit id="HFS_ulM">
+                <source>narration.guided_step_pilot_plan_projects</source>
+                <target>Elija los proyectos que la ofrecerán.</target>
+            </trans-unit>
+            <trans-unit id="hcKcisw">
+                <source>narration.guided_step_pilot_plan_start</source>
+                <target>En la página del proyecto, inicie el plan: se abre su primera tarjeta.</target>
+            </trans-unit>
+            <trans-unit id="b7TMLlX">
+                <source>narration.guided_step_pilot_plan_template</source>
+                <target>Un plan repite los mismos pasos: escríbalos una vez en una plantilla.</target>
+            </trans-unit>
+            <trans-unit id="QtDoT_j">
+                <source>narration.guided_step_pilot_runner_entrust</source>
+                <target>Elija lo que debe hacer la máquina y luego confíele la tarjeta.</target>
+            </trans-unit>
+            <trans-unit id="OzFYcxd">
+                <source>narration.guided_step_pilot_runner_search</source>
+                <target>Para confiar una tarjeta a una máquina, primero encuéntrela.</target>
+            </trans-unit>
+            <trans-unit id="H9l0NXy">
+                <source>narration.guided_step_pilot_runner_validate</source>
+                <target>Cuando la máquina termine, valide su trabajo o devuélvalo con un comentario.</target>
+            </trans-unit>
             <trans-unit id="p4Wt.p1">
                 <source>narration.guided_step_pilot_schedule_due</source>
                 <target>Elija el día en que debe estar hecha.</target>

@@ -7,3 +7,8 @@ services:
     c975L\PilotBundle\:
         resource: '../src/'
         exclude: '../src/{Entity,Enum,Exception}'
+
+    # The script of the piloting pages, loaded on the dashboard by UiBundle's registry
+    c975L\PilotBundle\Management\ScriptProvider:
+        tags:
+            - { name: 'ui.admin_script' }

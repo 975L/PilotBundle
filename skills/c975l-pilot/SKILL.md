@@ -1,6 +1,6 @@
 ---
 name: c975l-pilot
-description: "Use this skill when working with project piloting in a Symfony application built on the c975L ecosystem with c975l/pilot-bundle. Covers projects, cards (backlog without a date, planning with one, steps of a plan), files written on two floors (a short summary for a human, the detail for Claude), plans built from templates, runs executed by a runner machine under a lease, and the import of the Pilotage artifact. Triggers on: pilot, this week, horizon, pilot-horizon-days, PilotController, Planning, MenuProvider, sidebar, PilotGuidedProjectProvider, piloting, backlog, planning, card, Card, Project, Doc, summary, detail, Plan, PlanTemplate, Run, Machine, runner, lease, CardStatus, RunStatus, Executor, DocKind, ArtifactReader, ArtifactImporter, c975l:pilot:import, import the artifact, Pilotage artifact."
+description: "Use this skill when working with project piloting in a Symfony application built on the c975L ecosystem with c975l/pilot-bundle. Covers projects, cards (backlog without a date, planning with one, steps of a plan), files written on two floors (a short summary for a human, the detail for Claude), plans built from templates, runs executed by a runner machine under a lease, and the import of the Pilotage artifact. Triggers on: pilot, this week, horizon, pilot-horizon-days, PilotController, Planning, MenuProvider, sidebar, PilotGuidedProjectProvider, piloting, backlog, planning, card, Card, Project, Doc, summary, detail, Plan, PlanTemplate, Run, Machine, runner, lease, CardStatus, RunStatus, Executor, DocKind, ArtifactReader, ArtifactImporter, c975l:pilot:import, import the artifact, Pilotage artifact, RunnerController, RunQueue, RunOutputs, Report, ReportIngester, report.json, under way, cancel, CardFlow, PlanFactory, Action, Credit, credits, c975l:pilot:machine-add, machine token, /api/pilot/runner."
 ---
 
 # c975L PilotBundle
@@ -10,7 +10,7 @@ description: "Use this skill when working with project piloting in a Symfony app
 **Package:** `c975l/pilot-bundle` (private) · **Namespace:** `c975L\PilotBundle\` · **Tables:** `pilot_*`
 
 **Key source paths** (relative to the package root):
-`src/Entity/`, `src/Enum/`, `src/Repository/`, `src/Service/`, `src/Command/`, `src/Controller/Management/`, `src/Management/`, `templates/management/`, `config/services.yaml`, `config/configs.json`
+`src/Entity/`, `src/Enum/`, `src/Repository/`, `src/Service/`, `src/Command/`, `src/Controller/Management/`, `src/Management/`, `src/Controller/RunnerController.php`, `templates/management/`, `assets/`, `config/services.yaml`, `config/configs.json`
 
 **Related skills:** `c975l-config` (the `pilot-horizon-days` key), `c975l-management` (sidebar, onboarding tour, guided projects)
 
@@ -25,7 +25,15 @@ description: "Use this skill when working with project piloting in a Symfony app
 
 ## The screens
 
-`PilotController` serves four back-office pages: this week (`Planning` splits the open dated cards into late ones and the coming days, up to `pilot-horizon-days`), a project (dated cards, backlog, files, done cards folded), the search, and a card. A card shows on three lines (`_card.html.twig`), a file shows its summary with the detail folded (`_doc.html.twig`). `MenuProvider` adds one sidebar link per project.
+`PilotController` serves four back-office pages: the Planning (`Planning` splits the open dated cards into late ones, the coming days up to `pilot-horizon-days`, then the later ones by month), a project (dated cards, backlog, files, done cards folded), the search, and a card. A card shows on three lines (`_card.html.twig`), a file shows its summary with the detail folded (`_doc.html.twig`). `MenuProvider` puts the Planning and the settings (`ProjectCrudController`, `PlanTemplateCrudController` with `PlanStepType`, `ActionCrudController`, `MachineCrudController`, `CreditCrudController`) in the sidebar, the balances (`Credit`) show on the Planning, plans come from `PlanFactory` (a `PlanTemplate` is offered only on its projects, `PlanTemplateRepository::findOfferedTo()`) and move through `CardFlow`, machines call `RunnerController` and their actions are recorded as `Action` rows; the planning, the search and the projects are listed in the column on the left of every piloting page (`_layout.html.twig`, fed by `PilotController::page()`), ordered by dragging them (`assets/js/pilot-project-sort.js`, saved by `PilotController::order()` through `ProjectOrder`); a card clicked in a listing opens in a dialog (`assets/js/pilot-card-modal.js` keeps the `.pilot-card-page` part of its page, posts the gestures made there and reads the card again), is added by `PilotController::newCard()` (`_card_new.html.twig`), and is dragged to a day or to the backlog by `assets/js/pilot-card-drag.js` (the `schedule` gesture). `_runs.html.twig` lists the active runs (`RunRepository::findActive()`, withdrawn by the `cancel` gesture, `CardFlow::cancel()`); `_reports.html.twig` shows the `Report` tables (`ReportRepository::findShownOn()`), filled by `ReportIngester` from a `<key>.report.json` run output and acted on by `PilotController::reportRun()`.
+
+## The runner
+
+```bash
+php bin/console c975l:pilot:machine-add <name>
+```
+
+prints a machine's token once, only its sha256 being kept (`Machine::newToken()`, `MachineRepository::findOneByToken()`). The machine calls `RunnerController` under `/api/pilot/runner` with `Authorization: Bearer <token>`: `claim` (the actions it declares, recorded as `Action` rows by `ActionRepository::declare()`), `runs/{id}/progress`, `runs/{id}/output`, `runs/{id}/finish` and `credits`. `RunQueue` takes a run in one conditional `UPDATE` (`RunRepository::take()`), refuses news about a run the machine no longer holds (409) and puts back the runs whose lease ended. `RunOutputs` keeps the files under `private/pilot/runs/<run id>/`, each name reduced to a safe one, and `PilotController::output()` shows an image or a video under the type of its extension (`RunOutputs::mediaType()`) and downloads any other file, sandboxed.
 
 ## Importing the artifact
 
@@ -38,4 +46,5 @@ The folder holds one sub-folder per collection of the artifact database (`settin
 ## Do not
 
 - Re-import once cards are dated or closed in the back office: the import puts the artifact's values back on every card it matches.
-- Add a `<style>` block to a template: the project colour goes inline, from `Project::getColor()`.
+- Put a project colour in a `style` attribute: the back office's Content-Security-Policy refuses it, the colour goes through a `pilot-color-<slug>` class written in the nonced `<style>` of `_layout.html.twig`.
+- Pass a machine token in a URL, or serve a run's file inline under a sniffed type: a machine can send an html or svg file, `PilotController::output()` downloads it.

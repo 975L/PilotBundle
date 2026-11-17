@@ -11,45 +11,33 @@
 namespace c975L\PilotBundle\Tests\Management;
 
 use c975L\PilotBundle\Controller\Management\PilotController;
-use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Management\MenuProvider;
-use c975L\PilotBundle\Repository\ProjectRepository;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class MenuProviderTest extends TestCase
 {
     private function provider(): MenuProvider
     {
-        $projects = $this->createStub(ProjectRepository::class);
-        $projects->method('findBy')->willReturn([new Project('catalog', 'Catalog'), new Project('item-1', 'Item 1')]);
-        $urls = $this->createStub(UrlGeneratorInterface::class);
-        $urls->method('generate')->willReturnCallback(static fn (string $route, array $parameters): string => '/' . $route . '/' . $parameters['slug']);
-
-        return new MenuProvider($projects, $urls);
+        return new MenuProvider();
     }
 
-    // This week and the search, each on an action of the pilot controller, carrying what the onboarding tour reads
-    public function testMenusAreTheWeekAndTheSearch(): void
+    // The planning first, then the settings, each carrying what the onboarding tour reads
+    public function testMenusAreThePlanningThenTheSettings(): void
     {
         $menus = $this->provider()->getMenus();
 
-        $this->assertSame(['pilot_week', 'pilot_search'], array_keys($menus));
+        $this->assertSame(['pilot_week', 'pilot_projects', 'pilot_templates', 'pilot_actions', 'pilot_machines', 'pilot_credits'], array_keys($menus));
+        $this->assertSame(PilotController::class, $menus['pilot_week']['controller']);
+        $this->assertSame('week', $menus['pilot_week']['action']);
+        $this->assertTrue($menus['pilot_week']['first'] ?? false);
         foreach ($menus as $slug => $entry) {
-            $this->assertSame(PilotController::class, $entry['controller'], $slug);
             $this->assertStringStartsWith('label.info_', $entry['description'], $slug);
         }
     }
 
-    // One link per project, to its page, with no target so it stays in this section of the sidebar, and the page's own text for the tour
-    public function testOneLinkPerProject(): void
+    // The projects stay out of the sidebar, listed inside the piloting pages instead
+    public function testNoLinkInTheSidebar(): void
     {
-        $links = $this->provider()->getLinks();
-
-        $this->assertSame(['pilot_project_catalog', 'pilot_project_item-1'], array_keys($links));
-        $this->assertSame('/' . PilotController::PROJECT_ROUTE . '/catalog', $links['pilot_project_catalog']['url']);
-        $this->assertSame('Catalog', $links['pilot_project_catalog']['label']);
-        $this->assertArrayNotHasKey('target', $links['pilot_project_catalog']);
-        $this->assertSame('label.info_project', $links['pilot_project_catalog']['description']);
+        $this->assertSame([], $this->provider()->getLinks());
     }
 }

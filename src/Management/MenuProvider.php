@@ -11,19 +11,16 @@
 namespace c975L\PilotBundle\Management;
 
 use c975L\ConfigBundle\Management\MenuProviderInterface;
+use c975L\PilotBundle\Controller\Management\ActionCrudController;
+use c975L\PilotBundle\Controller\Management\CreditCrudController;
+use c975L\PilotBundle\Controller\Management\MachineCrudController;
 use c975L\PilotBundle\Controller\Management\PilotController;
-use c975L\PilotBundle\Repository\ProjectRepository;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use c975L\PilotBundle\Controller\Management\PlanTemplateCrudController;
+use c975L\PilotBundle\Controller\Management\ProjectCrudController;
 
-// Its own section in the sidebar: this week, the search, then one entry per project in the order chosen
+// The piloting section of the sidebar: the planning, whose pages list the search and the projects in their own column, then the settings
 class MenuProvider implements MenuProviderInterface
 {
-    public function __construct(
-        private readonly ProjectRepository $projectRepository,
-        private readonly UrlGeneratorInterface $urlGenerator,
-    ) {
-    }
-
     public function getMenuSection(): array
     {
         return [
@@ -41,34 +38,50 @@ class MenuProvider implements MenuProviderInterface
                 'action' => 'week',
                 'label' => 'label.week',
                 'translation_domain' => 'pilot',
-                'icon' => 'fas fa-calendar-week',
-                'description' => 'label.info_week',
+                'icon' => 'fas fa-calendar-days',
+                'description' => 'label.info_pilot',
+                'first' => true,
             ],
-            'pilot_search' => [
-                'controller' => PilotController::class,
-                'action' => 'search',
-                'label' => 'label.search',
+            'pilot_projects' => [
+                'controller' => ProjectCrudController::class,
+                'label' => 'label.projects',
                 'translation_domain' => 'pilot',
-                'icon' => 'fas fa-magnifying-glass',
-                'description' => 'label.info_search',
+                'icon' => 'fas fa-folder',
+                'description' => 'label.info_projects',
+            ],
+            'pilot_templates' => [
+                'controller' => PlanTemplateCrudController::class,
+                'label' => 'label.templates',
+                'translation_domain' => 'pilot',
+                'icon' => 'fas fa-list-ol',
+                'description' => 'label.info_templates',
+            ],
+            'pilot_actions' => [
+                'controller' => ActionCrudController::class,
+                'label' => 'label.actions',
+                'translation_domain' => 'pilot',
+                'icon' => 'fas fa-bolt',
+                'description' => 'label.info_actions',
+            ],
+            'pilot_machines' => [
+                'controller' => MachineCrudController::class,
+                'label' => 'label.machines',
+                'translation_domain' => 'pilot',
+                'icon' => 'fas fa-desktop',
+                'description' => 'label.info_machines',
+            ],
+            'pilot_credits' => [
+                'controller' => CreditCrudController::class,
+                'label' => 'label.credits',
+                'translation_domain' => 'pilot',
+                'icon' => 'fas fa-coins',
+                'description' => 'label.info_credits',
             ],
         ];
     }
 
-    // One back-office link per project, drawn inside this section since it names no target
     public function getLinks(): array
     {
-        $links = [];
-        foreach ($this->projectRepository->findBy([], ['position' => 'ASC', 'name' => 'ASC']) as $project) {
-            $links['pilot_project_' . $project->getSlug()] = [
-                'url' => $this->urlGenerator->generate(PilotController::PROJECT_ROUTE, ['slug' => $project->getSlug()]),
-                'label' => $project->getName(),
-                'translation_domain' => 'pilot',
-                'icon' => 'fas fa-folder',
-                'description' => 'label.info_project',
-            ];
-        }
-
-        return $links;
+        return [];
     }
 }

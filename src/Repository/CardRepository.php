@@ -14,6 +14,7 @@ use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Enum\CardStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -32,18 +33,35 @@ class CardRepository extends ServiceEntityRepository
      */
     public function findDatedUntil(\DateTimeImmutable $last): array
     {
+        return $this->dated()
+            ->andWhere('c.due <= :last')
+            ->setParameter('last', $last->format('Y-m-d'))
+            ->getQuery()
+            ->getResult();
+    }
+
+    // Open dated cards after a day, the ones « Plus tard » folds
+    /** @return list<Card> */
+    public function findDatedAfter(\DateTimeImmutable $first): array
+    {
+        return $this->dated()
+            ->andWhere('c.due > :first')
+            ->setParameter('first', $first->format('Y-m-d'))
+            ->getQuery()
+            ->getResult();
+    }
+
+    // Open dated cards with their project, by date
+    private function dated(): QueryBuilder
+    {
         return $this->createQueryBuilder('c')
             ->addSelect('p')
             ->join('c.project', 'p')
             ->where('c.due IS NOT NULL')
-            ->andWhere('c.due <= :last')
             ->andWhere('c.status != :done')
-            ->setParameter('last', $last->format('Y-m-d'))
             ->setParameter('done', CardStatus::Done)
             ->orderBy('c.due', 'ASC')
-            ->addOrderBy('c.position', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->addOrderBy('c.position', 'ASC');
     }
 
     // Open cards of a project: the dated ones first by date, then the backlog in its own order
@@ -61,6 +79,21 @@ class CardRepository extends ServiceEntityRepository
             ->addOrderBy('c.due', 'ASC')
             ->addOrderBy('c.position', 'ASC')
             ->addOrderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    // Open cards waiting for an answer, the oldest first
+    /**
+     * @return list<Card>
+     */
+    public function findWaiting(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.waitingOn IS NOT NULL')
+            ->andWhere('c.status != :done')
+            ->setParameter('done', CardStatus::Done)
+            ->orderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -99,5 +132,20 @@ class CardRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    // Open cards of every project, by project id
+    /** @return array<int, int> */
+    public function countOpenByProject(): array
+    {
+        $rows = $this->createQueryBuilder('c')
+            ->select('IDENTITY(c.project) AS project, COUNT(c.id) AS cards')
+            ->where('c.status != :done')
+            ->setParameter('done', CardStatus::Done)
+            ->groupBy('c.project')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_column(array_map(static fn (array $row): array => ['project' => (int) $row['project'], 'cards' => (int) $row['cards']], $rows), 'cards', 'project');
     }
 }

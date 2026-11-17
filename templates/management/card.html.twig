@@ -1,40 +1,165 @@
-{% extends '@EasyAdmin/page/content.html.twig' %}
+{% extends '@c975LPilot/management/_layout.html.twig' %}
 
-{% block main %}
-    {% set token = csrf_token('management_pilot_card_gesture' ~ card.id) %}
-    <h1>{{ card.title }}</h1>
-    <p>
-        <a href="{{ path('management_pilot_project', {slug: card.project.slug}) }}" class="badge text-white text-decoration-none" style="background-color: {{ card.project.color }}">{{ card.project.name }}</a>
-        <span class="badge text-bg-light">{{ card.status.label|trans }}</span>
-    </p>
+{% block pilot %}
+    {# Wrapped so the dialog of the listing pages takes this content alone #}
+    <div class="pilot-card-page">
+        {% set token = csrf_token('management_pilot_card_gesture' ~ card.id) %}
+        <h1>{{ card.title }}</h1>
+        <p>
+            <a href="{{ path('management_pilot_project', {slug: card.project.slug}) }}" class="badge text-white text-decoration-none pilot-badge pilot-color-{{ card.project.slug }}">{{ card.project.name }}</a>
+            <span class="badge text-bg-light">{{ card.status.label|trans }}</span>
+            {% if card.waitingOn %}<span class="badge text-bg-info">{{ 'label.waiting_on'|trans({'%who%': card.waitingOn}, 'pilot') }}</span>{% endif %}
+        </p>
 
-    {% if card.note %}<p class="text-pre-line">{{ card.note }}</p>{% endif %}
+        {% if card.note %}<p class="pilot-note">{{ card.note|linkify }}</p>{% endif %}
 
-    {% if card.checklist is not empty %}
-        <ul class="list-unstyled">
-            {% for step in card.checklist %}
-                <li>{{ (step.done ?? false) ? '☑' : '☐' }} {{ step.t }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+        <details class="mb-3 pilot-card-edit">
+            <summary>{{ 'label.card_edit'|trans({}, 'pilot') }}</summary>
+            <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'edit'}) }}" class="d-grid gap-2 mt-2">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <label class="form-label mb-0">{{ 'label.card_title'|trans({}, 'pilot') }}
+                    <input name="title" value="{{ card.title }}" class="form-control" required>
+                </label>
+                <label class="form-label mb-0">{{ 'label.card_waiting_on'|trans({}, 'pilot') }}
+                    <input name="waitingOn" value="{{ card.waitingOn }}" maxlength="100" class="form-control" placeholder="{{ 'label.info_card_waiting_on'|trans({}, 'pilot') }}">
+                </label>
+                <label class="form-label mb-0">{{ 'label.card_note'|trans({}, 'pilot') }}
+                    <textarea name="note" rows="5" class="form-control">{{ card.note }}</textarea>
+                </label>
+                <div><button class="btn btn-sm btn-primary">{{ 'label.card_save'|trans({}, 'pilot') }}</button></div>
+            </form>
+        </details>
 
-    <div class="d-flex flex-wrap gap-2 align-items-end mb-4">
-        <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'schedule'}) }}" class="d-flex gap-2 align-items-end">
+        {% if card.checklist is not empty %}
+            <ul class="list-unstyled pilot-checklist">
+                {% for step in card.checklist %}
+                    <li>
+                        <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'step'}) }}" class="form-check">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <input type="hidden" name="index" value="{{ loop.index0 }}">
+                            <input type="checkbox" id="pilot-step-{{ loop.index0 }}" class="form-check-input" data-pilot-autosubmit{{ (step.done ?? false) ? ' checked' }}>
+                            <label for="pilot-step-{{ loop.index0 }}" class="form-check-label{{ (step.done ?? false) ? ' text-decoration-line-through text-body-secondary' }}">{{ step.t }}</label>
+                            {% if step.cost is defined and not (step.done ?? false) %}
+                                {# What the step spends, in red when the balance left is short #}
+                                {% set credit = credits[step.cost.credit] ?? null %}
+                                {% set short = credit and credit.remaining is not null and credit.remaining < step.cost.amount %}
+                                <span class="badge {{ short ? 'text-bg-danger' : 'text-bg-light' }} ms-1">{{ credit ? credit.label : step.cost.credit }} {{ (step.cost.guess ?? false) ? '≈ ' }}{{ step.cost.amount|format_number }}{% if credit and credit.remaining is not null %} · {{ 'label.credit_left'|trans({'%left%': credit.remaining|format_number}, 'pilot') }}{% endif %}</span>
+                            {% endif %}
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <div class="d-flex flex-wrap gap-2 align-items-end mb-4">
+            <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'schedule'}) }}" class="d-flex gap-2 align-items-end">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <label class="form-label mb-0">{{ 'label.due'|trans({}, 'pilot') }}
+                    <input type="date" id="pilot-due" name="due" value="{{ card.due ? card.due|date('Y-m-d') : '' }}" class="form-control form-control-sm">
+                </label>
+                <button class="btn btn-sm btn-outline-primary pilot-schedule">{{ 'label.schedule'|trans({}, 'pilot') }}</button>
+            </form>
+            <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: card.status.value == 'done' ? 'reopen' : 'done'}) }}">
+                <input type="hidden" name="_token" value="{{ token }}">
+                {% if card.status.value == 'done' %}
+                    <button class="btn btn-sm btn-outline-secondary">{{ 'label.reopen'|trans({}, 'pilot') }}</button>
+                {% else %}
+                    <button class="btn btn-sm btn-success">{{ 'label.done'|trans({}, 'pilot') }}</button>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if run %}
+            <section class="mb-4 pilot-run">
+                <h2 class="h5">{{ 'label.machine'|trans({}, 'pilot') }} · {{ card.action }}</h2>
+                <p class="mb-1">
+                    <span class="badge text-bg-light">{{ run.status.label|trans }}</span>
+                    {% if run.machine %}<span class="text-body-secondary small">{{ run.machine.name }}</span>{% endif %}
+                    {% if run.message %}<span class="small">{{ run.message }}</span>{% endif %}
+                </p>
+                {% if run.status.value == 'claimed' %}
+                    <progress class="w-100 mb-2" max="100" value="{{ run.progress }}">{{ run.progress }} %</progress>
+                {% endif %}
+                {% if card.comment %}<p class="small"><strong>{{ 'label.comment'|trans({}, 'pilot') }}</strong> {{ card.comment }}</p>{% endif %}
+                {% for output in outputs %}
+                    <figure class="mb-3">
+                        <figcaption class="small text-body-secondary">{{ output.name }}</figcaption>
+                        {% set url = output.kind != 'elsewhere' ? path('management_pilot_run_output', {id: run.id, name: output.name}) : null %}
+                        {% if output.kind == 'text' %}<pre class="border rounded p-2 small">{{ output.text }}</pre>
+                        {% elseif output.kind == 'image' %}<img src="{{ url }}" alt="{{ output.name }}" class="img-fluid border rounded">
+                        {% elseif output.kind == 'video' %}<video src="{{ url }}" controls class="w-100"></video>
+                        {% elseif output.kind == 'file' %}<a href="{{ url }}">{{ output.name }}</a>
+                        {% else %}<span class="small">{{ 'label.output_elsewhere'|trans({}, 'pilot') }}</span>{% endif %}
+                    </figure>
+                {% endfor %}
+                {% if run.log %}<details class="small"><summary>{{ 'label.log'|trans({}, 'pilot') }}</summary><pre>{{ run.log }}</pre></details>{% endif %}
+            </section>
+        {% endif %}
+
+        {% if card.status.value == 'review' %}
+            <div class="d-flex flex-wrap gap-2 align-items-end mb-4">
+                <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'validate'}) }}">
+                    <input type="hidden" name="_token" value="{{ token }}">
+                    <button class="btn btn-sm btn-success pilot-validate">{{ 'label.validate'|trans({}, 'pilot') }}</button>
+                </form>
+                <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'sendback'}) }}" class="d-flex gap-2 align-items-end flex-grow-1">
+                    <input type="hidden" name="_token" value="{{ token }}">
+                    <label class="form-label mb-0 flex-grow-1">{{ 'label.comment'|trans({}, 'pilot') }}
+                        <textarea name="comment" id="pilot-comment" rows="1" class="form-control form-control-sm" required></textarea>
+                    </label>
+                    <button class="btn btn-sm btn-outline-primary pilot-sendback">{{ 'label.send_back'|trans({}, 'pilot') }}</button>
+                </form>
+            </div>
+        {% elseif run and run.status.value == 'queued' %}
+        <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'cancel'}) }}" class="mb-4">
             <input type="hidden" name="_token" value="{{ token }}">
-            <label class="form-label mb-0">{{ 'label.due'|trans({}, 'pilot') }}
-                <input type="date" id="pilot-due" name="due" value="{{ card.due ? card.due|date('Y-m-d') : '' }}" class="form-control form-control-sm">
-            </label>
-            <button class="btn btn-sm btn-outline-primary pilot-schedule">{{ 'label.schedule'|trans({}, 'pilot') }}</button>
+            <button class="btn btn-sm btn-outline-secondary pilot-cancel">{{ 'label.run_cancel'|trans({}, 'pilot') }}</button>
         </form>
-        <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: card.status.value == 'done' ? 'reopen' : 'done'}) }}">
-            <input type="hidden" name="_token" value="{{ token }}">
-            {% if card.status.value == 'done' %}
-                <button class="btn btn-sm btn-outline-secondary">{{ 'label.reopen'|trans({}, 'pilot') }}</button>
-            {% else %}
-                <button class="btn btn-sm btn-success">{{ 'label.done'|trans({}, 'pilot') }}</button>
-            {% endif %}
-        </form>
+    {% elseif card.runner and card.action and card.status.value in ['ready', 'failed'] %}
+            <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'launch'}) }}" class="mb-4">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <button class="btn btn-sm btn-primary pilot-launch">{{ 'label.launch'|trans({}, 'pilot') }}</button>
+            </form>
+        {% endif %}
+
+        {% set direct = actions|filter(action => action.params is empty) %}
+        {% if card.status.value not in ['running', 'done'] and direct is not empty %}
+            {# The actions asking nothing leave in one click, as buttons #}
+            <div class="d-flex flex-wrap gap-2 mb-3 pilot-direct-actions">
+                {% for action in direct %}
+                    <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'entrust'}) }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <input type="hidden" name="action" value="{{ action.key }}">
+                        <button class="btn btn-sm btn-outline-primary" title="{{ action.machine }}">{{ action.label }}</button>
+                    </form>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% set asking = actions|filter(action => action.params is not empty) %}
+        {% if card.status.value not in ['running', 'done'] and asking is not empty %}
+            <details class="mb-4 pilot-entrust">
+                <summary class="h6">{{ 'label.entrust'|trans({}, 'pilot') }}</summary>
+                <p class="small text-body-secondary">{{ 'label.info_entrust'|trans({}, 'pilot') }}</p>
+                {% for action in asking %}
+                    {% set key = action.key %}
+                    <details class="mb-1">
+                        <summary>{{ action.label }} <span class="text-body-secondary small">{{ action.machine }}</span></summary>
+                        <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'entrust'}) }}" class="d-flex flex-wrap gap-2 align-items-end mt-2">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <input type="hidden" name="action" value="{{ key }}">
+                            {% for name in action.params %}
+                                <label class="form-label mb-0">{{ name }}
+                                    <input name="params[{{ name }}]" value="{{ card.action == key ? (card.params[name] ?? '') : '' }}" class="form-control form-control-sm">
+                                </label>
+                            {% endfor %}
+                            <button class="btn btn-sm btn-outline-primary">{{ 'label.entrust_go'|trans({}, 'pilot') }}</button>
+                        </form>
+                    </details>
+                {% endfor %}
+            </details>
+        {% endif %}
+
+        {% if card.doc %}{% set doc = card.doc %}{% include '@c975LPilot/management/_doc.html.twig' %}{% endif %}
     </div>
-
-    {% if card.doc %}{% set doc = card.doc %}{% include '@c975LPilot/management/_doc.html.twig' %}{% endif %}
 {% endblock %}

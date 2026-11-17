@@ -4,7 +4,7 @@
         <body>
             <trans-unit id="e70l2zx">
                 <source>description.pilot_horizon_days</source>
-                <target>Nombre de jours affichés dans « Cette semaine », après les cartes en retard</target>
+                <target>Jours que le Planning montre un par un, avant de regrouper par mois</target>
             </trans-unit>
             <trans-unit id="VdOkW5Q">
                 <source>label.pilot_horizon_days</source>

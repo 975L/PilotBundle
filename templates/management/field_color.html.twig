@@ -1,0 +1,7 @@
+{# A project's colour in the list: the back office's Content-Security-Policy refuses style attributes, so the sample gets its colour from a nonced <style> #}
+{% set color = field.value matches '/^#[0-9a-fA-F]{3,8}$/' ? field.value : null %}
+{% if color %}
+    <style {% guard function csp_nonce %}nonce="{{ csp_nonce('style') }}"{% endguard %}>.pilot-swatch-{{ entity.primaryKeyValue }} { width: .8rem; height: .8rem; background-color: {{ color }}; }</style>
+    <span class="d-inline-block rounded-circle align-middle me-1 pilot-swatch-{{ entity.primaryKeyValue }}"></span>
+{% endif %}
+{{ field.value }}

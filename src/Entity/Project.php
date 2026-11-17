@@ -39,9 +39,12 @@ class Project implements \Stringable
 
     public function __construct(
         #[ORM\Column(length: 50, unique: true)]
+        #[Assert\NotBlank]
+        #[Assert\Regex('/^[a-z0-9-]+$/')]
         #[Assert\Length(max: 50)]
         private string $slug,
         #[ORM\Column(length: 100)]
+        #[Assert\NotBlank]
         #[Assert\Length(max: 100)]
         private string $name,
     ) {
@@ -62,14 +65,21 @@ class Project implements \Stringable
         return $this->slug;
     }
 
+    public function setSlug(?string $slug): static
+    {
+        $this->slug = $slug ?? '';
+
+        return $this;
+    }
+
     public function getName(): string
     {
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(?string $name): static
     {
-        $this->name = $name;
+        $this->name = $name ?? '';
 
         return $this;
     }
@@ -79,9 +89,9 @@ class Project implements \Stringable
         return $this->color;
     }
 
-    public function setColor(string $color): static
+    public function setColor(?string $color): static
     {
-        $this->color = $color;
+        $this->color = $color ?? '';
 
         return $this;
     }
@@ -109,9 +119,9 @@ class Project implements \Stringable
         return $this->position;
     }
 
-    public function setPosition(int $position): static
+    public function setPosition(?int $position): static
     {
-        $this->position = $position;
+        $this->position = $position ?? 0;
 
         return $this;
     }

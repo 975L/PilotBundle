@@ -21,6 +21,18 @@ class c975LPilotBundle extends AbstractBundle
         $containerConfigurator->import('../config/services.yaml');
     }
 
+    // The bundle's scripts resolved under "@c975l/pilot-bundle" by AssetMapper
+    public function prependExtension(ContainerConfigurator $containerConfigurator, ContainerBuilder $containerBuilder): void
+    {
+        $containerBuilder->prependExtensionConfig('framework', [
+            'asset_mapper' => [
+                'paths' => [
+                    __DIR__ . '/../assets' => '@c975l/pilot-bundle',
+                ],
+            ],
+        ]);
+    }
+
     public function getPath(): string
     {
         return \dirname(__DIR__);

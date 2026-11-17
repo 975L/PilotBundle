@@ -2,6 +2,50 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="en" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="f29gyCe">
+                <source>narration.guided_step_pilot_machine_list</source>
+                <target>A machine runs the actions for you.</target>
+            </trans-unit>
+            <trans-unit id="cTbRdn3">
+                <source>narration.guided_step_pilot_machine_new</source>
+                <target>Add it and copy its token, shown only once.</target>
+            </trans-unit>
+            <trans-unit id="V_N3l7f">
+                <source>narration.guided_step_pilot_machine_projects</source>
+                <target>Choose the projects where each of its actions is offered.</target>
+            </trans-unit>
+            <trans-unit id="xs68zKz">
+                <source>narration.guided_step_pilot_machine_run</source>
+                <target>On the project's page, one click runs the action.</target>
+            </trans-unit>
+            <trans-unit id="ZnjnQVh">
+                <source>narration.guided_step_pilot_plan_new</source>
+                <target>Create the template and write its steps.</target>
+            </trans-unit>
+            <trans-unit id="HFS_ulM">
+                <source>narration.guided_step_pilot_plan_projects</source>
+                <target>Choose the projects that will offer it.</target>
+            </trans-unit>
+            <trans-unit id="hcKcisw">
+                <source>narration.guided_step_pilot_plan_start</source>
+                <target>On the project's page, start the plan: its first card opens.</target>
+            </trans-unit>
+            <trans-unit id="b7TMLlX">
+                <source>narration.guided_step_pilot_plan_template</source>
+                <target>A plan repeats the same steps: write them once in a template.</target>
+            </trans-unit>
+            <trans-unit id="QtDoT_j">
+                <source>narration.guided_step_pilot_runner_entrust</source>
+                <target>Choose what the machine should do, then hand it the card.</target>
+            </trans-unit>
+            <trans-unit id="OzFYcxd">
+                <source>narration.guided_step_pilot_runner_search</source>
+                <target>To hand a card to a machine, first find it.</target>
+            </trans-unit>
+            <trans-unit id="H9l0NXy">
+                <source>narration.guided_step_pilot_runner_validate</source>
+                <target>When the machine is done, validate its work or send it back with a comment.</target>
+            </trans-unit>
             <trans-unit id="p4Wt.p1">
                 <source>narration.guided_step_pilot_schedule_due</source>
                 <target>Pick the day it must be done.</target>

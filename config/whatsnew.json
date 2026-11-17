@@ -6,6 +6,41 @@
                 "en": "Piloting: « This week » shows the late cards then those of the coming days, each project has its page with its backlog, and the search finds a card or a file.",
                 "fr": "Pilotage : « Cette semaine » montre les cartes en retard puis celles des prochains jours, chaque projet a sa page avec son backlog, et la recherche retrouve une carte ou un dossier.",
                 "es": "Pilotaje: « Esta semana » muestra las tarjetas atrasadas y luego las de los próximos días, cada proyecto tiene su página con sus pendientes, y la búsqueda encuentra una tarjeta o un expediente."
+            },
+            {
+                "en": "Piloting: the projects are listed in a column on the left of the piloting pages, and a card can be handed to a machine, which runs it and shows its result to validate or send back with a comment.",
+                "fr": "Pilotage : les projets sont listés dans une colonne à gauche des pages de pilotage, et une carte peut être confiée à une machine, qui l'exécute et montre son résultat à valider ou à renvoyer avec un commentaire.",
+                "es": "Pilotaje: los proyectos aparecen en una columna a la izquierda de las páginas de pilotaje, y una tarjeta puede confiarse a una máquina, que la ejecuta y muestra su resultado para validarlo o devolverlo con un comentario."
+            },
+            {
+                "en": "Piloting: the balances of the paid services (voices, images, app builds…) show on top of the Planning, read by the machine or typed in there; projects, templates, actions, machines and credits are set from the sidebar.",
+                "fr": "Pilotage : les soldes des services payants (voix, images, builds d'appli…) s'affichent en tête du Planning, relevés par la machine ou saisis sur place ; projets, modèles, actions, machines et crédits se règlent depuis la barre latérale.",
+                "es": "Pilotaje: los saldos de los servicios de pago (voces, imágenes, builds de app…) se muestran al principio de la Planificación, leídos por la máquina o escritos allí; proyectos, plantillas, acciones, máquinas y créditos se ajustan desde la barra lateral."
+            },
+            {
+                "en": "Piloting: the cards show as tiles in their project's colour and open in a window over the page, the projects of the left column are ordered by dragging them, and each plan template is offered only on the projects chosen for it.",
+                "fr": "Pilotage : les cartes s'affichent en tuiles aux couleurs de leur projet et s'ouvrent dans une fenêtre par-dessus la page, les projets de la colonne de gauche se rangent en les faisant glisser, et chaque modèle de plan n'est proposé que sur les projets choisis pour lui.",
+                "es": "Pilotaje: las tarjetas se muestran como mosaicos con el color de su proyecto y se abren en una ventana sobre la página, los proyectos de la columna izquierda se ordenan arrastrándolos, y cada plantilla de plan solo se propone en los proyectos elegidos para ella."
+            },
+            {
+                "en": "Piloting: a card is added in one line on a project's page or under a day of the Planning, its title, note and steps are edited in its window, and it is dragged to another day or to the backlog.",
+                "fr": "Pilotage : une carte s'ajoute en une ligne sur la page d'un projet ou sous un jour du Planning, son titre, sa note et ses étapes se modifient dans sa fenêtre, et elle se glisse vers un autre jour ou vers le backlog.",
+                "es": "Pilotaje: una tarjeta se añade en una línea en la página de un proyecto o bajo un día de la Planificación, su título, nota y pasos se modifican en su ventana, y se arrastra a otro día o a pendientes."
+            },
+            {
+                "en": "Piloting: a plan is started on a project's page from a template, its cards following each other, and the project's recurring actions are buttons on its page.",
+                "fr": "Pilotage : un plan se lance depuis la page d'un projet à partir d'un modèle, ses cartes s'enchaînant, et les actions récurrentes du projet sont des boutons sur sa page.",
+                "es": "Pilotaje: un plan se inicia desde la página de un proyecto a partir de una plantilla, sus tarjetas sucediéndose, y las acciones recurrentes del proyecto son botones en su página."
+            },
+            {
+                "en": "Piloting: two guided projects show how to start a plan from a template and how to register a machine and run its actions.",
+                "fr": "Pilotage : deux projets guidés montrent comment lancer un plan depuis un modèle, et comment déclarer une machine puis lancer ses actions.",
+                "es": "Pilotaje: dos proyectos guiados muestran cómo iniciar un plan desde una plantilla y cómo registrar una máquina y lanzar sus acciones."
+            },
+            {
+                "en": "Piloting: what the machines are doing shows under « Under way », a waiting order can be cancelled, and the tables they send (repositories, sites, publication series…) show with a button per row (push, update, extend).",
+                "fr": "Pilotage : ce que font les machines s'affiche sous « En cours », un ordre en attente s'annule, et les tableaux qu'elles envoient (dépôts, sites, séries de publications…) s'affichent avec un bouton par ligne (pousser, mettre à jour, prolonger).",
+                "es": "Pilotaje: lo que hacen las máquinas se muestra en « En curso », una orden en espera se anula, y las tablas que envían (repositorios, sitios, series de publicaciones…) se muestran con un botón por fila (subir, actualizar, prolongar)."
             }
         ]
     }

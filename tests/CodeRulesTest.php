@@ -30,6 +30,10 @@ class CodeRulesTest extends CodeRulesTestCase
     // The legitimate exceptions, each with its reason
     protected function allowed(): array
     {
-        return [];
+        return [
+            self::BULK_QUERY => [
+                'c975L\\PilotBundle\\Repository\\RunRepository::take' => 'Runs are read live by the machines and the card page, never held in a cached fragment',
+            ],
+        ];
     }
 }
