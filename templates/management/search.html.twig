@@ -1,0 +1,18 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block main %}
+    <h1>{{ 'label.search'|trans({}, 'pilot') }}</h1>
+    <form method="get" class="mb-4">
+        <input type="search" name="q" value="{{ words }}" class="form-control" placeholder="{{ 'label.search_placeholder'|trans({}, 'pilot') }}" autofocus>
+    </form>
+
+    {% if cards is not empty %}
+        <ul class="list-group mb-4">
+            {% for card in cards %}{% include '@c975LPilot/management/_card.html.twig' %}{% endfor %}
+        </ul>
+    {% endif %}
+    {% for doc in docs %}{% include '@c975LPilot/management/_doc.html.twig' %}{% endfor %}
+    {% if words|length >= 2 and cards is empty and docs is empty %}
+        <p>{{ 'label.nothing_found'|trans({}, 'pilot') }}</p>
+    {% endif %}
+{% endblock %}

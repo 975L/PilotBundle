@@ -1,0 +1,13 @@
+[
+    {
+        "label": "label.pilot_horizon_days",
+        "slug": "pilot-horizon-days",
+        "sensitive": false,
+        "restricted": false,
+        "value": "7",
+        "kind": "int",
+        "group": "pilot",
+        "severity": null,
+        "description": "description.pilot_horizon_days"
+    }
+]

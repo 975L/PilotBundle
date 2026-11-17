@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="en" datatype="plaintext" original="pilot.en.xlf">
+        <body>
+            <trans-unit id="nevRENI">
+                <source>description.guided_project_pilot_schedule</source>
+                <target>Give a backlog card a date: it moves into « This week » when the time comes.</target>
+            </trans-unit>
+            <trans-unit id="LWkGxtg">
+                <source>description.guided_step_pilot_schedule_due</source>
+                <target>Leave it empty to send it back to the backlog.</target>
+            </trans-unit>
+            <trans-unit id="5mEj1oS">
+                <source>description.guided_step_pilot_schedule_open</source>
+                <target>Click its title.</target>
+            </trans-unit>
+            <trans-unit id="GQ73Hzr">
+                <source>description.guided_step_pilot_schedule_save</source>
+                <target>The card shows in « This week » once its date enters the horizon.</target>
+            </trans-unit>
+            <trans-unit id="EY0fTPI">
+                <source>description.guided_step_pilot_schedule_search</source>
+                <target>Type two letters of its title.</target>
+            </trans-unit>
+            <trans-unit id="I6PzVva">
+                <source>label.backlog</source>
+                <target>Backlog</target>
+            </trans-unit>
+            <trans-unit id="J8_FIpa">
+                <source>label.backlog_empty</source>
+                <target>No card without a date.</target>
+            </trans-unit>
+            <trans-unit id="0.g7Tcu">
+                <source>label.detail</source>
+                <target>Detail</target>
+            </trans-unit>
+            <trans-unit id="x65L0pA">
+                <source>label.docs</source>
+                <target>Files</target>
+            </trans-unit>
+            <trans-unit id="Ha6BT7W">
+                <source>label.done</source>
+                <target>Done</target>
+            </trans-unit>
+            <trans-unit id="_Sf2WxU">
+                <source>label.done_cards</source>
+                <target>Done (%count%)</target>
+            </trans-unit>
+            <trans-unit id="iS0d92j">
+                <source>label.due</source>
+                <target>Date</target>
+            </trans-unit>
+            <trans-unit id="CE.J4Ir">
+                <source>label.guided_project_pilot_schedule</source>
+                <target>Schedule a card</target>
+            </trans-unit>
+            <trans-unit id="Fw9sp6x">
+                <source>label.guided_step_pilot_schedule_due</source>
+                <target>Pick the date</target>
+            </trans-unit>
+            <trans-unit id="IWCzMDb">
+                <source>label.guided_step_pilot_schedule_open</source>
+                <target>Open the card</target>
+            </trans-unit>
+            <trans-unit id="VN9BB3I">
+                <source>label.guided_step_pilot_schedule_save</source>
+                <target>Schedule</target>
+            </trans-unit>
+            <trans-unit id="I9aaQYv">
+                <source>label.guided_step_pilot_schedule_search</source>
+                <target>Find the card</target>
+            </trans-unit>
+            <trans-unit id="3.31SY1">
+                <source>label.info_project</source>
+                <target>Its dated cards, then its backlog, its files and its done cards.</target>
+            </trans-unit>
+            <trans-unit id="LnVyCF1">
+                <source>label.info_search</source>
+                <target>Find a card or a file, even a done one.</target>
+            </trans-unit>
+            <trans-unit id="dTTDxsg">
+                <source>label.info_week</source>
+                <target>Late cards, then those of the coming days.</target>
+            </trans-unit>
+            <trans-unit id=".c3ER3G">
+                <source>label.late</source>
+                <target>Late</target>
+            </trans-unit>
+            <trans-unit id="C62419s">
+                <source>label.next</source>
+                <target>Next:</target>
+            </trans-unit>
+            <trans-unit id="JqAN45.">
+                <source>label.nothing_found</source>
+                <target>Nothing found.</target>
+            </trans-unit>
+            <trans-unit id=".CLxfze">
+                <source>label.nothing_planned</source>
+                <target>Nothing planned in this period.</target>
+            </trans-unit>
+            <trans-unit id="f8icqBu">
+                <source>label.pilot</source>
+                <target>Piloting</target>
+            </trans-unit>
+            <trans-unit id="lDMgngM">
+                <source>label.planned</source>
+                <target>Planned</target>
+            </trans-unit>
+            <trans-unit id="xLyncAl">
+                <source>label.reopen</source>
+                <target>Not done after all</target>
+            </trans-unit>
+            <trans-unit id="RJcbCnz">
+                <source>label.schedule</source>
+                <target>Schedule</target>
+            </trans-unit>
+            <trans-unit id="iw9qUxb">
+                <source>label.search</source>
+                <target>Search</target>
+            </trans-unit>
+            <trans-unit id="wuLVBeQ">
+                <source>label.search_placeholder</source>
+                <target>A card, a file…</target>
+            </trans-unit>
+            <trans-unit id="qWFPyfX">
+                <source>label.status_done</source>
+                <target>Done</target>
+            </trans-unit>
+            <trans-unit id="EamjCVx">
+                <source>label.status_failed</source>
+                <target>Blocked</target>
+            </trans-unit>
+            <trans-unit id="HKYDWXM">
+                <source>label.status_ready</source>
+                <target>To do</target>
+            </trans-unit>
+            <trans-unit id="17Ds0dr">
+                <source>label.status_running</source>
+                <target>Running</target>
+            </trans-unit>
+            <trans-unit id="YE6bn09">
+                <source>label.status_todo</source>
+                <target>Waiting</target>
+            </trans-unit>
+            <trans-unit id="X7KFWgH">
+                <source>label.week</source>
+                <target>This week</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

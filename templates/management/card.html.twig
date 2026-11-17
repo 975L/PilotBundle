@@ -1,0 +1,40 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block main %}
+    {% set token = csrf_token('management_pilot_card_gesture' ~ card.id) %}
+    <h1>{{ card.title }}</h1>
+    <p>
+        <a href="{{ path('management_pilot_project', {slug: card.project.slug}) }}" class="badge text-white text-decoration-none" style="background-color: {{ card.project.color }}">{{ card.project.name }}</a>
+        <span class="badge text-bg-light">{{ card.status.label|trans }}</span>
+    </p>
+
+    {% if card.note %}<p class="text-pre-line">{{ card.note }}</p>{% endif %}
+
+    {% if card.checklist is not empty %}
+        <ul class="list-unstyled">
+            {% for step in card.checklist %}
+                <li>{{ (step.done ?? false) ? '☑' : '☐' }} {{ step.t }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="d-flex flex-wrap gap-2 align-items-end mb-4">
+        <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'schedule'}) }}" class="d-flex gap-2 align-items-end">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <label class="form-label mb-0">{{ 'label.due'|trans({}, 'pilot') }}
+                <input type="date" id="pilot-due" name="due" value="{{ card.due ? card.due|date('Y-m-d') : '' }}" class="form-control form-control-sm">
+            </label>
+            <button class="btn btn-sm btn-outline-primary pilot-schedule">{{ 'label.schedule'|trans({}, 'pilot') }}</button>
+        </form>
+        <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: card.status.value == 'done' ? 'reopen' : 'done'}) }}">
+            <input type="hidden" name="_token" value="{{ token }}">
+            {% if card.status.value == 'done' %}
+                <button class="btn btn-sm btn-outline-secondary">{{ 'label.reopen'|trans({}, 'pilot') }}</button>
+            {% else %}
+                <button class="btn btn-sm btn-success">{{ 'label.done'|trans({}, 'pilot') }}</button>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if card.doc %}{% set doc = card.doc %}{% include '@c975LPilot/management/_doc.html.twig' %}{% endif %}
+{% endblock %}

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="es" datatype="plaintext" original="pilot_narration.en.xlf">
+        <body>
+            <trans-unit id="p4Wt.p1">
+                <source>narration.guided_step_pilot_schedule_due</source>
+                <target>Elija el día en que debe estar hecha.</target>
+            </trans-unit>
+            <trans-unit id="APqCa7g">
+                <source>narration.guided_step_pilot_schedule_open</source>
+                <target>Su título abre su página, con todo el detalle.</target>
+            </trans-unit>
+            <trans-unit id="dl_wbib">
+                <source>narration.guided_step_pilot_schedule_save</source>
+                <target>Planifíquela: la tarjeta sale de pendientes.</target>
+            </trans-unit>
+            <trans-unit id="3aZ4Ay4">
+                <source>narration.guided_step_pilot_schedule_search</source>
+                <target>Para planificar una tarjeta, primero hay que encontrarla.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

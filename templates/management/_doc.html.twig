@@ -1,0 +1,13 @@
+{# A file: its summary shown, its detail folded #}
+<div class="mb-3">
+    <h3 class="h6 mb-1">{{ doc.title }}</h3>
+    {% if doc.summary %}
+        <div class="small">{{ doc.summary|markdown_to_html }}</div>
+    {% endif %}
+    {% if doc.detail %}
+        <details class="small">
+            <summary>{{ 'label.detail'|trans({}, 'pilot') }}</summary>
+            {{ doc.detail|markdown_to_html }}
+        </details>
+    {% endif %}
+</div>

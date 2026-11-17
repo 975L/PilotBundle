@@ -1,0 +1,21 @@
+{# A card on three lines: title, project, date and status; the next action; one gesture. The rest is on its page #}
+{% set next = card.checklist|filter(step => not (step.done ?? false))|first %}
+<li class="list-group-item d-flex justify-content-between align-items-start gap-2">
+    <div class="flex-grow-1">
+        <a href="{{ path('management_pilot_card', {id: card.id}) }}" class="fw-semibold text-decoration-none pilot-card-open">{{ card.title }}</a>
+        <div class="small">
+            <a href="{{ path('management_pilot_project', {slug: card.project.slug}) }}" class="badge text-white text-decoration-none" style="background-color: {{ card.project.color }}">{{ card.project.name }}</a>
+            {% if card.due %}<span class="text-body-secondary">{{ card.due|format_date('short') }}</span>{% endif %}
+            <span class="badge text-bg-light">{{ card.status.label|trans }}</span>
+        </div>
+        {% if next %}
+            <div class="small text-body-secondary">{{ 'label.next'|trans({}, 'pilot') }} {{ next.t }}</div>
+        {% endif %}
+    </div>
+    {% if card.status.value != 'done' %}
+        <form method="post" action="{{ path('management_pilot_card_gesture', {id: card.id, gesture: 'done'}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('management_pilot_card_gesture' ~ card.id) }}">
+            <button class="btn btn-sm btn-outline-success" title="{{ 'label.done'|trans({}, 'pilot') }}"><i class="fas fa-check"></i></button>
+        </form>
+    {% endif %}
+</li>

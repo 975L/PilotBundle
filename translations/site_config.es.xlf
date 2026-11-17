@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="es" datatype="plaintext" original="site_config.en.xlf">
+        <body>
+            <trans-unit id="e70l2zx">
+                <source>description.pilot_horizon_days</source>
+                <target>Número de días mostrados en « Esta semana », después de las tarjetas atrasadas</target>
+            </trans-unit>
+            <trans-unit id="VdOkW5Q">
+                <source>label.pilot_horizon_days</source>
+                <target>Horizonte de la planificación (días)</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

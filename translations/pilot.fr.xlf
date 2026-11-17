@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="fr" datatype="plaintext" original="pilot.en.xlf">
+        <body>
+            <trans-unit id="nevRENI">
+                <source>description.guided_project_pilot_schedule</source>
+                <target>Donnez une date à une carte du backlog : elle passe dans « Cette semaine » le moment venu.</target>
+            </trans-unit>
+            <trans-unit id="LWkGxtg">
+                <source>description.guided_step_pilot_schedule_due</source>
+                <target>Laissez vide pour la renvoyer au backlog.</target>
+            </trans-unit>
+            <trans-unit id="5mEj1oS">
+                <source>description.guided_step_pilot_schedule_open</source>
+                <target>Cliquez sur son titre.</target>
+            </trans-unit>
+            <trans-unit id="GQ73Hzr">
+                <source>description.guided_step_pilot_schedule_save</source>
+                <target>La carte apparaît dans « Cette semaine » quand sa date entre dans l'horizon.</target>
+            </trans-unit>
+            <trans-unit id="EY0fTPI">
+                <source>description.guided_step_pilot_schedule_search</source>
+                <target>Tapez deux lettres de son titre.</target>
+            </trans-unit>
+            <trans-unit id="I6PzVva">
+                <source>label.backlog</source>
+                <target>Backlog</target>
+            </trans-unit>
+            <trans-unit id="J8_FIpa">
+                <source>label.backlog_empty</source>
+                <target>Aucune carte sans date.</target>
+            </trans-unit>
+            <trans-unit id="0.g7Tcu">
+                <source>label.detail</source>
+                <target>Détail</target>
+            </trans-unit>
+            <trans-unit id="x65L0pA">
+                <source>label.docs</source>
+                <target>Dossiers</target>
+            </trans-unit>
+            <trans-unit id="Ha6BT7W">
+                <source>label.done</source>
+                <target>C'est fait</target>
+            </trans-unit>
+            <trans-unit id="_Sf2WxU">
+                <source>label.done_cards</source>
+                <target>Terminées (%count%)</target>
+            </trans-unit>
+            <trans-unit id="iS0d92j">
+                <source>label.due</source>
+                <target>Date</target>
+            </trans-unit>
+            <trans-unit id="CE.J4Ir">
+                <source>label.guided_project_pilot_schedule</source>
+                <target>Planifier une carte</target>
+            </trans-unit>
+            <trans-unit id="Fw9sp6x">
+                <source>label.guided_step_pilot_schedule_due</source>
+                <target>Choisir la date</target>
+            </trans-unit>
+            <trans-unit id="IWCzMDb">
+                <source>label.guided_step_pilot_schedule_open</source>
+                <target>Ouvrir la carte</target>
+            </trans-unit>
+            <trans-unit id="VN9BB3I">
+                <source>label.guided_step_pilot_schedule_save</source>
+                <target>Planifier</target>
+            </trans-unit>
+            <trans-unit id="I9aaQYv">
+                <source>label.guided_step_pilot_schedule_search</source>
+                <target>Trouver la carte</target>
+            </trans-unit>
+            <trans-unit id="3.31SY1">
+                <source>label.info_project</source>
+                <target>Ses cartes datées, puis son backlog, ses dossiers et ses cartes terminées.</target>
+            </trans-unit>
+            <trans-unit id="LnVyCF1">
+                <source>label.info_search</source>
+                <target>Retrouver une carte ou un dossier, même terminé.</target>
+            </trans-unit>
+            <trans-unit id="dTTDxsg">
+                <source>label.info_week</source>
+                <target>Les cartes en retard, puis celles des prochains jours.</target>
+            </trans-unit>
+            <trans-unit id=".c3ER3G">
+                <source>label.late</source>
+                <target>En retard</target>
+            </trans-unit>
+            <trans-unit id="C62419s">
+                <source>label.next</source>
+                <target>Ensuite :</target>
+            </trans-unit>
+            <trans-unit id="JqAN45.">
+                <source>label.nothing_found</source>
+                <target>Rien trouvé.</target>
+            </trans-unit>
+            <trans-unit id=".CLxfze">
+                <source>label.nothing_planned</source>
+                <target>Rien de prévu sur cette période.</target>
+            </trans-unit>
+            <trans-unit id="f8icqBu">
+                <source>label.pilot</source>
+                <target>Pilotage</target>
+            </trans-unit>
+            <trans-unit id="lDMgngM">
+                <source>label.planned</source>
+                <target>Planifiées</target>
+            </trans-unit>
+            <trans-unit id="xLyncAl">
+                <source>label.reopen</source>
+                <target>Pas fait en fait</target>
+            </trans-unit>
+            <trans-unit id="RJcbCnz">
+                <source>label.schedule</source>
+                <target>Planifier</target>
+            </trans-unit>
+            <trans-unit id="iw9qUxb">
+                <source>label.search</source>
+                <target>Rechercher</target>
+            </trans-unit>
+            <trans-unit id="wuLVBeQ">
+                <source>label.search_placeholder</source>
+                <target>Une carte, un dossier…</target>
+            </trans-unit>
+            <trans-unit id="qWFPyfX">
+                <source>label.status_done</source>
+                <target>Faite</target>
+            </trans-unit>
+            <trans-unit id="EamjCVx">
+                <source>label.status_failed</source>
+                <target>Bloquée</target>
+            </trans-unit>
+            <trans-unit id="HKYDWXM">
+                <source>label.status_ready</source>
+                <target>À faire</target>
+            </trans-unit>
+            <trans-unit id="17Ds0dr">
+                <source>label.status_running</source>
+                <target>En cours</target>
+            </trans-unit>
+            <trans-unit id="YE6bn09">
+                <source>label.status_todo</source>
+                <target>En attente</target>
+            </trans-unit>
+            <trans-unit id="X7KFWgH">
+                <source>label.week</source>
+                <target>Cette semaine</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

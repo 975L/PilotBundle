@@ -1,0 +1,38 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block main %}
+    <h1><span class="badge" style="background-color: {{ project.color }}">&nbsp;</span> {{ project.name }}</h1>
+    <p class="text-body-secondary">{{ 'label.info_project'|trans({}, 'pilot') }}</p>
+    {% for site in project.sites %}
+        <a href="https://{{ site }}" target="_blank" rel="noopener" class="me-2">{{ site }}</a>
+    {% endfor %}
+
+    {% set dated = cards|filter(card => card.due) %}
+    {% set backlog = cards|filter(card => not card.due) %}
+
+    {% if dated is not empty %}
+        <h2 class="h5 mt-4">{{ 'label.planned'|trans({}, 'pilot') }}</h2>
+        <ul class="list-group">
+            {% for card in dated %}{% include '@c975LPilot/management/_card.html.twig' %}{% endfor %}
+        </ul>
+    {% endif %}
+
+    <h2 class="h5 mt-4">{{ 'label.backlog'|trans({}, 'pilot') }}</h2>
+    <ul class="list-group">
+        {% for card in backlog %}{% include '@c975LPilot/management/_card.html.twig' %}{% else %}<li class="list-group-item text-body-secondary">{{ 'label.backlog_empty'|trans({}, 'pilot') }}</li>{% endfor %}
+    </ul>
+
+    {% if docs is not empty %}
+        <h2 class="h5 mt-4">{{ 'label.docs'|trans({}, 'pilot') }}</h2>
+        {% for doc in docs %}{% include '@c975LPilot/management/_doc.html.twig' %}{% endfor %}
+    {% endif %}
+
+    {% if done is not empty %}
+        <details class="mt-4">
+            <summary>{{ 'label.done_cards'|trans({'%count%': done|length}, 'pilot') }}</summary>
+            <ul class="list-group mt-2">
+                {% for card in done %}{% include '@c975LPilot/management/_card.html.twig' %}{% endfor %}
+            </ul>
+        </details>
+    {% endif %}
+{% endblock %}

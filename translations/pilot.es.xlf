@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="es" datatype="plaintext" original="pilot.en.xlf">
+        <body>
+            <trans-unit id="nevRENI">
+                <source>description.guided_project_pilot_schedule</source>
+                <target>Dé una fecha a una tarjeta pendiente: pasará a « Esta semana » cuando llegue el momento.</target>
+            </trans-unit>
+            <trans-unit id="LWkGxtg">
+                <source>description.guided_step_pilot_schedule_due</source>
+                <target>Déjela vacía para devolverla a pendientes.</target>
+            </trans-unit>
+            <trans-unit id="5mEj1oS">
+                <source>description.guided_step_pilot_schedule_open</source>
+                <target>Haga clic en su título.</target>
+            </trans-unit>
+            <trans-unit id="GQ73Hzr">
+                <source>description.guided_step_pilot_schedule_save</source>
+                <target>La tarjeta aparece en « Esta semana » cuando su fecha entra en el horizonte.</target>
+            </trans-unit>
+            <trans-unit id="EY0fTPI">
+                <source>description.guided_step_pilot_schedule_search</source>
+                <target>Escriba dos letras de su título.</target>
+            </trans-unit>
+            <trans-unit id="I6PzVva">
+                <source>label.backlog</source>
+                <target>Pendientes</target>
+            </trans-unit>
+            <trans-unit id="J8_FIpa">
+                <source>label.backlog_empty</source>
+                <target>Ninguna tarjeta sin fecha.</target>
+            </trans-unit>
+            <trans-unit id="0.g7Tcu">
+                <source>label.detail</source>
+                <target>Detalle</target>
+            </trans-unit>
+            <trans-unit id="x65L0pA">
+                <source>label.docs</source>
+                <target>Expedientes</target>
+            </trans-unit>
+            <trans-unit id="Ha6BT7W">
+                <source>label.done</source>
+                <target>Hecho</target>
+            </trans-unit>
+            <trans-unit id="_Sf2WxU">
+                <source>label.done_cards</source>
+                <target>Terminadas (%count%)</target>
+            </trans-unit>
+            <trans-unit id="iS0d92j">
+                <source>label.due</source>
+                <target>Fecha</target>
+            </trans-unit>
+            <trans-unit id="CE.J4Ir">
+                <source>label.guided_project_pilot_schedule</source>
+                <target>Planificar una tarjeta</target>
+            </trans-unit>
+            <trans-unit id="Fw9sp6x">
+                <source>label.guided_step_pilot_schedule_due</source>
+                <target>Elegir la fecha</target>
+            </trans-unit>
+            <trans-unit id="IWCzMDb">
+                <source>label.guided_step_pilot_schedule_open</source>
+                <target>Abrir la tarjeta</target>
+            </trans-unit>
+            <trans-unit id="VN9BB3I">
+                <source>label.guided_step_pilot_schedule_save</source>
+                <target>Planificar</target>
+            </trans-unit>
+            <trans-unit id="I9aaQYv">
+                <source>label.guided_step_pilot_schedule_search</source>
+                <target>Encontrar la tarjeta</target>
+            </trans-unit>
+            <trans-unit id="3.31SY1">
+                <source>label.info_project</source>
+                <target>Sus tarjetas con fecha, luego sus pendientes, sus expedientes y sus tarjetas terminadas.</target>
+            </trans-unit>
+            <trans-unit id="LnVyCF1">
+                <source>label.info_search</source>
+                <target>Encontrar una tarjeta o un expediente, aunque esté terminado.</target>
+            </trans-unit>
+            <trans-unit id="dTTDxsg">
+                <source>label.info_week</source>
+                <target>Las tarjetas atrasadas y luego las de los próximos días.</target>
+            </trans-unit>
+            <trans-unit id=".c3ER3G">
+                <source>label.late</source>
+                <target>Atrasadas</target>
+            </trans-unit>
+            <trans-unit id="C62419s">
+                <source>label.next</source>
+                <target>A continuación:</target>
+            </trans-unit>
+            <trans-unit id="JqAN45.">
+                <source>label.nothing_found</source>
+                <target>No se ha encontrado nada.</target>
+            </trans-unit>
+            <trans-unit id=".CLxfze">
+                <source>label.nothing_planned</source>
+                <target>Nada previsto en este periodo.</target>
+            </trans-unit>
+            <trans-unit id="f8icqBu">
+                <source>label.pilot</source>
+                <target>Pilotaje</target>
+            </trans-unit>
+            <trans-unit id="lDMgngM">
+                <source>label.planned</source>
+                <target>Planificadas</target>
+            </trans-unit>
+            <trans-unit id="xLyncAl">
+                <source>label.reopen</source>
+                <target>No está hecho</target>
+            </trans-unit>
+            <trans-unit id="RJcbCnz">
+                <source>label.schedule</source>
+                <target>Planificar</target>
+            </trans-unit>
+            <trans-unit id="iw9qUxb">
+                <source>label.search</source>
+                <target>Buscar</target>
+            </trans-unit>
+            <trans-unit id="wuLVBeQ">
+                <source>label.search_placeholder</source>
+                <target>Una tarjeta, un expediente…</target>
+            </trans-unit>
+            <trans-unit id="qWFPyfX">
+                <source>label.status_done</source>
+                <target>Hecha</target>
+            </trans-unit>
+            <trans-unit id="EamjCVx">
+                <source>label.status_failed</source>
+                <target>Bloqueada</target>
+            </trans-unit>
+            <trans-unit id="HKYDWXM">
+                <source>label.status_ready</source>
+                <target>Por hacer</target>
+            </trans-unit>
+            <trans-unit id="17Ds0dr">
+                <source>label.status_running</source>
+                <target>En curso</target>
+            </trans-unit>
+            <trans-unit id="YE6bn09">
+                <source>label.status_todo</source>
+                <target>En espera</target>
+            </trans-unit>
+            <trans-unit id="X7KFWgH">
+                <source>label.week</source>
+                <target>Esta semana</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>
