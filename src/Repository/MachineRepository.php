@@ -37,7 +37,7 @@ class MachineRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('m')
             ->where('m.lastSeenAt >= :since')
             ->setParameter('since', $now->modify('-' . Machine::ONLINE_SECONDS . ' seconds'))
-            ->orderBy('m.name', 'ASC')
+            ->orderBy('m.name', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

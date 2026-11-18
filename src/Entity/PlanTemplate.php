@@ -34,8 +34,12 @@ class PlanTemplate
     #[ORM\JoinTable(name: 'pilot_plan_template_project')]
     private Collection $projects;
 
+    // One card whose checklist is the steps, instead of one card per step
+    #[ORM\Column(options: ['default' => false])]
+    private bool $checklist = false;
+
     // Each step: title, executor (human|runner), kind (task|validate), action key and params for a runner step
-    /** @param list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>}> $steps */
+    /** @param list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>, after?: list<int>}> $steps */
     public function __construct(
         #[ORM\Column(length: 100, unique: true)]
         #[Assert\NotBlank]
@@ -67,17 +71,29 @@ class PlanTemplate
     }
 
     // Step definitions
-    /** @return list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>}> */
+    /** @return list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>, after?: list<int>}> */
     public function getSteps(): array
     {
         return $this->steps;
     }
 
     // Replaces the step definitions
-    /** @param list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>}> $steps */
+    /** @param list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>, after?: list<int>}> $steps */
     public function setSteps(array $steps): static
     {
         $this->steps = $steps;
+
+        return $this;
+    }
+
+    public function isChecklist(): bool
+    {
+        return $this->checklist;
+    }
+
+    public function setChecklist(bool $checklist): static
+    {
+        $this->checklist = $checklist;
 
         return $this;
     }

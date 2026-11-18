@@ -25,6 +25,9 @@ class Run
     // Seconds a claim lasts without news from the machine
     public const LEASE_SECONDS = 60;
 
+    // Step of a run whose step left the checklist, never an index of it
+    public const int LEFT_STEP = -1;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -60,14 +63,67 @@ class Run
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $finishedAt = null;
 
-    // A queued run of a card
+    #[ORM\Column(length: 64, nullable: true)]
+    #[Assert\Length(max: 64)]
+    private ?string $action;
+
+    /** @var array<string, string>|null */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $params;
+
+    // A queued run of a card, doing the given action of one of its steps or, without one, the card's own action with its comment
+    /** @param array<string, string> $params */
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'runs')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
         private Card $card,
+        ?string $action = null,
+        array $params = [],
+        #[ORM\Column(nullable: true)]
+        private ?int $step = null,
     ) {
         $this->createdAt = new \DateTimeImmutable();
+        $this->action = $action ?? $card->getAction();
+        $this->params = null !== $action ? $params : null;
         $card->addRun($this);
+    }
+
+    // Action the machine runs, the card's for a run queued before runs held their own
+    public function getAction(): ?string
+    {
+        return $this->action ?? $this->card->getAction();
+    }
+
+    // Values of the action's parameters, the card's with its comment for a run of the card's own action, which cannot change while it runs
+    /** @return array<string, string> */
+    public function getParams(): array
+    {
+        return $this->params ?? $this->card->getParams() + (null !== $this->card->getComment() ? ['comment' => $this->card->getComment()] : []);
+    }
+
+    // Index of the checklist step the run does, null for the card's own action
+    public function getStep(): ?int
+    {
+        return $this->step;
+    }
+
+    // Follows its step moved elsewhere in the checklist, null when the step left it
+    public function moveToStep(?int $step): static
+    {
+        $this->step = $step;
+
+        return $this;
+    }
+
+    // Leaves the step that left the checklist, withdrawn when still waiting or held, its result kept when finished
+    public function leaveStep(\DateTimeImmutable $now): static
+    {
+        if ($this->status->isActive()) {
+            $this->cancel($now);
+        }
+        $this->step = self::LEFT_STEP;
+
+        return $this;
     }
 
     // Run id
@@ -198,9 +254,9 @@ class Run
         return $this;
     }
 
-    // Withdraws a run still waiting in the queue
+    // Withdraws a run, still waiting or stopped while a machine holds it
     public function cancel(\DateTimeImmutable $now): static
     {
-        return $this->finish(RunStatus::Failed, null, [], null, $now);
+        return $this->finish(RunStatus::Cancelled, null, [], null, $now);
     }
 }

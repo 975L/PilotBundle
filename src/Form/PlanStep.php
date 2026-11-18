@@ -23,6 +23,7 @@ class PlanStep implements \Stringable
         public string $executor = Executor::Human->value,
         public ?string $action = null,
         public array $params = [],
+        public string $after = '',
     ) {
     }
 
@@ -31,17 +32,25 @@ class PlanStep implements \Stringable
         return $this->title;
     }
 
-    // A step read from the template
-    /** @param array{title?: string, executor?: string, action?: ?string, params?: array<string, string>} $step */
+    // A step read from the template, the steps it waits for shown as their numbers, « - » for none
+    /** @param array{title?: string, executor?: string, action?: ?string, params?: array<string, string>, after?: list<int>} $step */
     public static function fromArray(array $step): self
     {
-        return new self($step['title'] ?? '', $step['executor'] ?? Executor::Human->value, $step['action'] ?? null, $step['params'] ?? []);
+        $after = isset($step['after']) ? ([] === $step['after'] ? '-' : implode(', ', $step['after'])) : '';
+
+        return new self($step['title'] ?? '', $step['executor'] ?? Executor::Human->value, $step['action'] ?? null, $step['params'] ?? [], $after);
     }
 
-    // The step as the template keeps it, without the empty parts
-    /** @return array{title: string, executor: string, action?: string, params?: array<string, string>} */
+    // The step as the template keeps it, without the empty parts; « after » only when typed, the step before being waited for otherwise
+    /** @return array{title: string, executor: string, action?: string, params?: array<string, string>, after?: list<int>} */
     public function toArray(): array
     {
-        return array_filter(['title' => $this->title, 'executor' => $this->executor, 'action' => $this->action, 'params' => $this->params], static fn (mixed $value): bool => null !== $value && [] !== $value);
+        $step = array_filter(['title' => $this->title, 'executor' => $this->executor, 'action' => $this->action, 'params' => $this->params], static fn (mixed $value): bool => null !== $value && [] !== $value);
+        $after = trim($this->after);
+        if ('' !== $after) {
+            $step['after'] = '-' === $after ? [] : array_values(array_unique(array_map(intval(...), preg_split('/\D+/', $after, -1, \PREG_SPLIT_NO_EMPTY) ?: [])));
+        }
+
+        return $step;
     }
 }

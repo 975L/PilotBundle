@@ -91,7 +91,10 @@ class RunQueue
         $now = $this->clock->now();
         $run->finish($status, $message, $outputs, $log, $now);
         $machine->seen($machine->getCapabilities(), $now);
-        $this->cardFlow->runFinished($run);
+        $next = $this->cardFlow->runFinished($run);
+        if (null !== $next) {
+            $this->entityManager->persist($next);
+        }
         $this->entityManager->flush();
     }
 

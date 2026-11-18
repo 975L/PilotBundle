@@ -291,10 +291,10 @@ class SkillsTest extends TestCase
 
                 $source = (string) file_get_contents($file);
 
-                // A constant may carry a type since PHP 8.3 ("const string AUTOMATIC_LATEST"), so the name is matched rather than a fixed prefix - a plain substring reads the typed one as absent
+                // A constant may carry a type since PHP 8.3 ("const string AUTOMATIC_LATEST"), so the name is matched rather than a fixed prefix - a plain substring reads the typed one as absent; an enum case counts as a constant
                 $needle = str_ends_with($member, '()')
                     ? '/function\s+' . preg_quote(substr($member, 0, -2), '/') . '\s*\(/'
-                    : '/const\s+(?:[\\\\|?A-Za-z_][\\\\|?A-Za-z0-9_]*\s+)?' . preg_quote($member, '/') . '\b/';
+                    : '/(?:case|const\s+(?:[\\\\|?A-Za-z_][\\\\|?A-Za-z0-9_]*\s+)?)\s*' . preg_quote($member, '/') . '\b/';
                 $this->assertMatchesRegularExpression($needle, $source, sprintf('%s quotes "%s", which %s does not hold', $directory, $token, basename($file)));
             }
         }

@@ -4,6 +4,9 @@
     <h1>{{ 'label.week'|trans({}, 'pilot') }}</h1>
     <p class="text-body-secondary">{{ 'label.info_week'|trans({}, 'pilot') }}</p>
 
+    {# The machine work under way first, before anything else #}
+    {% include '@c975LPilot/management/_runs.html.twig' %}
+
     {% if credits is not empty %}
         <div class="row g-2 mb-4 pilot-credits">
             {% for credit in credits %}
@@ -30,11 +33,10 @@
         </div>
     {% endif %}
 
-    {% include '@c975LPilot/management/_runs.html.twig' %}
 
     {% if waiting is not empty %}
-        <section class="mb-4" data-pilot-fold="waiting">
-            <h2 class="h5 pilot-fold-head">{{ 'label.waiting'|trans({}, 'pilot') }}</h2>
+        <section class="mb-4">
+            <h2 class="h5">{{ 'label.waiting'|trans({}, 'pilot') }}</h2>
             <div class="pilot-cards">
                 {% for card in waiting %}{% include '@c975LPilot/management/_card.html.twig' %}{% endfor %}
             </div>
@@ -43,15 +45,15 @@
     {% include '@c975LPilot/management/_reports.html.twig' %}
 
     {% if late is not empty %}
-        <section class="mb-4" data-pilot-fold="late">
-            <h2 class="h5 text-danger pilot-fold-head">{{ 'label.late'|trans({}, 'pilot') }}</h2>
+        <section class="mb-4">
+            <h2 class="h5 text-danger">{{ 'label.late'|trans({}, 'pilot') }}</h2>
             <div class="pilot-cards">
                 {% for card in late %}{% include '@c975LPilot/management/_card.html.twig' %}{% endfor %}
             </div>
         </section>
     {% endif %}
 
-    {% if late is empty and days|filter(cards => cards is not empty) is empty and later is empty %}
+    {% if late is empty and days is empty and later is empty %}
         <p>{{ 'label.nothing_planned'|trans({}, 'pilot') }}</p>
     {% endif %}
 
@@ -63,23 +65,20 @@
 
     {% for day, cards in days %}
         <h2 class="h5">{{ day|format_date('full') }}</h2>
-        {% include '@c975LPilot/management/_card_new.html.twig' with {new_due: day} %}
         <div class="pilot-cards pilot-drop mb-4" data-pilot-card-drag-target="zone" data-due="{{ day }}">
             {% for card in cards %}{% include '@c975LPilot/management/_card.html.twig' %}{% endfor %}
         </div>
     {% endfor %}
 
-
-    {% if later is not empty %}
-        <section class="mt-4 pilot-later" data-pilot-fold="later">
-            <h2 class="h5 pilot-fold-head">{{ 'label.later'|trans({}, 'pilot') }}</h2>
-            {% for month, cards in later %}
-                <h3 class="h6 mt-3">{{ month|format_date(pattern: 'MMMM y') }}</h3>
-                {% include '@c975LPilot/management/_spend.html.twig' %}
-                <div class="pilot-cards">
-                    {% for card in cards %}{% include '@c975LPilot/management/_card.html.twig' %}{% endfor %}
-                </div>
-            {% endfor %}
-        </section>
-    {% endif %}
+    {# The later deadlines month by month, every card shown, the month written larger than a day #}
+    {% for month, cards in later %}
+        <h2 class="h3 mt-5 pilot-month">{{ month|format_date(pattern: 'MMMM y')|capitalize }}</h2>
+        {% if spend[month] is defined %}
+            <p class="small text-body-secondary mb-1">{{ 'label.spend_month'|trans({'%month%': month|format_date(pattern: 'MMMM y')}, 'pilot') }}</p>
+            {% include '@c975LPilot/management/_spend.html.twig' %}
+        {% endif %}
+        <div class="pilot-cards mb-4">
+            {% for card in cards %}{% include '@c975LPilot/management/_card.html.twig' %}{% endfor %}
+        </div>
+    {% endfor %}
 {% endblock %}

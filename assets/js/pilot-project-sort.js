@@ -5,54 +5,17 @@
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
  */
-import { Controller } from "@hotwired/stimulus";
 import { addSortGesture } from "@c975l/ui-bundle/pointer-sort.js";
+import PilotListSort from "./pilot-list-sort.js";
 
-// Orders the projects of the left column by dragging them, saved on the drop; the gesture is UiBundle's, mouse and finger alike
-export default class extends Controller {
-    static targets = ["list", "item"];
-    static values = { url: String, token: String, failedLabel: String };
-
+// Orders the projects of the left column by dragging them, saved on the drop, mouse and finger alike
+export default class extends PilotListSort {
     // Each project grabbed by its handle at the finger, anywhere with a mouse: a plain click still opens it
     itemTargetConnected(item) {
-        const gesture = {
-            item,
-            onStart: () => this.pickUp(item),
-            onMove: (dragged, x, y) => this.moveTo(dragged, y),
-            onDrop: () => this.drop(item),
-            onCancel: () => this.revert(item),
-        };
+        const gesture = this.gesture(item);
         const handle = item.querySelector("[data-pilot-project-sort-handle]");
         if (handle) addSortGesture(handle, gesture);
         addSortGesture(item, { ...gesture, touch: false, ignore: "[data-pilot-project-sort-handle]" });
-    }
-
-    pickUp(item) {
-        this.origin = item.nextElementSibling;
-        item.classList.add("opacity-50");
-    }
-
-    // A vertical list: the project goes before the first one whose middle is below the pointer
-    moveTo(dragged, y) {
-        const before = this.itemTargets.find((item) => {
-            if (item === dragged) return false;
-            const box = item.getBoundingClientRect();
-
-            return y < box.top + box.height / 2;
-        });
-        if (before) this.listTarget.insertBefore(dragged, before);
-        else this.listTarget.appendChild(dragged);
-    }
-
-    // A project put back where it was picked up saves nothing
-    drop(item) {
-        item.classList.remove("opacity-50");
-        if (item.nextElementSibling !== this.origin) this.save();
-    }
-
-    revert(item) {
-        item.classList.remove("opacity-50");
-        this.listTarget.insertBefore(item, this.origin);
     }
 
     save() {

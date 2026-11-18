@@ -36,7 +36,7 @@ class RunRepository extends ServiceEntityRepository
             ->join('r.card', 'c')
             ->where('r.status IN (:active)')
             ->setParameter('active', [RunStatus::Queued, RunStatus::Claimed])
-            ->orderBy('r.id', 'ASC');
+            ->orderBy('r.id', \SortDirection::Ascending);
         if (null !== $project) {
             $builder->andWhere('c.project = :project')->setParameter('project', $project);
         }
@@ -57,7 +57,7 @@ class RunRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // Oldest queued run ids whose action the machine declared, candidates for a claim
+    // Oldest queued run ids whose action the machine declared, candidates for a claim: one run of a card at a time, the next one waiting until the one taken and those queued before it are gone
     /**
      * @param list<string> $actions
      *
@@ -68,15 +68,21 @@ class RunRepository extends ServiceEntityRepository
         if ([] === $actions) {
             return [];
         }
+        $before = $this->createQueryBuilder('o')
+            ->select('1')
+            ->where('o.card = r.card')
+            ->andWhere('o.status = :claimed OR (o.status = :queued AND o.id < r.id)');
 
         return array_map(intval(...), $this->createQueryBuilder('r')
             ->select('r.id')
             ->join('r.card', 'c')
             ->where('r.status = :queued')
-            ->andWhere('c.action IN (:actions)')
+            ->andWhere('COALESCE(r.action, c.action) IN (:actions)')
+            ->andWhere('NOT EXISTS (' . $before->getDQL() . ')')
             ->setParameter('queued', RunStatus::Queued)
+            ->setParameter('claimed', RunStatus::Claimed)
             ->setParameter('actions', $actions)
-            ->orderBy('r.id', 'ASC')
+            ->orderBy('r.id', \SortDirection::Ascending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getSingleColumnResult());

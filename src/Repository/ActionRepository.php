@@ -59,8 +59,8 @@ class ActionRepository extends ServiceEntityRepository
             ->andWhere('a.key IN (:keys)')
             ->setParameter('project', $project)
             ->setParameter('keys', $keys)
-            ->orderBy('a.position', 'ASC')
-            ->addOrderBy('a.label', 'ASC')
+            ->orderBy('a.position', \SortDirection::Ascending)
+            ->addOrderBy('a.label', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

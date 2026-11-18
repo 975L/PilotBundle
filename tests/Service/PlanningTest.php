@@ -20,7 +20,7 @@ use Symfony\Component\Clock\MockClock;
 
 class PlanningTest extends TestCase
 {
-    // Late cards first, every coming day listed with its cards, the cards past the horizon by month
+    // Late cards first, only the coming days holding a card, the cards past the horizon by month
     public function testLateDaysAndLaterMonths(): void
     {
         $project = new Project('catalog', 'Catalog');
@@ -34,10 +34,7 @@ class PlanningTest extends TestCase
         $planning = new Planning($cards, $config, new MockClock('2026-11-17 10:00'))->build();
 
         $this->assertCount(1, $planning['late']);
-        $this->assertCount(8, $planning['days']);
-        $this->assertSame('2026-11-17', array_key_first($planning['days']));
-        $this->assertSame('2026-11-24', array_key_last($planning['days']));
-        $this->assertSame([], $planning['days']['2026-11-17']);
+        $this->assertSame(['2026-11-18'], array_keys($planning['days']));
         $this->assertCount(1, $planning['days']['2026-11-18']);
         $this->assertSame(['2026-12-01', '2027-01-01'], array_keys($planning['later']));
         $this->assertCount(2, $planning['later']['2026-12-01']);

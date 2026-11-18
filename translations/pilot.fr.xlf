@@ -2,9 +2,13 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="fr" datatype="plaintext" original="pilot.en.xlf">
         <body>
+            <trans-unit id="oxjtEVt">
+                <source>description.guided_project_pilot_card_edit</source>
+                <target>Ouvrez une carte, réécrivez son titre d'un clic, ajoutez ou renommez ses étapes, glissez-les dans un nouvel ordre, puis dupliquez-la.</target>
+            </trans-unit>
             <trans-unit id="poZvvnR">
                 <source>description.guided_project_pilot_doc</source>
-                <target>Trouvez un dossier, ouvrez-le sur sa page, puis réécrivez son titre, son résumé pour un humain et son détail pour Claude.</target>
+                <target>Trouvez une référence, ouvrez-la sur sa page, puis réécrivez son titre, son résumé pour un humain et son détail pour Claude.</target>
             </trans-unit>
             <trans-unit id="cNjx5cn">
                 <source>description.guided_project_pilot_machine</source>
@@ -26,13 +30,33 @@
                 <source>description.guided_project_pilot_schedule</source>
                 <target>Donnez une date à une carte du backlog : elle passe dans le Planning.</target>
             </trans-unit>
+            <trans-unit id="I01Y.bj">
+                <source>description.guided_project_pilot_share</source>
+                <target>Ouvrez une carte, partagez-la en lecture seule, puis donnez un lien qui permet de la modifier.</target>
+            </trans-unit>
+            <trans-unit id="VEI80xF">
+                <source>description.guided_step_pilot_card_edit_drag</source>
+                <target>Glissez une étape par sa poignée : si la carte vient d'un modèle en checklist, le nouvel ordre passe au modèle et à ses autres cartes ouvertes.</target>
+            </trans-unit>
+            <trans-unit id="XGUl1Qp">
+                <source>description.guided_step_pilot_card_edit_duplicate</source>
+                <target>Une copie de la carte est créée dans le même projet, ses étapes décochées, hors de son plan.</target>
+            </trans-unit>
+            <trans-unit id="8tgamt5">
+                <source>description.guided_step_pilot_card_edit_steps</source>
+                <target>Tapez une étape ici pour l'ajouter en fin de liste ; un clic sur le texte d'une étape la renomme, la vider la retire.</target>
+            </trans-unit>
+            <trans-unit id="mCa1lTw">
+                <source>description.guided_step_pilot_card_edit_title</source>
+                <target>Un clic sur le titre l'ouvre en saisie, enregistré dès que vous quittez le champ ; la description en markdown, la référence et l'attente s'éditent de la même façon.</target>
+            </trans-unit>
             <trans-unit id="jK5pb7k">
                 <source>description.guided_step_pilot_doc_open</source>
-                <target>Le crayon à côté de son titre l'ouvre sur sa page.</target>
+                <target>Un clic sur sa tuile l'ouvre dans une fenêtre, avec ses cartes.</target>
             </trans-unit>
             <trans-unit id="jQPj5pE">
                 <source>description.guided_step_pilot_doc_write</source>
-                <target>Dépliez « Modifier le dossier », changez le titre, le résumé ou le détail, puis enregistrez.</target>
+                <target>Dépliez « Modifier la référence », changez le titre, le résumé ou le détail, puis enregistrez.</target>
             </trans-unit>
             <trans-unit id="Vu1JcnP">
                 <source>description.guided_step_pilot_machine_list</source>
@@ -72,11 +96,15 @@
             </trans-unit>
             <trans-unit id="ne5jQTp">
                 <source>description.guided_step_pilot_plan_template</source>
-                <target>Les modèles listent les étapes qu'un plan répète, à la main ou par une machine.</target>
+                <target>Les modèles listent les étapes qu'un plan répète, à la main ou par une machine, et celles que chacune attend avant de pouvoir être lancée.</target>
             </trans-unit>
             <trans-unit id="oswwmeb">
                 <source>description.guided_step_pilot_runner_entrust</source>
                 <target>Choisissez une action d'une machine en ligne, remplissez ses paramètres et confiez.</target>
+            </trans-unit>
+            <trans-unit id="T4oflDI">
+                <source>description.guided_step_pilot_runner_steps</source>
+                <target>Chaque étape machine a son bouton : lancées les unes après les autres, elles s'exécutent à la suite et chacune réussie se coche. La poignée réordonne les étapes, et l'ordre passe au modèle de la carte et à ses autres cartes.</target>
             </trans-unit>
             <trans-unit id="ni2dKdz">
                 <source>description.guided_step_pilot_runner_validate</source>
@@ -97,6 +125,14 @@
             <trans-unit id="EY0fTPI">
                 <source>description.guided_step_pilot_schedule_search</source>
                 <target>Tapez deux lettres de son titre.</target>
+            </trans-unit>
+            <trans-unit id="Q5GLXea">
+                <source>description.guided_step_pilot_share_edit</source>
+                <target>Ce second lien laisse qui le détient lire et réécrire la carte, en page ou en markdown, et lancer ses actions ; le lien est la permission, la croix le reprend.</target>
+            </trans-unit>
+            <trans-unit id="jawCk_I">
+                <source>description.guided_step_pilot_share_link</source>
+                <target>Un clic copie un lien secret en lecture seule, ouvert sans connexion et toujours le même ; la croix à côté l'arrête.</target>
             </trans-unit>
             <trans-unit id="Eah7mrY">
                 <source>flash.machine_created</source>
@@ -146,14 +182,6 @@
                 <source>label.actions</source>
                 <target>Actions</target>
             </trans-unit>
-            <trans-unit id="I6PzVva">
-                <source>label.backlog</source>
-                <target>Backlog</target>
-            </trans-unit>
-            <trans-unit id="J8_FIpa">
-                <source>label.backlog_empty</source>
-                <target>Aucune carte sans date.</target>
-            </trans-unit>
             <trans-unit id="CkGng16">
                 <source>label.card</source>
                 <target>Carte</target>
@@ -162,21 +190,33 @@
                 <source>label.card_add</source>
                 <target>Ajouter la carte</target>
             </trans-unit>
+            <trans-unit id="98VBR90">
+                <source>label.card_copy_suffix</source>
+                <target> (copie)</target>
+            </trans-unit>
             <trans-unit id="hFdwawk">
                 <source>label.card_doc</source>
-                <target>Dossier</target>
+                <target>Référence</target>
+            </trans-unit>
+            <trans-unit id="e.l.EFj">
+                <source>label.card_doc_named</source>
+                <target>Référence : %title%</target>
             </trans-unit>
             <trans-unit id="DMWSP2p">
                 <source>label.card_doc_new</source>
-                <target>Ou nouveau dossier</target>
+                <target>Ou nouvelle référence</target>
             </trans-unit>
             <trans-unit id="RnONm4c">
                 <source>label.card_doc_none</source>
-                <target>Aucun</target>
+                <target>Aucune</target>
+            </trans-unit>
+            <trans-unit id="eheeGW.">
+                <source>label.card_duplicate</source>
+                <target>Dupliquer la carte</target>
             </trans-unit>
             <trans-unit id="lnR41eV">
                 <source>label.card_edit</source>
-                <target>Modifier</target>
+                <target>Cliquer pour modifier</target>
             </trans-unit>
             <trans-unit id="tHxpxtn">
                 <source>label.card_new</source>
@@ -190,6 +230,10 @@
                 <source>label.card_save</source>
                 <target>Enregistrer</target>
             </trans-unit>
+            <trans-unit id="C5rhOEU">
+                <source>label.card_template</source>
+                <target>Modèle : %name%</target>
+            </trans-unit>
             <trans-unit id="iQQCggk">
                 <source>label.card_title</source>
                 <target>Titre</target>
@@ -197,6 +241,14 @@
             <trans-unit id="F0j36T8">
                 <source>label.card_waiting_on</source>
                 <target>En attente de</target>
+            </trans-unit>
+            <trans-unit id="gTzWFQi">
+                <source>label.cards</source>
+                <target>Cartes</target>
+            </trans-unit>
+            <trans-unit id="fGzpfhk">
+                <source>label.cards_empty</source>
+                <target>Aucune carte ouverte.</target>
             </trans-unit>
             <trans-unit id="EKG83VA">
                 <source>label.character_image</source>
@@ -284,7 +336,7 @@
             </trans-unit>
             <trans-unit id="1kdh_SS">
                 <source>label.doc_edit</source>
-                <target>Modifier le dossier</target>
+                <target>Modifier la référence</target>
             </trans-unit>
             <trans-unit id="PkNfbLn">
                 <source>label.doc_summary</source>
@@ -292,7 +344,7 @@
             </trans-unit>
             <trans-unit id="x65L0pA">
                 <source>label.docs</source>
-                <target>Dossiers</target>
+                <target>Références</target>
             </trans-unit>
             <trans-unit id="Ha6BT7W">
                 <source>label.done</source>
@@ -334,9 +386,13 @@
                 <source>label.gesture_expired</source>
                 <target>Le formulaire a expiré, recharge la page.</target>
             </trans-unit>
+            <trans-unit id="rnoolUh">
+                <source>label.guided_project_pilot_card_edit</source>
+                <target>Modifier une carte sur place</target>
+            </trans-unit>
             <trans-unit id="9HD1k6r">
                 <source>label.guided_project_pilot_doc</source>
-                <target>Rédiger un dossier</target>
+                <target>Rédiger une référence</target>
             </trans-unit>
             <trans-unit id="jdyjshO">
                 <source>label.guided_project_pilot_machine</source>
@@ -358,13 +414,33 @@
                 <source>label.guided_project_pilot_schedule</source>
                 <target>Planifier une carte</target>
             </trans-unit>
+            <trans-unit id="wSeJxj5">
+                <source>label.guided_project_pilot_share</source>
+                <target>Partager une carte</target>
+            </trans-unit>
+            <trans-unit id="H_AyjYl">
+                <source>label.guided_step_pilot_card_edit_drag</source>
+                <target>Changer l'ordre des étapes</target>
+            </trans-unit>
+            <trans-unit id="qbiehPs">
+                <source>label.guided_step_pilot_card_edit_duplicate</source>
+                <target>Dupliquer la carte</target>
+            </trans-unit>
+            <trans-unit id="9yvpYTj">
+                <source>label.guided_step_pilot_card_edit_steps</source>
+                <target>Ajouter ou renommer une étape</target>
+            </trans-unit>
+            <trans-unit id="35Z3e86">
+                <source>label.guided_step_pilot_card_edit_title</source>
+                <target>Réécrire le titre</target>
+            </trans-unit>
             <trans-unit id="CXGhwMt">
                 <source>label.guided_step_pilot_doc_open</source>
-                <target>Ouvrir le dossier</target>
+                <target>Ouvrir la référence</target>
             </trans-unit>
             <trans-unit id="8hglhZ9">
                 <source>label.guided_step_pilot_doc_search</source>
-                <target>Trouver le dossier</target>
+                <target>Trouver la référence</target>
             </trans-unit>
             <trans-unit id="x5AtrJ4">
                 <source>label.guided_step_pilot_doc_write</source>
@@ -414,6 +490,10 @@
                 <source>label.guided_step_pilot_runner_entrust</source>
                 <target>Confier la carte</target>
             </trans-unit>
+            <trans-unit id="PAe2yRN">
+                <source>label.guided_step_pilot_runner_steps</source>
+                <target>Lancer les étapes</target>
+            </trans-unit>
             <trans-unit id="lD6H0Mc">
                 <source>label.guided_step_pilot_runner_validate</source>
                 <target>Valider ou renvoyer</target>
@@ -434,6 +514,14 @@
                 <source>label.guided_step_pilot_schedule_search</source>
                 <target>Trouver la carte</target>
             </trans-unit>
+            <trans-unit id="sdZh5d1">
+                <source>label.guided_step_pilot_share_edit</source>
+                <target>Donner le lien de modification</target>
+            </trans-unit>
+            <trans-unit id="BtBhkC0">
+                <source>label.guided_step_pilot_share_link</source>
+                <target>Partager le lien</target>
+            </trans-unit>
             <trans-unit id="Oek4bfM">
                 <source>label.info_action_projects</source>
                 <target>Les cartes et la page de ces projets proposent cette action.</target>
@@ -444,11 +532,11 @@
             </trans-unit>
             <trans-unit id="3pAySP6">
                 <source>label.info_card_doc_new</source>
-                <target>Titre du nouveau dossier</target>
+                <target>Titre de la nouvelle référence</target>
             </trans-unit>
-            <trans-unit id="y6Wak8E">
-                <source>label.info_card_new_due</source>
-                <target>Sans date, la carte va au backlog</target>
+            <trans-unit id="EG_indX">
+                <source>label.info_card_note</source>
+                <target>Description en markdown : titres, listes, liens, cases à cocher</target>
             </trans-unit>
             <trans-unit id="YUG81Yr">
                 <source>label.info_card_waiting_on</source>
@@ -484,7 +572,7 @@
             </trans-unit>
             <trans-unit id="3.31SY1">
                 <source>label.info_project</source>
-                <target>Ses objectifs, ses cartes datées, puis son backlog, ses dossiers et ses cartes terminées.</target>
+                <target>Ses objectifs, ses cartes (les datées d'abord), ses références et ses cartes terminées.</target>
             </trans-unit>
             <trans-unit id="3DJqjm2">
                 <source>label.info_project_slug</source>
@@ -496,11 +584,27 @@
             </trans-unit>
             <trans-unit id="LnVyCF1">
                 <source>label.info_search</source>
-                <target>Retrouver une carte ou un dossier, même terminé.</target>
+                <target>Retrouver une carte ou une référence, même terminée.</target>
+            </trans-unit>
+            <trans-unit id="U8_1Po2">
+                <source>label.info_share_edit</source>
+                <target>Réécrivez la carte en markdown : une partie absente garde ce que la carte avait, une partie écrite le remplace.</target>
+            </trans-unit>
+            <trans-unit id="xe6IW.S">
+                <source>label.info_step_after</source>
+                <target>Numéros des étapes à cocher avant de lancer celle-ci, séparés par des virgules ; vide : l'étape précédente ; « - » : aucune.</target>
+            </trans-unit>
+            <trans-unit id="dUHOSNA">
+                <source>label.info_step_edit</source>
+                <target>Vide : l'étape est retirée</target>
             </trans-unit>
             <trans-unit id="nkRHf1s">
                 <source>label.info_step_params</source>
                 <target>Un « nom=valeur » par ligne.</target>
+            </trans-unit>
+            <trans-unit id="YERdGS1">
+                <source>label.info_template_checklist</source>
+                <target>Coché : le plan est une seule carte dont les étapes sont les cases à cocher ; sinon, une carte par étape.</target>
             </trans-unit>
             <trans-unit id="IaYl.9w">
                 <source>label.info_template_projects</source>
@@ -517,10 +621,6 @@
             <trans-unit id=".c3ER3G">
                 <source>label.late</source>
                 <target>En retard</target>
-            </trans-unit>
-            <trans-unit id="5JTxGnV">
-                <source>label.later</source>
-                <target>Ensuite</target>
             </trans-unit>
             <trans-unit id="qhB25G1">
                 <source>label.launch</source>
@@ -557,6 +657,10 @@
             <trans-unit id=".CLxfze">
                 <source>label.nothing_planned</source>
                 <target>Rien de prévu sur cette période.</target>
+            </trans-unit>
+            <trans-unit id="6E5Lb4V">
+                <source>label.objective_reached</source>
+                <target>Cocher ou décocher l'objectif</target>
             </trans-unit>
             <trans-unit id="kEt.QE2">
                 <source>label.objectives</source>
@@ -602,10 +706,6 @@
                 <source>label.plan_title</source>
                 <target>Titre du plan</target>
             </trans-unit>
-            <trans-unit id="lDMgngM">
-                <source>label.planned</source>
-                <target>Planifiées</target>
-            </trans-unit>
             <trans-unit id="1QBj5KM">
                 <source>label.project</source>
                 <target>Projet</target>
@@ -650,6 +750,10 @@
                 <source>label.run_cancel</source>
                 <target>Annuler l'ordre</target>
             </trans-unit>
+            <trans-unit id="s52T6iJ">
+                <source>label.run_cancelled</source>
+                <target>Retiré</target>
+            </trans-unit>
             <trans-unit id="n07TsR8">
                 <source>label.run_claimed</source>
                 <target>En cours</target>
@@ -665,6 +769,10 @@
             <trans-unit id="6VKEpHg">
                 <source>label.run_queued</source>
                 <target>En file</target>
+            </trans-unit>
+            <trans-unit id="vGAoP_Z">
+                <source>label.run_stop</source>
+                <target>Arrêter</target>
             </trans-unit>
             <trans-unit id="xSMG8Sj">
                 <source>label.runs_active</source>
@@ -684,11 +792,39 @@
             </trans-unit>
             <trans-unit id="wuLVBeQ">
                 <source>label.search_placeholder</source>
-                <target>Une carte, un dossier…</target>
+                <target>Une carte, une référence…</target>
             </trans-unit>
             <trans-unit id="qwwpZOD">
                 <source>label.send_back</source>
                 <target>Renvoyer</target>
+            </trans-unit>
+            <trans-unit id="bJAie.8">
+                <source>label.share</source>
+                <target>Copier le lien de lecture seule</target>
+            </trans-unit>
+            <trans-unit id="r3zJY0N">
+                <source>label.share_description</source>
+                <target>Description</target>
+            </trans-unit>
+            <trans-unit id="ppeF0LM">
+                <source>label.share_edit</source>
+                <target>Copier le lien de modification</target>
+            </trans-unit>
+            <trans-unit id="4OE7dbE">
+                <source>label.share_edit_stop</source>
+                <target>Reprendre le lien de modification</target>
+            </trans-unit>
+            <trans-unit id="ZU4_r7w">
+                <source>label.share_rewrite</source>
+                <target>Réécrire la carte en markdown</target>
+            </trans-unit>
+            <trans-unit id="iZYNXQH">
+                <source>label.share_steps</source>
+                <target>Étapes</target>
+            </trans-unit>
+            <trans-unit id="jOBjqsh">
+                <source>label.share_stop</source>
+                <target>Ne plus partager</target>
             </trans-unit>
             <trans-unit id="5eiyx0C">
                 <source>label.spend_month</source>
@@ -722,17 +858,53 @@
                 <source>label.step_action</source>
                 <target>Action de la machine</target>
             </trans-unit>
+            <trans-unit id="sDr_.vh">
+                <source>label.step_add</source>
+                <target>Ajouter une étape</target>
+            </trans-unit>
+            <trans-unit id="z5AwEdT">
+                <source>label.step_after</source>
+                <target>Après les étapes</target>
+            </trans-unit>
+            <trans-unit id="1CiY47b">
+                <source>label.step_edit</source>
+                <target>Modifier l'étape</target>
+            </trans-unit>
             <trans-unit id="NVK7xLn">
                 <source>label.step_executor</source>
                 <target>Qui</target>
+            </trans-unit>
+            <trans-unit id="f7NIKx4">
+                <source>label.step_move</source>
+                <target>Déplacer l'étape</target>
+            </trans-unit>
+            <trans-unit id="mB.mnYo">
+                <source>label.step_move_template</source>
+                <target>Déplacer l'étape : l'ordre change dans le modèle « %name% » et ses cartes</target>
+            </trans-unit>
+            <trans-unit id="8iW6AgU">
+                <source>label.step_no_action</source>
+                <target>Aucune action</target>
             </trans-unit>
             <trans-unit id="CG_YnR.">
                 <source>label.step_params</source>
                 <target>Paramètres</target>
             </trans-unit>
+            <trans-unit id="3I27mmg">
+                <source>label.step_run</source>
+                <target>Lancer cette étape</target>
+            </trans-unit>
             <trans-unit id="uYvwX94">
                 <source>label.step_title</source>
                 <target>Titre</target>
+            </trans-unit>
+            <trans-unit id="Dgrws64">
+                <source>label.step_up</source>
+                <target>Monter l'étape</target>
+            </trans-unit>
+            <trans-unit id="sV6Za4c">
+                <source>label.step_waiting</source>
+                <target>En attente de : %steps%</target>
             </trans-unit>
             <trans-unit id="5UPyb9h">
                 <source>label.steps_done</source>
@@ -741,6 +913,10 @@
             <trans-unit id="3C4wOwQ">
                 <source>label.template</source>
                 <target>Modèle de plan</target>
+            </trans-unit>
+            <trans-unit id="XfW0Lbv">
+                <source>label.template_checklist</source>
+                <target>Une seule carte à cocher</target>
             </trans-unit>
             <trans-unit id="W7kzvfO">
                 <source>label.template_name</source>
@@ -753,6 +929,10 @@
             <trans-unit id="Gwnseqp">
                 <source>label.templates</source>
                 <target>Modèles de plan</target>
+            </trans-unit>
+            <trans-unit id="E5XaMa_">
+                <source>label.templates_offered</source>
+                <target>Modèles proposés :</target>
             </trans-unit>
             <trans-unit id="M2GHic6">
                 <source>label.validate</source>

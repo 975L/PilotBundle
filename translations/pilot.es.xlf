@@ -2,9 +2,13 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="es" datatype="plaintext" original="pilot.en.xlf">
         <body>
+            <trans-unit id="oxjtEVt">
+                <source>description.guided_project_pilot_card_edit</source>
+                <target>Abra una tarjeta, reescriba su título con un clic, añada o renombre sus pasos, arrástrelos a un nuevo orden y luego duplíquela.</target>
+            </trans-unit>
             <trans-unit id="poZvvnR">
                 <source>description.guided_project_pilot_doc</source>
-                <target>Encuentre un expediente, ábralo en su página y reescriba su título, su resumen para una persona y su detalle para Claude.</target>
+                <target>Encuentre una referencia, ábrala en su página y reescriba su título, su resumen para una persona y su detalle para Claude.</target>
             </trans-unit>
             <trans-unit id="cNjx5cn">
                 <source>description.guided_project_pilot_machine</source>
@@ -26,13 +30,33 @@
                 <source>description.guided_project_pilot_schedule</source>
                 <target>Dé una fecha a una tarjeta pendiente: pasará a la Planificación.</target>
             </trans-unit>
+            <trans-unit id="I01Y.bj">
+                <source>description.guided_project_pilot_share</source>
+                <target>Abra una tarjeta, compártala en solo lectura y luego dé un enlace que permita editarla.</target>
+            </trans-unit>
+            <trans-unit id="VEI80xF">
+                <source>description.guided_step_pilot_card_edit_drag</source>
+                <target>Arrastre un paso por su asa: si la tarjeta viene de una plantilla en checklist, el nuevo orden pasa a la plantilla y a sus demás tarjetas abiertas.</target>
+            </trans-unit>
+            <trans-unit id="XGUl1Qp">
+                <source>description.guided_step_pilot_card_edit_duplicate</source>
+                <target>Se crea una copia de la tarjeta en el mismo proyecto, con sus pasos sin marcar, fuera de su plan.</target>
+            </trans-unit>
+            <trans-unit id="8tgamt5">
+                <source>description.guided_step_pilot_card_edit_steps</source>
+                <target>Escriba un paso aquí para añadirlo al final de la lista; un clic en el texto de un paso lo renombra, vaciarlo lo quita.</target>
+            </trans-unit>
+            <trans-unit id="mCa1lTw">
+                <source>description.guided_step_pilot_card_edit_title</source>
+                <target>Un clic en el título lo abre para escribir, guardado en cuanto sale del campo; la descripción en markdown, la referencia y la espera se editan del mismo modo.</target>
+            </trans-unit>
             <trans-unit id="jK5pb7k">
                 <source>description.guided_step_pilot_doc_open</source>
-                <target>El lápiz junto a su título lo abre en su página.</target>
+                <target>Un clic en su recuadro la abre en una ventana, con sus tarjetas.</target>
             </trans-unit>
             <trans-unit id="jQPj5pE">
                 <source>description.guided_step_pilot_doc_write</source>
-                <target>Despliegue « Modificar el expediente », cambie el título, el resumen o el detalle y guarde.</target>
+                <target>Despliegue « Modificar la referencia », cambie el título, el resumen o el detalle y guarde.</target>
             </trans-unit>
             <trans-unit id="Vu1JcnP">
                 <source>description.guided_step_pilot_machine_list</source>
@@ -72,11 +96,15 @@
             </trans-unit>
             <trans-unit id="ne5jQTp">
                 <source>description.guided_step_pilot_plan_template</source>
-                <target>Las plantillas enumeran los pasos que repite un plan, a mano o por una máquina.</target>
+                <target>Las plantillas enumeran los pasos que repite un plan, a mano o por una máquina, y los que cada paso espera antes de poder lanzarse.</target>
             </trans-unit>
             <trans-unit id="oswwmeb">
                 <source>description.guided_step_pilot_runner_entrust</source>
                 <target>Elija una acción de una máquina en línea, rellene sus parámetros y confíela.</target>
+            </trans-unit>
+            <trans-unit id="T4oflDI">
+                <source>description.guided_step_pilot_runner_steps</source>
+                <target>Cada paso de máquina tiene su botón: lanzados uno tras otro, se ejecutan seguidos y cada uno terminado se marca. El asa reordena los pasos, y el orden pasa a la plantilla de la tarjeta y a sus otras tarjetas.</target>
             </trans-unit>
             <trans-unit id="ni2dKdz">
                 <source>description.guided_step_pilot_runner_validate</source>
@@ -97,6 +125,14 @@
             <trans-unit id="EY0fTPI">
                 <source>description.guided_step_pilot_schedule_search</source>
                 <target>Escriba dos letras de su título.</target>
+            </trans-unit>
+            <trans-unit id="Q5GLXea">
+                <source>description.guided_step_pilot_share_edit</source>
+                <target>Este segundo enlace permite a quien lo tenga leer y reescribir la tarjeta, en página o en markdown, y lanzar sus acciones; el enlace es el permiso, la cruz lo retira.</target>
+            </trans-unit>
+            <trans-unit id="jawCk_I">
+                <source>description.guided_step_pilot_share_link</source>
+                <target>Un clic copia un enlace secreto de solo lectura, abierto sin sesión y siempre el mismo; la cruz al lado lo detiene.</target>
             </trans-unit>
             <trans-unit id="Eah7mrY">
                 <source>flash.machine_created</source>
@@ -146,14 +182,6 @@
                 <source>label.actions</source>
                 <target>Acciones</target>
             </trans-unit>
-            <trans-unit id="I6PzVva">
-                <source>label.backlog</source>
-                <target>Pendientes</target>
-            </trans-unit>
-            <trans-unit id="J8_FIpa">
-                <source>label.backlog_empty</source>
-                <target>Ninguna tarjeta sin fecha.</target>
-            </trans-unit>
             <trans-unit id="CkGng16">
                 <source>label.card</source>
                 <target>Tarjeta</target>
@@ -162,21 +190,33 @@
                 <source>label.card_add</source>
                 <target>Añadir la tarjeta</target>
             </trans-unit>
+            <trans-unit id="98VBR90">
+                <source>label.card_copy_suffix</source>
+                <target> (copia)</target>
+            </trans-unit>
             <trans-unit id="hFdwawk">
                 <source>label.card_doc</source>
-                <target>Expediente</target>
+                <target>Referencia</target>
+            </trans-unit>
+            <trans-unit id="e.l.EFj">
+                <source>label.card_doc_named</source>
+                <target>Referencia: %title%</target>
             </trans-unit>
             <trans-unit id="DMWSP2p">
                 <source>label.card_doc_new</source>
-                <target>O nuevo expediente</target>
+                <target>O nueva referencia</target>
             </trans-unit>
             <trans-unit id="RnONm4c">
                 <source>label.card_doc_none</source>
-                <target>Ninguno</target>
+                <target>Ninguna</target>
+            </trans-unit>
+            <trans-unit id="eheeGW.">
+                <source>label.card_duplicate</source>
+                <target>Duplicar la tarjeta</target>
             </trans-unit>
             <trans-unit id="lnR41eV">
                 <source>label.card_edit</source>
-                <target>Modificar</target>
+                <target>Haz clic para editar</target>
             </trans-unit>
             <trans-unit id="tHxpxtn">
                 <source>label.card_new</source>
@@ -190,6 +230,10 @@
                 <source>label.card_save</source>
                 <target>Guardar</target>
             </trans-unit>
+            <trans-unit id="C5rhOEU">
+                <source>label.card_template</source>
+                <target>Plantilla: %name%</target>
+            </trans-unit>
             <trans-unit id="iQQCggk">
                 <source>label.card_title</source>
                 <target>Título</target>
@@ -197,6 +241,14 @@
             <trans-unit id="F0j36T8">
                 <source>label.card_waiting_on</source>
                 <target>En espera de</target>
+            </trans-unit>
+            <trans-unit id="gTzWFQi">
+                <source>label.cards</source>
+                <target>Tarjetas</target>
+            </trans-unit>
+            <trans-unit id="fGzpfhk">
+                <source>label.cards_empty</source>
+                <target>Ninguna tarjeta abierta.</target>
             </trans-unit>
             <trans-unit id="EKG83VA">
                 <source>label.character_image</source>
@@ -284,7 +336,7 @@
             </trans-unit>
             <trans-unit id="1kdh_SS">
                 <source>label.doc_edit</source>
-                <target>Modificar el expediente</target>
+                <target>Modificar la referencia</target>
             </trans-unit>
             <trans-unit id="PkNfbLn">
                 <source>label.doc_summary</source>
@@ -292,7 +344,7 @@
             </trans-unit>
             <trans-unit id="x65L0pA">
                 <source>label.docs</source>
-                <target>Expedientes</target>
+                <target>Referencias</target>
             </trans-unit>
             <trans-unit id="Ha6BT7W">
                 <source>label.done</source>
@@ -334,9 +386,13 @@
                 <source>label.gesture_expired</source>
                 <target>El formulario caducó, recarga la página.</target>
             </trans-unit>
+            <trans-unit id="rnoolUh">
+                <source>label.guided_project_pilot_card_edit</source>
+                <target>Editar una tarjeta en su sitio</target>
+            </trans-unit>
             <trans-unit id="9HD1k6r">
                 <source>label.guided_project_pilot_doc</source>
-                <target>Redactar un expediente</target>
+                <target>Redactar una referencia</target>
             </trans-unit>
             <trans-unit id="jdyjshO">
                 <source>label.guided_project_pilot_machine</source>
@@ -358,13 +414,33 @@
                 <source>label.guided_project_pilot_schedule</source>
                 <target>Planificar una tarjeta</target>
             </trans-unit>
+            <trans-unit id="wSeJxj5">
+                <source>label.guided_project_pilot_share</source>
+                <target>Compartir una tarjeta</target>
+            </trans-unit>
+            <trans-unit id="H_AyjYl">
+                <source>label.guided_step_pilot_card_edit_drag</source>
+                <target>Cambiar el orden de los pasos</target>
+            </trans-unit>
+            <trans-unit id="qbiehPs">
+                <source>label.guided_step_pilot_card_edit_duplicate</source>
+                <target>Duplicar la tarjeta</target>
+            </trans-unit>
+            <trans-unit id="9yvpYTj">
+                <source>label.guided_step_pilot_card_edit_steps</source>
+                <target>Añadir o renombrar un paso</target>
+            </trans-unit>
+            <trans-unit id="35Z3e86">
+                <source>label.guided_step_pilot_card_edit_title</source>
+                <target>Reescribir el título</target>
+            </trans-unit>
             <trans-unit id="CXGhwMt">
                 <source>label.guided_step_pilot_doc_open</source>
-                <target>Abrir el expediente</target>
+                <target>Abrir la referencia</target>
             </trans-unit>
             <trans-unit id="8hglhZ9">
                 <source>label.guided_step_pilot_doc_search</source>
-                <target>Encontrar el expediente</target>
+                <target>Encontrar la referencia</target>
             </trans-unit>
             <trans-unit id="x5AtrJ4">
                 <source>label.guided_step_pilot_doc_write</source>
@@ -414,6 +490,10 @@
                 <source>label.guided_step_pilot_runner_entrust</source>
                 <target>Confiar la tarjeta</target>
             </trans-unit>
+            <trans-unit id="PAe2yRN">
+                <source>label.guided_step_pilot_runner_steps</source>
+                <target>Lanzar los pasos</target>
+            </trans-unit>
             <trans-unit id="lD6H0Mc">
                 <source>label.guided_step_pilot_runner_validate</source>
                 <target>Validar o devolver</target>
@@ -434,6 +514,14 @@
                 <source>label.guided_step_pilot_schedule_search</source>
                 <target>Encontrar la tarjeta</target>
             </trans-unit>
+            <trans-unit id="sdZh5d1">
+                <source>label.guided_step_pilot_share_edit</source>
+                <target>Dar el enlace de edición</target>
+            </trans-unit>
+            <trans-unit id="BtBhkC0">
+                <source>label.guided_step_pilot_share_link</source>
+                <target>Compartir el enlace</target>
+            </trans-unit>
             <trans-unit id="Oek4bfM">
                 <source>label.info_action_projects</source>
                 <target>Las tarjetas y la página de estos proyectos proponen esta acción.</target>
@@ -444,11 +532,11 @@
             </trans-unit>
             <trans-unit id="3pAySP6">
                 <source>label.info_card_doc_new</source>
-                <target>Título del nuevo expediente</target>
+                <target>Título de la nueva referencia</target>
             </trans-unit>
-            <trans-unit id="y6Wak8E">
-                <source>label.info_card_new_due</source>
-                <target>Sin fecha, la tarjeta va a pendientes</target>
+            <trans-unit id="EG_indX">
+                <source>label.info_card_note</source>
+                <target>Descripción en markdown: títulos, listas, enlaces, casillas</target>
             </trans-unit>
             <trans-unit id="YUG81Yr">
                 <source>label.info_card_waiting_on</source>
@@ -484,7 +572,7 @@
             </trans-unit>
             <trans-unit id="3.31SY1">
                 <source>label.info_project</source>
-                <target>Sus objetivos, sus tarjetas con fecha, luego sus pendientes, sus expedientes y sus tarjetas terminadas.</target>
+                <target>Sus objetivos, sus tarjetas (primero las que tienen fecha), sus referencias y sus tarjetas terminadas.</target>
             </trans-unit>
             <trans-unit id="3DJqjm2">
                 <source>label.info_project_slug</source>
@@ -496,11 +584,27 @@
             </trans-unit>
             <trans-unit id="LnVyCF1">
                 <source>label.info_search</source>
-                <target>Encontrar una tarjeta o un expediente, aunque esté terminado.</target>
+                <target>Encontrar una tarjeta o una referencia, aunque esté terminada.</target>
+            </trans-unit>
+            <trans-unit id="U8_1Po2">
+                <source>label.info_share_edit</source>
+                <target>Reescriba la tarjeta en markdown: una parte omitida conserva lo que tenía la tarjeta, una parte escrita lo reemplaza.</target>
+            </trans-unit>
+            <trans-unit id="xe6IW.S">
+                <source>label.info_step_after</source>
+                <target>Números de los pasos que marcar antes de lanzar este, separados por comas; vacío: el paso anterior; « - »: ninguno.</target>
+            </trans-unit>
+            <trans-unit id="dUHOSNA">
+                <source>label.info_step_edit</source>
+                <target>Vacío: el paso se quita</target>
             </trans-unit>
             <trans-unit id="nkRHf1s">
                 <source>label.info_step_params</source>
                 <target>Un « nombre=valor » por línea.</target>
+            </trans-unit>
+            <trans-unit id="YERdGS1">
+                <source>label.info_template_checklist</source>
+                <target>Marcado: el plan es una sola tarjeta cuyos pasos son sus casillas; si no, una tarjeta por paso.</target>
             </trans-unit>
             <trans-unit id="IaYl.9w">
                 <source>label.info_template_projects</source>
@@ -517,10 +621,6 @@
             <trans-unit id=".c3ER3G">
                 <source>label.late</source>
                 <target>Atrasadas</target>
-            </trans-unit>
-            <trans-unit id="5JTxGnV">
-                <source>label.later</source>
-                <target>Después</target>
             </trans-unit>
             <trans-unit id="qhB25G1">
                 <source>label.launch</source>
@@ -557,6 +657,10 @@
             <trans-unit id=".CLxfze">
                 <source>label.nothing_planned</source>
                 <target>Nada previsto en este periodo.</target>
+            </trans-unit>
+            <trans-unit id="6E5Lb4V">
+                <source>label.objective_reached</source>
+                <target>Marcar o desmarcar el objetivo</target>
             </trans-unit>
             <trans-unit id="kEt.QE2">
                 <source>label.objectives</source>
@@ -602,10 +706,6 @@
                 <source>label.plan_title</source>
                 <target>Título del plan</target>
             </trans-unit>
-            <trans-unit id="lDMgngM">
-                <source>label.planned</source>
-                <target>Planificadas</target>
-            </trans-unit>
             <trans-unit id="1QBj5KM">
                 <source>label.project</source>
                 <target>Proyecto</target>
@@ -650,6 +750,10 @@
                 <source>label.run_cancel</source>
                 <target>Anular la orden</target>
             </trans-unit>
+            <trans-unit id="s52T6iJ">
+                <source>label.run_cancelled</source>
+                <target>Retirado</target>
+            </trans-unit>
             <trans-unit id="n07TsR8">
                 <source>label.run_claimed</source>
                 <target>En curso</target>
@@ -665,6 +769,10 @@
             <trans-unit id="6VKEpHg">
                 <source>label.run_queued</source>
                 <target>En cola</target>
+            </trans-unit>
+            <trans-unit id="vGAoP_Z">
+                <source>label.run_stop</source>
+                <target>Detener</target>
             </trans-unit>
             <trans-unit id="xSMG8Sj">
                 <source>label.runs_active</source>
@@ -684,11 +792,39 @@
             </trans-unit>
             <trans-unit id="wuLVBeQ">
                 <source>label.search_placeholder</source>
-                <target>Una tarjeta, un expediente…</target>
+                <target>Una tarjeta, una referencia…</target>
             </trans-unit>
             <trans-unit id="qwwpZOD">
                 <source>label.send_back</source>
                 <target>Devolver</target>
+            </trans-unit>
+            <trans-unit id="bJAie.8">
+                <source>label.share</source>
+                <target>Copiar el enlace de solo lectura</target>
+            </trans-unit>
+            <trans-unit id="r3zJY0N">
+                <source>label.share_description</source>
+                <target>Descripción</target>
+            </trans-unit>
+            <trans-unit id="ppeF0LM">
+                <source>label.share_edit</source>
+                <target>Copiar el enlace de edición</target>
+            </trans-unit>
+            <trans-unit id="4OE7dbE">
+                <source>label.share_edit_stop</source>
+                <target>Retirar el enlace de edición</target>
+            </trans-unit>
+            <trans-unit id="ZU4_r7w">
+                <source>label.share_rewrite</source>
+                <target>Reescribir la tarjeta en markdown</target>
+            </trans-unit>
+            <trans-unit id="iZYNXQH">
+                <source>label.share_steps</source>
+                <target>Pasos</target>
+            </trans-unit>
+            <trans-unit id="jOBjqsh">
+                <source>label.share_stop</source>
+                <target>Dejar de compartir</target>
             </trans-unit>
             <trans-unit id="5eiyx0C">
                 <source>label.spend_month</source>
@@ -722,17 +858,53 @@
                 <source>label.step_action</source>
                 <target>Acción de la máquina</target>
             </trans-unit>
+            <trans-unit id="sDr_.vh">
+                <source>label.step_add</source>
+                <target>Añadir un paso</target>
+            </trans-unit>
+            <trans-unit id="z5AwEdT">
+                <source>label.step_after</source>
+                <target>Después de los pasos</target>
+            </trans-unit>
+            <trans-unit id="1CiY47b">
+                <source>label.step_edit</source>
+                <target>Modificar el paso</target>
+            </trans-unit>
             <trans-unit id="NVK7xLn">
                 <source>label.step_executor</source>
                 <target>Quién</target>
+            </trans-unit>
+            <trans-unit id="f7NIKx4">
+                <source>label.step_move</source>
+                <target>Mover el paso</target>
+            </trans-unit>
+            <trans-unit id="mB.mnYo">
+                <source>label.step_move_template</source>
+                <target>Mover el paso: el orden cambia en la plantilla « %name% » y sus tarjetas</target>
+            </trans-unit>
+            <trans-unit id="8iW6AgU">
+                <source>label.step_no_action</source>
+                <target>Ninguna acción</target>
             </trans-unit>
             <trans-unit id="CG_YnR.">
                 <source>label.step_params</source>
                 <target>Parámetros</target>
             </trans-unit>
+            <trans-unit id="3I27mmg">
+                <source>label.step_run</source>
+                <target>Lanzar este paso</target>
+            </trans-unit>
             <trans-unit id="uYvwX94">
                 <source>label.step_title</source>
                 <target>Título</target>
+            </trans-unit>
+            <trans-unit id="Dgrws64">
+                <source>label.step_up</source>
+                <target>Subir el paso</target>
+            </trans-unit>
+            <trans-unit id="sV6Za4c">
+                <source>label.step_waiting</source>
+                <target>A la espera de: %steps%</target>
             </trans-unit>
             <trans-unit id="5UPyb9h">
                 <source>label.steps_done</source>
@@ -741,6 +913,10 @@
             <trans-unit id="3C4wOwQ">
                 <source>label.template</source>
                 <target>Plantilla de plan</target>
+            </trans-unit>
+            <trans-unit id="XfW0Lbv">
+                <source>label.template_checklist</source>
+                <target>Una sola tarjeta para marcar</target>
             </trans-unit>
             <trans-unit id="W7kzvfO">
                 <source>label.template_name</source>
@@ -753,6 +929,10 @@
             <trans-unit id="Gwnseqp">
                 <source>label.templates</source>
                 <target>Plantillas de plan</target>
+            </trans-unit>
+            <trans-unit id="E5XaMa_">
+                <source>label.templates_offered</source>
+                <target>Plantillas propuestas:</target>
             </trans-unit>
             <trans-unit id="M2GHic6">
                 <source>label.validate</source>

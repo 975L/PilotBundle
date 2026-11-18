@@ -31,7 +31,7 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
 
     public function getGuidedProjects(): array
     {
-        return [$this->schedule(), $this->runner(), $this->plan(), $this->machine(), $this->doc(), $this->objectives()];
+        return [$this->schedule(), $this->runner(), $this->plan(), $this->machine(), $this->doc(), $this->objectives(), $this->share(), $this->cardEdit()];
     }
 
     // A card found, opened, then dated: it leaves the backlog for the planning
@@ -97,6 +97,12 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
                     'description' => 'description.guided_step_pilot_schedule_open',
                     'narration' => 'narration.guided_step_pilot_schedule_open',
                     'highlight' => '.pilot-card-open',
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_runner_steps',
+                    'description' => 'description.guided_step_pilot_runner_steps',
+                    'narration' => 'narration.guided_step_pilot_runner_steps',
+                    'highlight' => '.pilot-step-run',
                 ],
                 [
                     'label' => 'label.guided_step_pilot_runner_entrust',
@@ -271,5 +277,97 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
             ->setController($controllerFqcn)
             ->setAction(Action::INDEX)
             ->generateUrl();
+    }
+
+    // A card found and opened, shared by a read-only link, then by one letting whoever holds it rewrite it
+    /** @return array{slug: string, label: string, description: string, translation_domain: string, order: int, role: string, steps: list<array{label: string, description: string, narration: string, url?: string, highlight?: string}>} */
+    private function share(): array
+    {
+        return [
+            'slug' => 'pilot-share',
+            'label' => 'label.guided_project_pilot_share',
+            'description' => 'description.guided_project_pilot_share',
+            'translation_domain' => 'pilot',
+            'order' => 12070,
+            'role' => (string) $this->configService->get('site-role-admin'),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_pilot_schedule_search',
+                    'description' => 'description.guided_step_pilot_schedule_search',
+                    'narration' => 'narration.guided_step_pilot_share_search',
+                    'url' => $this->urlGenerator->generate(PilotController::SEARCH_ROUTE),
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_schedule_open',
+                    'description' => 'description.guided_step_pilot_schedule_open',
+                    'narration' => 'narration.guided_step_pilot_schedule_open',
+                    'highlight' => '.pilot-card-open',
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_share_link',
+                    'description' => 'description.guided_step_pilot_share_link',
+                    'narration' => 'narration.guided_step_pilot_share_link',
+                    'highlight' => '.pilot-share',
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_share_edit',
+                    'description' => 'description.guided_step_pilot_share_edit',
+                    'narration' => 'narration.guided_step_pilot_share_edit',
+                    'highlight' => '.pilot-lend',
+                ],
+            ],
+        ];
+    }
+
+    // A card found and opened, its title rewritten in place, a step added, the steps dragged into a new order, then the card duplicated
+    /** @return array{slug: string, label: string, description: string, translation_domain: string, order: int, role: string, steps: list<array{label: string, description: string, narration: string, url?: string, highlight?: string}>} */
+    private function cardEdit(): array
+    {
+        return [
+            'slug' => 'pilot-card-edit',
+            'label' => 'label.guided_project_pilot_card_edit',
+            'description' => 'description.guided_project_pilot_card_edit',
+            'translation_domain' => 'pilot',
+            'order' => 12080,
+            'role' => (string) $this->configService->get('site-role-admin'),
+            'steps' => [
+                [
+                    'label' => 'label.guided_step_pilot_schedule_search',
+                    'description' => 'description.guided_step_pilot_schedule_search',
+                    'narration' => 'narration.guided_step_pilot_card_edit_search',
+                    'url' => $this->urlGenerator->generate(PilotController::SEARCH_ROUTE),
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_schedule_open',
+                    'description' => 'description.guided_step_pilot_schedule_open',
+                    'narration' => 'narration.guided_step_pilot_schedule_open',
+                    'highlight' => '.pilot-card-open',
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_card_edit_title',
+                    'description' => 'description.guided_step_pilot_card_edit_title',
+                    'narration' => 'narration.guided_step_pilot_card_edit_title',
+                    'highlight' => '.pilot-card-title',
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_card_edit_steps',
+                    'description' => 'description.guided_step_pilot_card_edit_steps',
+                    'narration' => 'narration.guided_step_pilot_card_edit_steps',
+                    'highlight' => '.pilot-step-add',
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_card_edit_drag',
+                    'description' => 'description.guided_step_pilot_card_edit_drag',
+                    'narration' => 'narration.guided_step_pilot_card_edit_drag',
+                    'highlight' => '.pilot-step-handle',
+                ],
+                [
+                    'label' => 'label.guided_step_pilot_card_edit_duplicate',
+                    'description' => 'description.guided_step_pilot_card_edit_duplicate',
+                    'narration' => 'narration.guided_step_pilot_card_edit_duplicate',
+                    'highlight' => '.pilot-duplicate',
+                ],
+            ],
+        ];
     }
 }

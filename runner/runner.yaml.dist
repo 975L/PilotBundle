@@ -1,0 +1,13 @@
+# Sites this machine serves, each with the token printed by c975l:pilot:machine-add on that site
+sites:
+  - url: https://pilot.example.com
+    token: change-me
+  # A second site, a local copy for instance, served in the same loop
+  # - url: http://127.0.0.1:8000
+  #   token: change-me
+
+# Root of the work folders, one per site and per card
+workdir: ~/.local/share/pilot-runner
+
+# Command printing the balances of paid services as JSON, sent every hour to the Planning ({"key": {"label", "remaining", "total", "unit", "renewsOn"}})
+# credits: [~/scripts/credits.py]

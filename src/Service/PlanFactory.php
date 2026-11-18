@@ -18,7 +18,7 @@ use c975L\PilotBundle\Enum\CardKind;
 use c975L\PilotBundle\Enum\CardStatus;
 use c975L\PilotBundle\Enum\Executor;
 
-// Builds a plan from a template: one card per step, its {variables} replaced by the values given, the first card opened
+// Builds a plan from a template: one card per step, or a single card whose checklist is the steps, their {variables} replaced by the values given, the first card opened
 class PlanFactory
 {
     private const string VARIABLE = '/\{(\w+)\}/';
@@ -48,6 +48,9 @@ class PlanFactory
     public function create(PlanTemplate $template, Project $project, string $title, array $values): Plan
     {
         $plan = new Plan($template, $project, $title);
+        if ($template->isChecklist()) {
+            return $this->checklist($template, $plan, $project, $title, $values);
+        }
         foreach ($template->getSteps() as $position => $step) {
             $params = array_map(fn (string $value): string => $this->fill($value, $values), $step['params'] ?? []);
             new Card($project, $this->fill($step['title'], $values))
@@ -55,6 +58,25 @@ class PlanFactory
                 ->setStatus(CardStatus::Todo)
                 ->placeIn($plan, $position);
         }
+        $this->cardFlow->start($plan);
+
+        return $plan;
+    }
+
+    // The single card of a checklist template, each step a box to tick, still naming the machine action it hands the card to
+    /** @param array<string, string> $values */
+    private function checklist(PlanTemplate $template, Plan $plan, Project $project, string $title, array $values): Plan
+    {
+        $steps = [];
+        foreach ($template->getSteps() as $step) {
+            $item = ['t' => $this->fill($step['title'], $values)];
+            if (null !== ($step['action'] ?? null) && '' !== $step['action']) {
+                $item['action'] = $step['action'];
+                $item['params'] = array_map(fn (string $value): string => $this->fill($value, $values), $step['params'] ?? []);
+            }
+            $steps[] = $item;
+        }
+        new Card($project, $title)->setChecklist(StepOrder::linkAfter($steps, $template->getSteps()))->setStatus(CardStatus::Todo)->placeIn($plan, 0);
         $this->cardFlow->start($plan);
 
         return $plan;

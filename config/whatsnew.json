@@ -1,5 +1,105 @@
 [
     {
+        "date": "2026-11-18",
+        "description": [
+            {
+                "en": "Piloting: a checklist step that names a machine action has a ▶ button to launch it by hand, and validating its result ticks the step, the card staying open for the next one.",
+                "fr": "Pilotage : une étape de checklist qui nomme une action de machine a un bouton ▶ pour la lancer à la main, et valider son résultat coche l'étape, la carte restant ouverte pour la suivante.",
+                "es": "Pilotaje: un paso de la lista que nombra una acción de máquina tiene un botón ▶ para lanzarla a mano, y validar su resultado marca el paso, la tarjeta quedando abierta para el siguiente."
+            },
+            {
+                "en": "Piloting: the Planning shows every card, without « Later » nor folding, the later months written larger than the days.",
+                "fr": "Pilotage : le Planning montre toutes les cartes, sans « Ensuite » ni repli, les mois suivants écrits plus gros que les jours.",
+                "es": "Pilotaje: la Planificación muestra todas las tarjetas, sin « Después » ni plegado, los meses siguientes escritos más grandes que los días."
+            },
+            {
+                "en": "Piloting: a card is edited in place, its title, note, awaited answer or reference clicked; its date and its done tick sit right under its badges.",
+                "fr": "Pilotage : une carte se modifie sur place, en cliquant son titre, sa note, la réponse attendue ou sa référence ; sa date et sa coche « fait » sont juste sous ses badges.",
+                "es": "Pilotaje: una tarjeta se edita en su sitio, haciendo clic en su título, su nota, la respuesta esperada o su referencia; su fecha y su marca « hecho » están justo bajo sus etiquetas."
+            },
+            {
+                "en": "Piloting: a card is shared outside the back office by a secret link, read-only, or letting whoever holds it rewrite it in markdown, tick its steps and launch their machine actions; a click copies the link, which stays the same until the cross beside it stops it.",
+                "fr": "Pilotage : une carte se partage hors du back-office par un lien secret, en lecture seule, ou en laissant qui le détient la réécrire en markdown, cocher ses étapes et lancer leurs actions de machine ; un clic copie le lien, qui reste le même jusqu'à ce que la croix à côté l'arrête.",
+                "es": "Pilotaje: una tarjeta se comparte fuera del back-office con un enlace secreto, en solo lectura, o dejando a quien lo tenga reescribirla en markdown, marcar sus pasos y lanzar sus acciones de máquina; un clic copia el enlace, que sigue igual hasta que la cruz de al lado lo detiene."
+            },
+            {
+                "en": "Piloting: a project's page lists all its cards together, the dated ones first; files are now called references.",
+                "fr": "Pilotage : la page d'un projet liste toutes ses cartes ensemble, les datées d'abord ; les dossiers s'appellent désormais références.",
+                "es": "Pilotaje: la página de un proyecto lista todas sus tarjetas juntas, primero las que tienen fecha; los expedientes se llaman ahora referencias."
+            },
+            {
+                "en": "Piloting: a plan template can make a single card whose steps are boxes to tick, and a project's page links to the templates it offers.",
+                "fr": "Pilotage : un modèle de plan peut faire une seule carte dont les étapes sont des cases à cocher, et la page d'un projet renvoie vers les modèles qu'elle propose.",
+                "es": "Pilotaje: una plantilla de plan puede crear una sola tarjeta cuyos pasos son casillas para marcar, y la página de un proyecto enlaza con las plantillas que ofrece."
+            },
+            {
+                "en": "Piloting: a project's objectives are ticked on its page like the cards, each one dated when reached, and a project is renamed by a click on its name, its colour picked beside it.",
+                "fr": "Pilotage : les objectifs d'un projet se cochent sur sa page comme les cartes, chacun daté quand il est atteint, et un projet se renomme en cliquant sur son nom, sa couleur se choisissant à côté.",
+                "es": "Pilotaje: los objetivos de un proyecto se marcan en su página como las tarjetas, cada uno fechado cuando se alcanza, y un proyecto se renombra haciendo clic en su nombre, con su color elegido al lado."
+            },
+            {
+                "en": "Piloting: a reference's page lists the cards pointing to it, what is to do then what was done, so that a site or a topic keeps its memory. A card added from that page points to it.",
+                "fr": "Pilotage : la page d'une référence liste les cartes qui la visent, ce qui est à faire puis ce qui a été fait, pour qu'un site ou un sujet garde sa mémoire. Une carte ajoutée depuis cette page la vise d'office.",
+                "es": "Pilotaje: la página de una referencia lista las tarjetas que la señalan, lo que queda por hacer y luego lo hecho, para que un sitio o un tema guarde su memoria. Una tarjeta añadida desde esa página la señala de entrada."
+            },
+            {
+                "en": "Piloting: a card is duplicated from its page, its steps unticked, the copy opening in its place.",
+                "fr": "Pilotage : une carte se duplique depuis sa page, ses étapes décochées, la copie s'ouvrant à sa place.",
+                "es": "Pilotaje: una tarjeta se duplica desde su página, con sus pasos desmarcados, y la copia se abre en su lugar."
+            },
+            {
+                "en": "Piloting: a project's references show as tiles that open in a window; a reference used by a single card is no longer listed, it stays on its card.",
+                "fr": "Pilotage : les références d'un projet s'affichent en tuiles qui s'ouvrent dans une fenêtre ; une référence utilisée par une seule carte n'est plus listée, elle reste sur sa carte.",
+                "es": "Pilotaje: las referencias de un proyecto se muestran en recuadros que se abren en una ventana; una referencia usada por una sola tarjeta ya no aparece en la lista, se queda en su tarjeta."
+            },
+            {
+                "en": "Piloting: a card holds everything it needs, like a Trello card: a description in markdown shown laid out, steps renamed, removed and added in place, and a new card opens at once.",
+                "fr": "Pilotage : une carte contient tout ce qu'il lui faut, comme une carte Trello : une description en markdown affichée mise en forme, des étapes renommées, retirées et ajoutées sur place, et une nouvelle carte s'ouvre aussitôt.",
+                "es": "Pilotaje: una tarjeta contiene todo lo que necesita, como una tarjeta de Trello: una descripción en markdown mostrada con formato, pasos renombrados, quitados y añadidos en su sitio, y una tarjeta nueva se abre enseguida."
+            },
+            {
+                "en": "Piloting: a card's machine steps are launched one after the other and run in turn, each one done ticking its step; a failure stops what is still queued, and a queued step can be withdrawn on its own.",
+                "fr": "Pilotage : les étapes machine d'une carte se lancent les unes après les autres et s'exécutent à la suite, chacune réussie cochant son étape ; un échec arrête ce qui reste en file, et une étape en file se retire seule.",
+                "es": "Pilotaje: los pasos de máquina de una tarjeta se lanzan uno tras otro y se ejecutan seguidos, cada uno terminado marca su paso; un fallo detiene lo que queda en cola, y un paso en cola se retira por sí solo."
+            },
+            {
+                "en": "Piloting: a card's steps are reordered by dragging them, and the new order goes to the card's template and to its other cards, ticks kept, and a template saved updates its cards; the card shows the template it comes from.",
+                "fr": "Pilotage : les étapes d'une carte se réordonnent en les glissant, et le nouvel ordre passe à son modèle et à ses autres cartes, coches conservées, et un modèle enregistré met ses cartes à jour ; la carte montre le modèle dont elle vient.",
+                "es": "Pilotaje: los pasos de una tarjeta se reordenan arrastrándolos, y el nuevo orden pasa a su plantilla y a sus otras tarjetas, conservando las marcas, y una plantilla guardada actualiza sus tarjetas; la tarjeta muestra la plantilla de la que viene."
+            },
+            {
+                "en": "Piloting: the machine work under way shows first on the Planning and on each project, and a run can be withdrawn on its own, a waiting one never leaving and one already started being stopped.",
+                "fr": "Pilotage : le travail des machines en cours s'affiche en tête du Planning et de chaque projet, et une exécution se retire seule, celle qui attend ne partant jamais et celle déjà commencée étant arrêtée.",
+                "es": "Pilotaje: el trabajo de las máquinas en curso aparece primero en la Planificación y en cada proyecto, y una ejecución se retira sola, la que espera no sale nunca y la ya iniciada se detiene."
+            },
+            {
+                "en": "Piloting: a card shows the progress of its machine work as it goes, without reloading the page.",
+                "fr": "Pilotage : une carte montre l'avancement du travail de ses machines au fil de l'eau, sans recharger la page.",
+                "es": "Pilotaje: una tarjeta muestra el avance del trabajo de sus máquinas sobre la marcha, sin recargar la página."
+            },
+            {
+                "en": "Piloting: once a machine finishes a checklist step, the next machine step starts on its own, and a card's machine steps run one at a time.",
+                "fr": "Pilotage : quand une machine termine une étape de checklist, l'étape machine suivante part d'elle-même, et les étapes machine d'une carte passent une par une.",
+                "es": "Pilotaje: cuando una máquina termina un paso de la lista, el siguiente paso de máquina arranca solo, y los pasos de máquina de una tarjeta pasan uno a uno."
+            },
+            {
+                "en": "Piloting: removing a step stops its machine work under way, and the ticks of steps with the same text are no longer mixed up.",
+                "fr": "Pilotage : retirer une étape arrête son travail machine en cours, et les coches des étapes de même texte ne se mélangent plus.",
+                "es": "Pilotaje: quitar un paso detiene su trabajo de máquina en curso, y las marcas de los pasos con el mismo texto ya no se confunden."
+            },
+            {
+                "en": "Piloting: a new guided project shows how to edit a card in place, reorder its steps and duplicate it.",
+                "fr": "Pilotage : un nouveau projet guidé montre comment modifier une carte sur place, réordonner ses étapes et la dupliquer.",
+                "es": "Pilotaje: un nuevo proyecto guiado muestra cómo editar una tarjeta en su sitio, reordenar sus pasos y duplicarla."
+            },
+            {
+                "en": "Piloting: a machine step can only be launched once the steps it depends on are ticked, its button greyed out until then; a template says which steps each one waits for, the previous one by default.",
+                "fr": "Pilotage : une étape de machine ne se lance qu'une fois cochées les étapes dont elle dépend, son bouton restant grisé jusque-là ; un modèle dit quelles étapes chacune attend, la précédente par défaut.",
+                "es": "Pilotaje: un paso de máquina solo se lanza una vez marcados los pasos de los que depende, con su botón en gris hasta entonces; una plantilla indica qué pasos espera cada uno, el anterior por defecto."
+            }
+        ]
+    },
+    {
         "date": "2026-11-17",
         "description": [
             {

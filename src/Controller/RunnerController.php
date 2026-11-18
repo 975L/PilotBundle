@@ -61,8 +61,8 @@ class RunnerController extends AbstractController
         return $this->json([
             'id' => $run->getId(),
             'card' => $card->getId(),
-            'action' => $card->getAction(),
-            'params' => $card->getParams() + (null !== $card->getComment() ? ['comment' => $card->getComment()] : []),
+            'action' => $run->getAction(),
+            'params' => $run->getParams(),
             'title' => $card->getTitle(),
             'note' => $card->getNote() ?? '',
             'project' => $card->getProject()->getSlug(),

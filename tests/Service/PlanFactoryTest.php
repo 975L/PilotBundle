@@ -55,6 +55,35 @@ class PlanFactoryTest extends TestCase
         $this->assertSame([CardStatus::Ready, CardStatus::Todo, CardStatus::Todo], array_map(static fn ($card): CardStatus => $card->getStatus(), $cards));
     }
 
+    // A checklist template makes a single card named after the plan, each step a box naming its action, the card opened
+    public function testChecklist(): void
+    {
+        $plan = $this->factory->create($this->template->setChecklist(true), new Project('catalog', 'Catalog'), 'Item 1', ['item' => 'item-1']);
+        $cards = $plan->getCards()->getValues();
+
+        $this->assertCount(1, $cards);
+        $this->assertSame('Item 1', $cards[0]->getTitle());
+        $this->assertSame([['t' => 'Write item-1'], ['t' => 'Build item-1', 'action' => 'build', 'params' => ['item' => 'item-1', 'mode' => 'test']], ['t' => 'Publish']], $cards[0]->getChecklist());
+        $this->assertSame(CardStatus::Ready, $cards[0]->getStatus());
+    }
+
+    // The steps a template step waits for, typed as numbers, reach the card as the keys of those steps; « none » stays empty, and a step naming none waits for the previous one
+    public function testChecklistAfter(): void
+    {
+        $template = new PlanTemplate('catalog', [
+            ['title' => 'Write {item}', 'executor' => 'human'],
+            ['title' => 'Build {item}', 'executor' => 'runner', 'action' => 'build', 'after' => []],
+            ['title' => 'Publish', 'executor' => 'human', 'after' => [1, 2, 3, 9]],
+        ]);
+        $card = $this->factory->create($template->setChecklist(true), new Project('catalog', 'Catalog'), 'Item 1', ['item' => 'item-1'])->getCards()->first();
+        $steps = $card->getChecklist();
+
+        $this->assertArrayNotHasKey('after', $steps[0]);
+        $this->assertSame([], $steps[1]['after'] ?? null);
+        $this->assertSame(['text:Write item-1', 'action:build'], $steps[2]['after'] ?? null);
+        $this->assertSame([0, 1], $card->stepNeeds(2));
+    }
+
     // Closing a card opens the next one, a machine card leaving at once, and its validation opens the one after
     public function testCardsFollowEachOther(): void
     {

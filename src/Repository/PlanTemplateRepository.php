@@ -33,7 +33,7 @@ class PlanTemplateRepository extends ServiceEntityRepository
             ->innerJoin('t.projects', 'p')
             ->andWhere('p = :project')
             ->setParameter('project', $project)
-            ->orderBy('t.name', 'ASC')
+            ->orderBy('t.name', \SortDirection::Ascending)
             ->getQuery()
             ->getResult()
         ;

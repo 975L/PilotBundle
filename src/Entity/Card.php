@@ -71,7 +71,7 @@ class Card implements \Stringable
     private ?string $comment = null;
 
     // Sub-steps ticked one by one: text, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), and the machine action a step leaves for once the one before is ticked
-    /** @var list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>}> */
+    /** @var list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>}> */
     #[ORM\Column(type: Types::JSON)]
     private array $checklist = [];
 
@@ -86,6 +86,16 @@ class Card implements \Stringable
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $doneAt = null;
+
+    // The secret of the read-only link sharing the card outside the back office, none while it is not shared
+    #[ORM\Column(length: 32, unique: true, nullable: true)]
+    #[Assert\Length(max: 32)]
+    private ?string $shareToken = null;
+
+    // The secret of the link letting whoever holds it read and rewrite the card, none while it is not given
+    #[ORM\Column(length: 32, unique: true, nullable: true)]
+    #[Assert\Length(max: 32)]
+    private ?string $editToken = null;
 
     // Project and id of the card in the source it was imported from ("catalog:item-1"), so a second import updates instead of duplicating
     #[ORM\Column(length: 100, unique: true, nullable: true)]
@@ -128,9 +138,10 @@ class Card implements \Stringable
         return $this->title;
     }
 
+    // The title, cut to the length of its column
     public function setTitle(string $title): static
     {
-        $this->title = $title;
+        $this->title = mb_substr($title, 0, 500);
 
         return $this;
     }
@@ -276,7 +287,7 @@ class Card implements \Stringable
     }
 
     /**
-     * @return list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>}>
+     * @return list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>}>
      */
     public function getChecklist(): array
     {
@@ -284,11 +295,152 @@ class Card implements \Stringable
     }
 
     /**
-     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>}> $checklist
+     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>}> $checklist
      */
     public function setChecklist(array $checklist): static
     {
         $this->checklist = $checklist;
+
+        return $this;
+    }
+
+    // Adds a step at the end of the checklist, an empty text adding nothing
+    public function addStep(string $text): static
+    {
+        $text = mb_substr(trim($text), 0, 500);
+        if ('' !== $text) {
+            $this->checklist[] = ['t' => $text];
+        }
+
+        return $this;
+    }
+
+    // Rewrites the text of a step, keeping what it spends, names and whether it is done; an empty text removes it, its run under way withdrawn
+    public function renameStep(int $index, string $text, \DateTimeImmutable $now): static
+    {
+        if (!isset($this->checklist[$index])) {
+            return $this;
+        }
+        $text = mb_substr(trim($text), 0, 500);
+        if ('' === $text) {
+            $steps = $this->checklist;
+            unset($steps[$index]);
+
+            return $this->restep(array_values($steps), array_keys($steps), $now);
+        }
+        $before = self::stepKey($this->checklist[$index]);
+        $this->checklist[$index]['t'] = $text;
+        $this->renameNeed($before, self::stepKey($this->checklist[$index]));
+
+        return $this;
+    }
+
+    // A step known by its machine action, or by its text when it names none
+    /** @param array{t: string, action?: string} $step */
+    public static function stepKey(array $step): string
+    {
+        return '' !== ($step['action'] ?? '') ? 'action:' . $step['action'] : 'text:' . $step['t'];
+    }
+
+    // Indices of the steps a step waits for: those its "after" names by their key, or the step before when it names none
+    /** @return list<int> */
+    public function stepNeeds(int $index): array
+    {
+        if (!isset($this->checklist[$index])) {
+            return [];
+        }
+        if (!isset($this->checklist[$index]['after'])) {
+            return $index > 0 ? [$index - 1] : [];
+        }
+        $keys = array_map(self::stepKey(...), $this->checklist);
+
+        return array_values(array_filter(array_map(static fn (string $key): int | false => array_search($key, $keys, true), $this->checklist[$index]['after']), static fn (int | false $need): bool => false !== $need && $need !== $index));
+    }
+
+    // Texts of the steps a step still waits for, not ticked yet
+    /** @return list<string> */
+    public function stepAwaits(int $index): array
+    {
+        return array_values(array_map(fn (int $need): string => $this->checklist[$need]['t'], array_filter($this->stepNeeds($index), fn (int $need): bool => !($this->checklist[$need]['done'] ?? false))));
+    }
+
+    // Whether a step still waits for one of the steps it needs to be ticked
+    public function isStepWaiting(int $index): bool
+    {
+        return [] !== $this->stepAwaits($index);
+    }
+
+    // A step renamed stays the one the others wait for
+    private function renameNeed(string $before, string $after): void
+    {
+        foreach ($this->checklist as $index => $step) {
+            if (isset($step['after'])) {
+                $this->checklist[$index]['after'] = array_map(static fn (string $key): string => $before === $key ? $after : $key, $step['after']);
+            }
+        }
+    }
+
+    // Puts the steps in a new order, given as their current indices; the runs follow the step they do; anything but a full reordering is ignored
+    /** @param list<int> $order */
+    public function reorderSteps(array $order): static
+    {
+        $indices = array_keys($this->checklist);
+        $sorted = $order;
+        sort($sorted);
+        if ($sorted !== $indices) {
+            return $this;
+        }
+        $this->checklist = array_map(fn (int $index): array => $this->checklist[$index], $order);
+        $moved = array_flip($order);
+        foreach ($this->runs as $run) {
+            if (null !== $run->getStep()) {
+                $run->moveToStep($moved[$run->getStep()] ?? $run->getStep());
+            }
+        }
+
+        return $this;
+    }
+
+    // Lays new steps, each given with the index it had or null for a new one; the runs follow their step, one whose step left leaving it (withdrawn while under way), the card back to do once nothing runs
+    /**
+     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>}> $steps
+     * @param list<?int>                                                                                                                                                                           $from
+     */
+    public function restep(array $steps, array $from, \DateTimeImmutable $now): static
+    {
+        $moved = array_flip(array_filter($from, static fn (?int $index): bool => null !== $index));
+        foreach ($this->runs as $run) {
+            $step = $run->getStep();
+            if (null !== $step && isset($moved[$step])) {
+                $run->moveToStep($moved[$step]);
+            } elseif (null !== $step) {
+                $run->leaveStep($now);
+            }
+        }
+        $this->checklist = $steps;
+        if (CardStatus::Running === $this->status && [] === $this->activeRuns()) {
+            $this->status = CardStatus::Ready;
+        }
+
+        return $this;
+    }
+
+    // Machine action a step hands the card to, none when empty; its parameters go with the action they were given for
+    public function setStepAction(int $index, ?string $action): static
+    {
+        if (!isset($this->checklist[$index])) {
+            return $this;
+        }
+        $action = '' === trim((string) $action) ? null : mb_substr(trim((string) $action), 0, 64);
+        $step = $this->checklist[$index];
+        if ($action === ($step['action'] ?? null)) {
+            return $this;
+        }
+        unset($step['action'], $step['params']);
+        if (null !== $action) {
+            $step['action'] = $action;
+        }
+        $this->checklist[$index] = $step;
 
         return $this;
     }
@@ -335,6 +487,71 @@ class Card implements \Stringable
         $this->waitingOn = '' === $waitingOn ? null : mb_substr($waitingOn, 0, 100);
 
         return $this;
+    }
+
+    // A new card copied from this one in the same project: title marked as a copy, note, date, reference, what does it and its steps all unticked; neither its plan, its links, its runs nor its wait
+    public function duplicate(string $suffix): self
+    {
+        $steps = array_map(static function (array $step): array {
+            unset($step['done'], $step['doneAt']);
+
+            return $step;
+        }, $this->checklist);
+
+        return new self($this->project, mb_substr($this->title . $suffix, 0, 500))
+            ->setNote($this->note)
+            ->setDue($this->due)
+            ->setDoc($this->doc)
+            ->assign($this->executor, $this->kind, $this->action, $this->params)
+            ->setChecklist($steps);
+    }
+
+    public function getShareToken(): ?string
+    {
+        return $this->shareToken;
+    }
+
+    // Shares the card read-only, its secret made once and kept: the link stays the same until sharing stops
+    public function share(): static
+    {
+        $this->shareToken ??= self::newToken();
+
+        return $this;
+    }
+
+    // Stops sharing: the old link answers nothing, a later share gets a new one
+    public function unshare(): static
+    {
+        $this->shareToken = null;
+
+        return $this;
+    }
+
+    public function getEditToken(): ?string
+    {
+        return $this->editToken;
+    }
+
+    // Gives the card's editing link, its secret made once and kept until it is taken back
+    public function lend(): static
+    {
+        $this->editToken ??= self::newToken();
+
+        return $this;
+    }
+
+    // Takes the editing link back: the old one answers nothing
+    public function unlend(): static
+    {
+        $this->editToken = null;
+
+        return $this;
+    }
+
+    // A secret of 32 hex characters
+    private static function newToken(): string
+    {
+        return bin2hex(random_bytes(16));
     }
 
     public function getDoneAt(): ?\DateTimeImmutable
@@ -384,5 +601,41 @@ class Card implements \Stringable
         $last = $this->runs->last();
 
         return false === $last ? null : $last;
+    }
+
+    // Runs waiting in the queue or held by a machine, oldest first
+    /** @return list<Run> */
+    public function activeRuns(): array
+    {
+        return array_values(array_filter($this->runs->toArray(), static fn (Run $run): bool => $run->getStatus()->isActive()));
+    }
+
+    // Latest run of a checklist step
+    public function stepRun(int $index): ?Run
+    {
+        return $this->stepRuns()[$index] ?? null;
+    }
+
+    // Latest run of each checklist step in one pass over the runs, a run of the card's own action counting for the steps naming it when it is the last one
+    /** @return array<int, Run> */
+    public function stepRuns(): array
+    {
+        $runs = [];
+        foreach ($this->runs as $run) {
+            if (isset($this->checklist[$run->getStep() ?? Run::LEFT_STEP])) {
+                $runs[(int) $run->getStep()] = $run;
+            }
+        }
+        $last = $this->lastRun();
+        if (null === $last || null !== $last->getStep()) {
+            return $runs;
+        }
+        foreach ($this->checklist as $index => $step) {
+            if (!isset($runs[$index]) && null !== ($step['action'] ?? null) && $step['action'] === $last->getAction()) {
+                $runs[$index] = $last;
+            }
+        }
+
+        return $runs;
     }
 }

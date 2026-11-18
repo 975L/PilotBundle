@@ -13,11 +13,14 @@ namespace c975L\PilotBundle\Controller\Management;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Form\PlanStepType;
+use c975L\PilotBundle\Service\StepOrder;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -36,6 +39,7 @@ class PlanTemplateCrudController extends AbstractCrudController
     public function __construct(
         private readonly ConfigServiceInterface $configService,
         private readonly TranslatorInterface $translator,
+        private readonly StepOrder $stepOrder,
     ) {
     }
 
@@ -48,6 +52,14 @@ class PlanTemplateCrudController extends AbstractCrudController
     public function createEntity(string $entityFqcn): PlanTemplate
     {
         return new PlanTemplate('', []);
+    }
+
+    // A checklist template saved lays its steps on its open cards
+    #[\Override]
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        $this->stepOrder->fromTemplate($entityInstance, $entityManager->getUnitOfWork()->getOriginalEntityData($entityInstance)['steps'] ?? []);
+        parent::updateEntity($entityManager, $entityInstance);
     }
 
     #[\Override]
@@ -74,6 +86,7 @@ class PlanTemplateCrudController extends AbstractCrudController
     {
         yield TextField::new('name', t('label.template_name', [], 'pilot'));
         yield AssociationField::new('projects', t('label.projects', [], 'pilot'))->setHelp(t('label.info_template_projects', [], 'pilot'));
+        yield BooleanField::new('checklist', t('label.template_checklist', [], 'pilot'))->renderAsSwitch(false)->setHelp(t('label.info_template_checklist', [], 'pilot'));
         yield CollectionField::new('steps', t('label.template_steps', [], 'pilot'))
             ->setEntryType(PlanStepType::class)
             ->allowAdd()

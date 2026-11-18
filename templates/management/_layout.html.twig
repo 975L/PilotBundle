@@ -8,6 +8,7 @@
         .pilot-note { white-space: pre-line; }
         .pilot-dot, .pilot-badge { background-color: #6c757d; }
         .pilot-cards { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); }
+        .pilot-reference { --pilot-ink: #6c757d; border-left: 4px solid var(--pilot-ink); border-style: dashed dashed dashed solid; }
         .pilot-card { --pilot-ink: #6c757d; border-top: 4px solid var(--pilot-ink); transition: border-color .15s, box-shadow .15s, transform .15s; }
         .pilot-card:hover, .pilot-card:focus-within { border-color: var(--pilot-ink); box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .12); transform: translateY(-2px); }
         .pilot-card .pilot-card-gesture { position: relative; z-index: 2; }
@@ -19,6 +20,9 @@
         .pilot-fold-head::before { content: "▾"; display: inline-block; width: 1em; transition: transform .15s; }
         .pilot-folded > .pilot-fold-head::before { transform: rotate(-90deg); }
         .pilot-folded > :not(.pilot-fold-head) { display: none; }
+        .pilot-inline-view { cursor: text; border-radius: .25rem; }
+        .pilot-inline-view:hover, .pilot-inline-view:focus-visible { outline: 1px dashed var(--bs-secondary-color); outline-offset: 2px; }
+        .pilot-inline-form:not([hidden]) { display: inline-flex; flex-wrap: wrap; gap: .25rem; }
         .pilot-drop { min-height: 3.5rem; border-radius: .5rem; }
         .pilot-characters { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); }
         .pilot-character-image { aspect-ratio: 1; object-fit: cover; }

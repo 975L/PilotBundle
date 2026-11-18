@@ -2,17 +2,37 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="en" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="xBzUKKJ">
+                <source>narration.guided_step_pilot_card_edit_drag</source>
+                <target>Drag a step by its handle to move it.</target>
+            </trans-unit>
+            <trans-unit id="Vos2zhm">
+                <source>narration.guided_step_pilot_card_edit_duplicate</source>
+                <target>Click here to copy the card.</target>
+            </trans-unit>
+            <trans-unit id="r5_pnta">
+                <source>narration.guided_step_pilot_card_edit_search</source>
+                <target>To edit a card, start by finding it.</target>
+            </trans-unit>
+            <trans-unit id="XQ9PZCa">
+                <source>narration.guided_step_pilot_card_edit_steps</source>
+                <target>Add a step to the checklist.</target>
+            </trans-unit>
+            <trans-unit id="vq0bPL.">
+                <source>narration.guided_step_pilot_card_edit_title</source>
+                <target>Click the title to rewrite it.</target>
+            </trans-unit>
             <trans-unit id="Va0v6od">
                 <source>narration.guided_step_pilot_doc_open</source>
-                <target>Click the pen next to the file's title.</target>
+                <target>Click the reference's tile.</target>
             </trans-unit>
             <trans-unit id="0ClZIvh">
                 <source>narration.guided_step_pilot_doc_search</source>
-                <target>Let's find the file: type two letters of its title.</target>
+                <target>Let's find the reference: type two letters of its title.</target>
             </trans-unit>
             <trans-unit id="70tITfS">
                 <source>narration.guided_step_pilot_doc_write</source>
-                <target>Unfold the form under the file, rewrite what has changed, then save.</target>
+                <target>Unfold the form under the reference, rewrite what has changed, then save.</target>
             </trans-unit>
             <trans-unit id="f29gyCe">
                 <source>narration.guided_step_pilot_machine_list</source>
@@ -62,6 +82,10 @@
                 <source>narration.guided_step_pilot_runner_search</source>
                 <target>To hand a card to a machine, first find it.</target>
             </trans-unit>
+            <trans-unit id="fxSCcw0">
+                <source>narration.guided_step_pilot_runner_steps</source>
+                <target>Launch the machine steps one after the other, they run in turn; the handle changes their order for the whole template.</target>
+            </trans-unit>
             <trans-unit id="H9l0NXy">
                 <source>narration.guided_step_pilot_runner_validate</source>
                 <target>When the machine is done, validate its work or send it back with a comment.</target>
@@ -81,6 +105,18 @@
             <trans-unit id="3aZ4Ay4">
                 <source>narration.guided_step_pilot_schedule_search</source>
                 <target>To schedule a card, first find it.</target>
+            </trans-unit>
+            <trans-unit id="5LAGJIA">
+                <source>narration.guided_step_pilot_share_edit</source>
+                <target>Click the pen: the editing link goes to the clipboard.</target>
+            </trans-unit>
+            <trans-unit id="YtbeBG9">
+                <source>narration.guided_step_pilot_share_link</source>
+                <target>Click the eye: the link goes to the clipboard.</target>
+            </trans-unit>
+            <trans-unit id="1F1w289">
+                <source>narration.guided_step_pilot_share_search</source>
+                <target>To share a card, start by finding it.</target>
             </trans-unit>
         </body>
     </file>

@@ -1,0 +1,19 @@
+# Allowlist of the actions this machine runs, keyed as the site names them, in the order their buttons show
+# label: name on the buttons; help: shown on hover; card: true for an action working on the card itself, never a button of the project's page
+# argv: the command, without a shell, {name} replaced by a parameter, {workdir} or the card's {title}, {note}, {project}, {doc}
+# params: each parameter with the pattern its value must match; comment receives the text of a send-back
+# outputs: files sent back to the card (glob accepted, a leading "?" for an optional one)
+hello:
+  label: Write a text
+  help: Demo action writing the given text in about fifteen seconds
+  argv: [python3, ~/pilot-runner/pilot-runner.py, --demo-hello, '{workdir}/hello.txt', '{text}', '{comment}']
+  params: { text: '.{1,500}', comment: '.{0,2000}' }
+  outputs: ['{workdir}/hello.txt']
+
+catalog-build:
+  label: Build the catalog
+  help: Builds the catalog of an item and sends its report
+  card: true
+  argv: [~/scripts/catalog-build.sh, '{item}']
+  params: { item: 'item-\d+' }
+  outputs: ['{workdir}/report.md']

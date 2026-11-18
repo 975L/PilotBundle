@@ -22,7 +22,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-// One step of a plan template: its title, who does it, and for a machine the action and its parameters, {variables} asked when the plan is created
+// One step of a plan template: its title, who does it, for a machine the action and its parameters, {variables} asked when the plan is created, and the steps it waits for
 class PlanStepType extends AbstractType
 {
     public function __construct(
@@ -41,6 +41,7 @@ class PlanStepType extends AbstractType
             ->add('executor', ChoiceType::class, ['label' => 'label.step_executor', 'choices' => ['label.executor_human' => Executor::Human->value, 'label.executor_runner' => Executor::Runner->value]])
             ->add('action', ChoiceType::class, ['label' => 'label.step_action', 'choices' => $actions, 'required' => false, 'placeholder' => '', 'choice_translation_domain' => false])
             ->add('params', TextareaType::class, ['label' => 'label.step_params', 'help' => 'label.info_step_params', 'required' => false])
+            ->add('after', TextType::class, ['label' => 'label.step_after', 'help' => 'label.info_step_after', 'required' => false, 'empty_data' => ''])
         ;
         $builder->get('params')->addModelTransformer(new CallbackTransformer($this->paramsToText(...), $this->textToParams(...)));
         $builder->addModelTransformer(new CallbackTransformer(

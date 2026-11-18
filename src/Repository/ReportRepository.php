@@ -29,7 +29,7 @@ class ReportRepository extends ServiceEntityRepository
     /** @return list<Report> */
     public function findShownOn(?Project $project): array
     {
-        $builder = $this->createQueryBuilder('r')->orderBy('r.label', 'ASC');
+        $builder = $this->createQueryBuilder('r')->orderBy('r.label', \SortDirection::Ascending);
         if (null === $project) {
             $builder->where('r.home = true');
         } else {

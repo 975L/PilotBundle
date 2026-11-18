@@ -10,8 +10,10 @@
 
 namespace c975L\PilotBundle\Repository;
 
+use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Doc;
 use c975L\PilotBundle\Entity\Project;
+use c975L\PilotBundle\Enum\CardStatus;
 use c975L\PilotBundle\Enum\DocKind;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -36,8 +38,26 @@ class DocRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('d')
             ->where('d.title LIKE :words OR d.summary LIKE :words OR d.detail LIKE :words')
             ->setParameter('words', '%' . addcslashes($words, '%_') . '%')
-            ->orderBy('d.title', 'ASC')
+            ->orderBy('d.title', \SortDirection::Ascending)
             ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    // A project's references common to its work: its files but the one that belongs to a single open card (shown on that card), characters and objectives left out, by title
+    /**
+     * @return list<Doc>
+     */
+    public function findReferences(Project $project): array
+    {
+        return $this->createQueryBuilder('d')
+            ->where('d.project = :project')
+            ->andWhere('d.kind NOT IN (:hidden)')
+            ->andWhere('d.id NOT IN (SELECT IDENTITY(c.doc) FROM ' . Card::class . ' c WHERE c.doc IS NOT NULL GROUP BY c.doc HAVING COUNT(c.id) = 1 AND SUM(CASE WHEN c.status = :done THEN 0 ELSE 1 END) = 1)')
+            ->setParameter('done', CardStatus::Done)
+            ->setParameter('project', $project)
+            ->setParameter('hidden', [DocKind::Character, DocKind::Objectives])
+            ->orderBy('d.title', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
@@ -53,7 +73,7 @@ class DocRepository extends ServiceEntityRepository
             ->andWhere('d.kind NOT IN (:hidden)')
             ->setParameter('project', $project)
             ->setParameter('hidden', [DocKind::Character, DocKind::Objectives])
-            ->orderBy('d.title', 'ASC')
+            ->orderBy('d.title', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }

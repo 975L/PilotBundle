@@ -44,4 +44,31 @@ class DocTest extends TestCase
         $this->assertNull($plain->getSummary());
         $this->assertSame("Just a note\n\nand more", $plain->getDetail());
     }
+
+    // Boxes counted through the summary then the detail: ticked with their day, unticked without it, none past the last
+    public function testToggleTask(): void
+    {
+        $doc = new Doc('catalog-objectives', 'Objectives')->write("- [ ] item-1\n", "Intro\n\n- [ ] item-2\n  - [x] item-3 (01/03/2026)\n");
+        $this->toggleSecondAndThird($doc);
+
+        $this->assertSame("- [ ] item-1\n", $doc->getSummary());
+        $this->assertSame("Intro\n\n- [x] item-2 (18/11/2026)\n  - [ ] item-3\n", $doc->getDetail());
+    }
+
+    // Boxes counted as the renderer draws them: numbered and quoted items count, those of a fenced code block do not
+    public function testToggleTaskCountsLikeTheRenderer(): void
+    {
+        $doc = new Doc('catalog-objectives', 'Objectives')->write(null, "```\n- [ ] code-1\n```\n1. [ ] item-1\n~~~md\n- [ ] code-2\n```\n~~~\n> - [ ] item-2\n2) [ ] item-3\n");
+        $this->toggleSecondAndThird($doc);
+        $this->assertSame("```\n- [ ] code-1\n```\n1. [ ] item-1\n~~~md\n- [ ] code-2\n```\n~~~\n> - [x] item-2 (18/11/2026)\n2) [x] item-3 (18/11/2026)\n", $doc->getDetail());
+    }
+
+    // The second and the third boxes toggled on 18/11/2026, none found at the fourth
+    private function toggleSecondAndThird(Doc $doc): void
+    {
+        $day = new \DateTimeImmutable('2026-11-18');
+        $this->assertTrue($doc->toggleTask(1, $day));
+        $this->assertTrue($doc->toggleTask(2, $day));
+        $this->assertFalse($doc->toggleTask(3, $day));
+    }
 }

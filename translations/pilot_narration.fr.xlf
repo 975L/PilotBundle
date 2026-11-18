@@ -2,17 +2,37 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="fr" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="xBzUKKJ">
+                <source>narration.guided_step_pilot_card_edit_drag</source>
+                <target>Glissez une étape par sa poignée pour la déplacer.</target>
+            </trans-unit>
+            <trans-unit id="Vos2zhm">
+                <source>narration.guided_step_pilot_card_edit_duplicate</source>
+                <target>Cliquez ici pour copier la carte.</target>
+            </trans-unit>
+            <trans-unit id="r5_pnta">
+                <source>narration.guided_step_pilot_card_edit_search</source>
+                <target>Pour modifier une carte, commencez par la retrouver.</target>
+            </trans-unit>
+            <trans-unit id="XQ9PZCa">
+                <source>narration.guided_step_pilot_card_edit_steps</source>
+                <target>Ajoutez une étape à la checklist.</target>
+            </trans-unit>
+            <trans-unit id="vq0bPL.">
+                <source>narration.guided_step_pilot_card_edit_title</source>
+                <target>Cliquez sur le titre pour le réécrire.</target>
+            </trans-unit>
             <trans-unit id="Va0v6od">
                 <source>narration.guided_step_pilot_doc_open</source>
-                <target>Cliquez sur le crayon à côté du titre du dossier.</target>
+                <target>Cliquez sur la tuile de la référence.</target>
             </trans-unit>
             <trans-unit id="0ClZIvh">
                 <source>narration.guided_step_pilot_doc_search</source>
-                <target>Cherchons le dossier : tapez deux lettres de son titre.</target>
+                <target>Cherchons la référence : tapez deux lettres de son titre.</target>
             </trans-unit>
             <trans-unit id="70tITfS">
                 <source>narration.guided_step_pilot_doc_write</source>
-                <target>Dépliez le formulaire sous le dossier, réécrivez ce qui a changé, puis enregistrez.</target>
+                <target>Dépliez le formulaire sous la référence, réécrivez ce qui a changé, puis enregistrez.</target>
             </trans-unit>
             <trans-unit id="f29gyCe">
                 <source>narration.guided_step_pilot_machine_list</source>
@@ -62,6 +82,10 @@
                 <source>narration.guided_step_pilot_runner_search</source>
                 <target>Pour confier une carte à une machine, commencez par la retrouver.</target>
             </trans-unit>
+            <trans-unit id="fxSCcw0">
+                <source>narration.guided_step_pilot_runner_steps</source>
+                <target>Lancez les étapes machine à la suite, elles se font l'une après l'autre ; la poignée change leur ordre pour tout le modèle.</target>
+            </trans-unit>
             <trans-unit id="H9l0NXy">
                 <source>narration.guided_step_pilot_runner_validate</source>
                 <target>Quand la machine a fini, validez son travail ou renvoyez-le avec un commentaire.</target>
@@ -81,6 +105,18 @@
             <trans-unit id="3aZ4Ay4">
                 <source>narration.guided_step_pilot_schedule_search</source>
                 <target>Pour planifier une carte, commencez par la retrouver.</target>
+            </trans-unit>
+            <trans-unit id="5LAGJIA">
+                <source>narration.guided_step_pilot_share_edit</source>
+                <target>Cliquez sur le crayon : le lien de modification part dans le presse-papier.</target>
+            </trans-unit>
+            <trans-unit id="YtbeBG9">
+                <source>narration.guided_step_pilot_share_link</source>
+                <target>Cliquez sur l'œil : le lien part dans le presse-papier.</target>
+            </trans-unit>
+            <trans-unit id="1F1w289">
+                <source>narration.guided_step_pilot_share_search</source>
+                <target>Pour partager une carte, commencez par la retrouver.</target>
             </trans-unit>
         </body>
     </file>

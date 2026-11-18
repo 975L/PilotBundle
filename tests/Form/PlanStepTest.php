@@ -24,4 +24,15 @@ class PlanStepTest extends TestCase
         $this->assertSame(['title' => 'Write', 'executor' => 'human'], PlanStep::fromArray(['title' => 'Write'])->toArray());
         $this->assertSame('Build {item}', (string) PlanStep::fromArray($step));
     }
+
+    // The steps a step waits for are typed as their numbers: empty for the previous step, « - » for none, kept through the form
+    public function testAfter(): void
+    {
+        $this->assertSame([2, 4], new PlanStep('Publish', after: '2, 4, 2')->toArray()['after']);
+        $this->assertSame([], new PlanStep('Publish', after: ' - ')->toArray()['after']);
+        $this->assertArrayNotHasKey('after', new PlanStep('Publish', after: '  ')->toArray());
+        $this->assertSame('2, 4', PlanStep::fromArray(['title' => 'Publish', 'after' => [2, 4]])->after);
+        $this->assertSame('-', PlanStep::fromArray(['title' => 'Publish', 'after' => []])->after);
+        $this->assertSame('', PlanStep::fromArray(['title' => 'Publish'])->after);
+    }
 }

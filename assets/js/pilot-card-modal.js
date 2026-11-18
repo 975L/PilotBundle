@@ -22,6 +22,8 @@ export default class extends Controller {
         window.addEventListener("popstate", this.onPopState);
         this.dialogTarget.addEventListener("close", () => this.closed());
         this.dialogTarget.addEventListener("click", (event) => { if (event.target === this.dialogTarget) this.dialogTarget.close(); });
+        // The card read again by pilot-run-watch changed: the page behind shows it once the dialog closes
+        this.dialogTarget.addEventListener("pilot:changed", () => { this.changed = true; });
         this.follow();
     }
 
@@ -44,18 +46,25 @@ export default class extends Controller {
         this.open(link.href);
     }
 
-    // A gesture made in the dialog stays in it: posted, a refusal shown, then the card read again; the page behind is reloaded once the dialog closes
+    // A gesture made in the dialog stays in it: posted, a refusal shown, then the card read again while the dialog is still open (a field edited in place is saved by the very click that closes it); the page behind is reloaded once the dialog closes
     submit(event) {
         const form = event.target;
         if (form.method !== "post") return;
 
         event.preventDefault();
         this.changed = true;
-        fetch(form.action, { method: "POST", headers: { "X-Pilot-Dialog": "1" }, body: new FormData(form) })
-            .then((response) => (response.ok ? null : response.text()))
+        let next = null;
+        this.pending = fetch(form.action, { method: "POST", headers: { "X-Pilot-Dialog": "1" }, body: new FormData(form) })
+            .then((response) => {
+                // A gesture that made another card (a copy) names it, the dialog then showing it
+                next = response.headers.get("X-Pilot-Location");
+
+                return response.ok ? null : response.text();
+            })
             .then((refusal) => {
                 if (refusal) window.alert(refusal);
-                this.open(this.current);
+                if (next) window.history.replaceState(null, "", "#card-" + next.split("/").pop());
+                if (this.dialogTarget.open) this.open(next || this.current);
             })
             .catch(() => form.submit());
     }
@@ -88,6 +97,7 @@ export default class extends Controller {
     closed() {
         this.bodyTarget.replaceChildren();
         if (/^#(card|doc)-/.test(window.location.hash)) window.history.pushState(null, "", window.location.pathname + window.location.search);
-        if (this.changed) window.location.reload();
+        // A gesture still on its way is waited for, the reload would cut it
+        if (this.changed) Promise.resolve(this.pending).finally(() => window.location.reload());
     }
 }

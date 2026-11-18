@@ -1,0 +1,7 @@
+{# A reference as a tile, set apart from the cards by its side stripe and icon: title and the start of its summary, opened in the dialog by a click anywhere on it #}
+<div class="card h-100 pilot-reference pilot-ink-{{ doc.project.slug }}">
+    <div class="card-body p-3">
+        <a href="{{ path('management_pilot_doc', {slug: doc.slug}) }}" data-pilot-dialog="doc-{{ doc.slug }}" class="fw-semibold text-decoration-none text-body stretched-link pilot-doc-edit"><i class="fas {{ doc.kind.value == 'charter' ? 'fa-palette' : 'fa-file-lines' }} me-1 text-body-secondary"></i>{{ doc.title }}</a>
+        {% if doc.summary %}{% set text = doc.summary|pilot_markdown|striptags|trim %}<p class="small text-body-secondary mb-0 mt-1">{{ text|length > 160 ? text|slice(0, 160) ~ '…' : text }}</p>{% endif %}
+    </div>
+</div>

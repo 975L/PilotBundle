@@ -104,6 +104,17 @@ class RunQueueTest extends TestCase
         $this->assertSame(CardStatus::Review, $this->run->getCard()->getStatus());
     }
 
+    // A step's run done hands the next step's run to the entity manager
+    public function testFinishPersistsTheNextStepsRun(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-2')->setChecklist([['t' => 'first', 'action' => 'hello'], ['t' => 'second', 'action' => 'copy']]);
+        $run = new CardFlow($this->clock)->runStep($card, 0)->claim($this->machine, $this->clock->now());
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->once())->method('persist')->with($this->callback(static fn (Run $next): bool => 1 === $next->getStep()));
+
+        new RunQueue($entityManager, $this->createStub(RunRepository::class), $this->createStub(ActionRepository::class), new CardFlow($this->clock), $this->clock)->finish($run, $this->machine, RunStatus::Done, null, [], null);
+    }
+
     private function queue(RunRepository $runs): RunQueue
     {
         return new RunQueue($this->createStub(EntityManagerInterface::class), $runs, $this->createStub(ActionRepository::class), new CardFlow($this->clock), $this->clock);

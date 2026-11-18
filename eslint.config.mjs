@@ -12,9 +12,11 @@ export default [
 
             // Browser globals used across the c975L bundles, plus the third-party ones loaded by AssetMapper
             globals: {
+                Blob: "readonly",
                 cancelAnimationFrame: "readonly",
                 clearInterval: "readonly",
                 clearTimeout: "readonly",
+                ClipboardItem: "readonly",
                 confetti: "readonly",
                 console: "readonly",
                 CSS: "readonly",

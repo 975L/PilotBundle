@@ -1,18 +1,8 @@
-{# A card added in one line: to the given project or one chosen, on the given day, a day typed in, or none (the backlog) #}
+{# A card added in one line to the given project, in its backlog, pointing to the given reference when there is one #}
 <form method="post" action="{{ path('management_pilot_card_new') }}" class="d-flex flex-wrap gap-2 mb-2 pilot-card-new">
     <input type="hidden" name="_token" value="{{ csrf_token('management_pilot_card_new') }}">
-    {% if new_project is defined %}
-        <input type="hidden" name="project" value="{{ new_project.id }}">
-    {% else %}
-        <select name="project" class="form-select form-select-sm w-auto" aria-label="{{ 'label.project'|trans({}, 'pilot') }}" required>
-            {% for item in pilot_projects %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}
-        </select>
-    {% endif %}
+    <input type="hidden" name="project" value="{{ new_project.id }}">
+    {% if new_doc is defined %}<input type="hidden" name="doc" value="{{ new_doc.id }}">{% endif %}
     <input name="title" class="form-control form-control-sm flex-grow-1 w-auto" placeholder="{{ 'label.card_new'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_new'|trans({}, 'pilot') }}" required>
-    {% if new_due is defined %}
-        <input type="hidden" name="due" value="{{ new_due }}">
-    {% else %}
-        <input type="date" name="due" class="form-control form-control-sm w-auto" aria-label="{{ 'label.due'|trans({}, 'pilot') }}" title="{{ 'label.info_card_new_due'|trans({}, 'pilot') }}">
-    {% endif %}
     <button class="btn btn-sm btn-outline-primary" title="{{ 'label.card_add'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_add'|trans({}, 'pilot') }}"><i class="fas fa-plus"></i></button>
 </form>

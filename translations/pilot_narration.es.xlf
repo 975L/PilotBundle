@@ -2,17 +2,37 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="es" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="xBzUKKJ">
+                <source>narration.guided_step_pilot_card_edit_drag</source>
+                <target>Arrastre un paso por su asa para moverlo.</target>
+            </trans-unit>
+            <trans-unit id="Vos2zhm">
+                <source>narration.guided_step_pilot_card_edit_duplicate</source>
+                <target>Haga clic aquí para copiar la tarjeta.</target>
+            </trans-unit>
+            <trans-unit id="r5_pnta">
+                <source>narration.guided_step_pilot_card_edit_search</source>
+                <target>Para modificar una tarjeta, empiece por encontrarla.</target>
+            </trans-unit>
+            <trans-unit id="XQ9PZCa">
+                <source>narration.guided_step_pilot_card_edit_steps</source>
+                <target>Añada un paso a la checklist.</target>
+            </trans-unit>
+            <trans-unit id="vq0bPL.">
+                <source>narration.guided_step_pilot_card_edit_title</source>
+                <target>Haga clic en el título para reescribirlo.</target>
+            </trans-unit>
             <trans-unit id="Va0v6od">
                 <source>narration.guided_step_pilot_doc_open</source>
-                <target>Haga clic en el lápiz junto al título del expediente.</target>
+                <target>Haga clic en el recuadro de la referencia.</target>
             </trans-unit>
             <trans-unit id="0ClZIvh">
                 <source>narration.guided_step_pilot_doc_search</source>
-                <target>Busquemos el expediente: escriba dos letras de su título.</target>
+                <target>Busquemos la referencia: escriba dos letras de su título.</target>
             </trans-unit>
             <trans-unit id="70tITfS">
                 <source>narration.guided_step_pilot_doc_write</source>
-                <target>Despliegue el formulario bajo el expediente, reescriba lo que ha cambiado y guarde.</target>
+                <target>Despliegue el formulario bajo la referencia, reescriba lo que ha cambiado y guarde.</target>
             </trans-unit>
             <trans-unit id="f29gyCe">
                 <source>narration.guided_step_pilot_machine_list</source>
@@ -62,6 +82,10 @@
                 <source>narration.guided_step_pilot_runner_search</source>
                 <target>Para confiar una tarjeta a una máquina, primero encuéntrela.</target>
             </trans-unit>
+            <trans-unit id="fxSCcw0">
+                <source>narration.guided_step_pilot_runner_steps</source>
+                <target>Lance los pasos de máquina uno tras otro, se hacen seguidos; el asa cambia su orden para toda la plantilla.</target>
+            </trans-unit>
             <trans-unit id="H9l0NXy">
                 <source>narration.guided_step_pilot_runner_validate</source>
                 <target>Cuando la máquina termine, valide su trabajo o devuélvalo con un comentario.</target>
@@ -81,6 +105,18 @@
             <trans-unit id="3aZ4Ay4">
                 <source>narration.guided_step_pilot_schedule_search</source>
                 <target>Para planificar una tarjeta, primero hay que encontrarla.</target>
+            </trans-unit>
+            <trans-unit id="5LAGJIA">
+                <source>narration.guided_step_pilot_share_edit</source>
+                <target>Haga clic en el lápiz: el enlace de edición va al portapapeles.</target>
+            </trans-unit>
+            <trans-unit id="YtbeBG9">
+                <source>narration.guided_step_pilot_share_link</source>
+                <target>Haga clic en el ojo: el enlace va al portapapeles.</target>
+            </trans-unit>
+            <trans-unit id="1F1w289">
+                <source>narration.guided_step_pilot_share_search</source>
+                <target>Para compartir una tarjeta, empiece por encontrarla.</target>
             </trans-unit>
         </body>
     </file>

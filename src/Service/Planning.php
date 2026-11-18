@@ -15,7 +15,7 @@ use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Repository\CardRepository;
 use Psr\Clock\ClockInterface;
 
-// The planning: open dated cards, late ones first, the coming days one by one up to the horizon (each day listed, even without a card, to add or drop one there) set in days (config "pilot-horizon-days"), then the later ones by month, never limited in number
+// The planning: open dated cards, late ones first, the coming days holding a card, one by one up to the horizon set in days (config "pilot-horizon-days"), then the later ones by month, never limited in number
 class Planning
 {
     public const string HORIZON_KEY = 'pilot-horizon-days';
@@ -41,9 +41,6 @@ class Planning
         $days = [];
         $later = [];
         $last = $today->modify('+' . $horizon . ' days');
-        for ($day = $today; $day <= $last; $day = $day->modify('+1 day')) {
-            $days[$day->format('Y-m-d')] = [];
-        }
         foreach ($this->cardRepository->findDatedAfter($last) as $card) {
             $later[$card->getDue()?->format('Y-m-01')][] = $card;
         }
@@ -54,6 +51,7 @@ class Planning
             }
             $days[$card->getDue()->format('Y-m-d')][] = $card;
         }
+        ksort($days);
 
         return ['today' => $today, 'horizon' => $horizon, 'late' => $late, 'days' => $days, 'later' => $later, 'spend' => $this->spend([...$late, ...array_merge(...array_values($days)), ...array_merge(...array_values($later))], $today)];
     }

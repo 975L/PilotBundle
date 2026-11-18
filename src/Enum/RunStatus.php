@@ -14,7 +14,7 @@ use Symfony\Contracts\Translation\TranslatableInterface;
 
 use function Symfony\Component\Translation\t;
 
-// Life of an execution: queued until a machine claims it, then finished as done, failed or blocked
+// Life of an execution: queued until a machine claims it, then finished as done, failed or blocked, or withdrawn before
 enum RunStatus: string
 {
     case Queued = 'queued';
@@ -22,6 +22,7 @@ enum RunStatus: string
     case Done = 'done';
     case Failed = 'failed';
     case Blocked = 'blocked';
+    case Cancelled = 'cancelled';
 
     // Word shown on the card, translatable
     public function label(): TranslatableInterface
@@ -32,12 +33,19 @@ enum RunStatus: string
             self::Done => t('label.run_done', [], 'pilot'),
             self::Failed => t('label.run_failed', [], 'pilot'),
             self::Blocked => t('label.run_blocked', [], 'pilot'),
+            self::Cancelled => t('label.run_cancelled', [], 'pilot'),
         };
     }
 
     // Whether the run is over
     public function isFinished(): bool
     {
-        return \in_array($this, [self::Done, self::Failed, self::Blocked], true);
+        return \in_array($this, [self::Done, self::Failed, self::Blocked, self::Cancelled], true);
+    }
+
+    // Whether the run waits in the queue or is held by a machine
+    public function isActive(): bool
+    {
+        return \in_array($this, [self::Queued, self::Claimed], true);
     }
 }

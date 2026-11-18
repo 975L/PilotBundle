@@ -11,6 +11,8 @@
 namespace c975L\PilotBundle\Repository;
 
 use c975L\PilotBundle\Entity\Card;
+use c975L\PilotBundle\Entity\Doc;
+use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Enum\CardStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -60,9 +62,9 @@ class CardRepository extends ServiceEntityRepository
             ->where('c.due IS NOT NULL')
             ->andWhere('c.status != :done')
             ->setParameter('done', CardStatus::Done)
-            ->orderBy('c.due', 'ASC')
-            ->addOrderBy('c.rank', 'ASC')
-            ->addOrderBy('c.position', 'ASC');
+            ->orderBy('c.due', \SortDirection::Ascending)
+            ->addOrderBy('c.rank', \SortDirection::Ascending)
+            ->addOrderBy('c.position', \SortDirection::Ascending);
     }
 
     // Open cards of a project: the dated ones first by date, then the backlog in its own order
@@ -76,11 +78,47 @@ class CardRepository extends ServiceEntityRepository
             ->andWhere('c.status != :done')
             ->setParameter('project', $project)
             ->setParameter('done', CardStatus::Done)
-            ->addOrderBy('CASE WHEN c.due IS NULL THEN 1 ELSE 0 END', 'ASC')
-            ->addOrderBy('c.due', 'ASC')
-            ->addOrderBy('c.rank', 'ASC')
-            ->addOrderBy('c.position', 'ASC')
-            ->addOrderBy('c.id', 'ASC')
+            ->addOrderBy('CASE WHEN c.due IS NULL THEN 1 ELSE 0 END', \SortDirection::Ascending)
+            ->addOrderBy('c.due', \SortDirection::Ascending)
+            ->addOrderBy('c.rank', \SortDirection::Ascending)
+            ->addOrderBy('c.position', \SortDirection::Ascending)
+            ->addOrderBy('c.id', \SortDirection::Ascending)
+            ->getQuery()
+            ->getResult();
+    }
+
+    // Cards pointing to a reference, its memory: the open ones first, then the done ones, the latest first
+    /**
+     * @return list<Card>
+     */
+    public function findOfDoc(Doc $doc): array
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.doc = :doc')
+            ->setParameter('doc', $doc)
+            ->addOrderBy('CASE WHEN c.status = :done THEN 1 ELSE 0 END', \SortDirection::Ascending)
+            ->setParameter('done', CardStatus::Done)
+            ->addOrderBy('c.doneAt', \SortDirection::Descending)
+            ->addOrderBy('c.id', \SortDirection::Descending)
+            ->getQuery()
+            ->getResult();
+    }
+
+    // Open cards of the checklist plans built from a template, those of one card, a plan built with a card per step left as it is
+    /** @return list<Card> */
+    public function findOpenOfTemplate(PlanTemplate $template): array
+    {
+        $cards = $this->createQueryBuilder('o')
+            ->select('COUNT(o.id)')
+            ->where('o.plan = p');
+
+        return $this->createQueryBuilder('c')
+            ->join('c.plan', 'p')
+            ->where('p.template = :template')
+            ->andWhere('c.status != :done')
+            ->andWhere('(' . $cards->getDQL() . ') = 1')
+            ->setParameter('template', $template)
+            ->setParameter('done', CardStatus::Done)
             ->getQuery()
             ->getResult();
     }
@@ -95,7 +133,7 @@ class CardRepository extends ServiceEntityRepository
             ->where('c.waitingOn IS NOT NULL')
             ->andWhere('c.status != :done')
             ->setParameter('done', CardStatus::Done)
-            ->orderBy('c.id', 'ASC')
+            ->orderBy('c.id', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
@@ -111,7 +149,7 @@ class CardRepository extends ServiceEntityRepository
             ->andWhere('c.status = :done')
             ->setParameter('project', $project)
             ->setParameter('done', CardStatus::Done)
-            ->orderBy('c.doneAt', 'DESC')
+            ->orderBy('c.doneAt', \SortDirection::Descending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -128,9 +166,9 @@ class CardRepository extends ServiceEntityRepository
             ->join('c.project', 'p')
             ->where('c.title LIKE :words OR c.note LIKE :words')
             ->setParameter('words', '%' . addcslashes($words, '%_') . '%')
-            ->addOrderBy('CASE WHEN c.status = :done THEN 1 ELSE 0 END', 'ASC')
+            ->addOrderBy('CASE WHEN c.status = :done THEN 1 ELSE 0 END', \SortDirection::Ascending)
             ->setParameter('done', CardStatus::Done)
-            ->addOrderBy('c.id', 'DESC')
+            ->addOrderBy('c.id', \SortDirection::Descending)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
