@@ -17,6 +17,7 @@ use c975L\PilotBundle\Repository\CardRepository;
 use c975L\PilotBundle\Repository\DocRepository;
 use c975L\PilotBundle\Service\ActionOffer;
 use c975L\PilotBundle\Service\CardFlow;
+use c975L\PilotBundle\Service\CardImages;
 use c975L\PilotBundle\Service\CardMarkdown;
 use c975L\PilotBundle\Service\StepOrder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +27,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class ShareControllerTest extends TestCase
 {
@@ -98,12 +100,12 @@ class ShareControllerTest extends TestCase
         $this->assertSame(['step-2', 'step-1'], array_column($this->card->getChecklist(), 't'));
     }
 
-    // The editing link adds a feedback, still to decide when it starts with « ? »
+    // The editing link adds a feedback, a « ? » first now part of its text
     public function testEditLinkAddsFeedback(): void
     {
         $this->controller()->gesture((string) $this->card->getEditToken(), 'feedback', new Request(request: ['text' => '? feedback-1']));
 
-        $this->assertSame([2 => ['t' => 'feedback-1', 'feedback' => true, 'ask' => true]], $this->card->getFeedback());
+        $this->assertSame([2 => ['t' => '? feedback-1', 'feedback' => true]], $this->card->getFeedback());
     }
 
     // An action the project does not offer right now is refused, the card left as it was
@@ -145,6 +147,15 @@ class ShareControllerTest extends TestCase
             default => null,
         });
 
-        return new ShareController($cards, new CardMarkdown($this->createStub(DocRepository::class)), $this->createStub(EntityManagerInterface::class), new MockClock(), new CardFlow(new MockClock()), $this->offer, new StepOrder($cards, new MockClock()));
+        return new ShareController($cards, new CardMarkdown($this->createStub(DocRepository::class), $this->urls()), $this->createStub(EntityManagerInterface::class), new MockClock(), new CardFlow(new MockClock()), $this->offer, new StepOrder($cards, new MockClock()), new CardImages(sys_get_temp_dir()));
+    }
+
+    // Addresses of the screenshots, as the router writes them
+    private function urls(): UrlGeneratorInterface
+    {
+        $urls = $this->createStub(UrlGeneratorInterface::class);
+        $urls->method('generate')->willReturnCallback(static fn (string $route, array $parameters): string => 'https://example.com/pilot/share/image/' . $parameters['name']);
+
+        return $urls;
     }
 }

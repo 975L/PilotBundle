@@ -30,6 +30,9 @@ class Card implements \Stringable
     // Where the pictures of the cards are kept, from the project's root
     public const string IMAGE_DIRECTORY = 'private/pilot/cards';
 
+    // Where the screenshots of the feedback are kept, from the project's root, each one served by its name alone
+    public const string FEEDBACK_IMAGE_DIRECTORY = 'private/pilot/feedback';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -79,8 +82,8 @@ class Card implements \Stringable
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
-    // Sub-steps ticked one by one: text, the group gathering it with its neighbours, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), the machine action a step leaves for once the one before is ticked; the feedback (a fix, an idea, a question still to decide) after the steps
-    /** @var list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}> */
+    // Sub-steps ticked one by one: text, the group gathering it with its neighbours, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), the machine action a step leaves for once the one before is ticked; the feedback (a fix, an idea, the file name of a screenshot) after the steps
+    /** @var list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, due?: string, img?: string}> */
     #[ORM\Column(type: Types::JSON)]
     private array $checklist = [];
 
@@ -384,7 +387,7 @@ class Card implements \Stringable
     }
 
     /**
-     * @return list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}>
+     * @return list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, due?: string, img?: string}>
      */
     public function getChecklist(): array
     {
@@ -392,7 +395,7 @@ class Card implements \Stringable
     }
 
     /**
-     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}> $checklist
+     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, due?: string, img?: string}> $checklist
      */
     public function setChecklist(array $checklist): static
     {
@@ -419,33 +422,16 @@ class Card implements \Stringable
         return $this->reopen();
     }
 
-    // Adds a feedback at the end (a fix, an idea), still to decide when its text starts with « ? », an empty text adding nothing; a done card opens again
+    // Adds a feedback at the end (a fix, an idea), an empty text adding nothing; a done card opens again
     public function addFeedback(string $text): static
     {
-        $text = trim($text);
-        $ask = str_starts_with($text, '?');
-        $text = mb_substr(ltrim($ask ? substr($text, 1) : $text), 0, 500);
+        $text = mb_substr(trim($text), 0, 500);
         if ('' === $text) {
             return $this;
         }
-        $this->checklist[] = ['t' => $text, 'feedback' => true] + ($ask ? ['ask' => true] : []);
+        $this->checklist[] = ['t' => $text, 'feedback' => true];
 
         return $this->reopen();
-    }
-
-    // A feedback marked still to decide, or decided; a step changes nothing
-    public function toggleAsk(int $index): static
-    {
-        if (!$this->isFeedback($index)) {
-            return $this;
-        }
-        if ($this->checklist[$index]['ask'] ?? false) {
-            unset($this->checklist[$index]['ask']);
-        } else {
-            $this->checklist[$index]['ask'] = true;
-        }
-
-        return $this;
     }
 
     public function isFeedback(int $index): bool
@@ -454,14 +440,14 @@ class Card implements \Stringable
     }
 
     // The steps of the checklist, the feedback left out, by their index in it
-    /** @return array<int, array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}> */
+    /** @return array<int, array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, due?: string, img?: string}> */
     public function getSteps(): array
     {
         return array_filter($this->checklist, static fn (array $step): bool => !($step['feedback'] ?? false));
     }
 
-    // The steps gathered as they follow each other: each run of steps of one group, a step out of any group in a run without a name
-    /** @return list<array{group: ?string, steps: array<int, array{t: string, done?: bool, g?: string}>}> */
+    // The steps gathered as they follow each other: each run of steps of one group, a step out of any group in a run without a name, cut into its parts
+    /** @return list<array{group: ?string, steps: array<int, array{t: string, done?: bool, g?: string}>, parts: list<array{folded: bool, steps: array<int, array{t: string, done?: bool, g?: string}>}>}> */
     public function getStepGroups(): array
     {
         $groups = [];
@@ -475,11 +461,66 @@ class Card implements \Stringable
             $groups[\count($groups) - 1]['steps'][$index] = $step;
         }
 
-        return $groups;
+        return array_map(static fn (array $group): array => $group + ['parts' => self::stepParts($group['steps'])], $groups);
+    }
+
+    // Steps in their order, cut where they change between ticked and open: a run of several ticked folded in place, a single ticked one left among the others
+    /**
+     * @param array<int, array{t: string, done?: bool, g?: string}> $steps
+     *
+     * @return list<array{folded: bool, steps: array<int, array{t: string, done?: bool, g?: string}>}>
+     */
+    private static function stepParts(array $steps): array
+    {
+        $parts = [];
+        $last = null;
+        foreach ($steps as $index => $step) {
+            $done = $step['done'] ?? false;
+            if ($done !== $last) {
+                $parts[] = ['folded' => $done, 'steps' => []];
+                $last = $done;
+            }
+            $parts[\count($parts) - 1]['steps'][$index] = $step;
+        }
+
+        // A lone ticked step stays in its place, joined to its open neighbours
+        $merged = [];
+        foreach ($parts as $part) {
+            $part['folded'] = $part['folded'] && \count($part['steps']) > 1;
+            $previous = \count($merged) - 1;
+            if (!$part['folded'] && $previous >= 0 && !$merged[$previous]['folded']) {
+                $merged[$previous]['steps'] += $part['steps'];
+                continue;
+            }
+            $merged[] = $part;
+        }
+
+        return $merged;
+    }
+
+    // A screenshot set on a feedback, or none; a step changes nothing, the file left being removed by whoever replaced it
+    public function setFeedbackImage(int $index, ?string $name): static
+    {
+        if (!$this->isFeedback($index)) {
+            return $this;
+        }
+        unset($this->checklist[$index]['img']);
+        if (null !== $name) {
+            $this->checklist[$index]['img'] = $name;
+        }
+
+        return $this;
+    }
+
+    // File names of the screenshots its feedback holds
+    /** @return list<string> */
+    public function getFeedbackImages(): array
+    {
+        return array_values(array_filter(array_map(static fn (array $step): ?string => $step['img'] ?? null, $this->getFeedback())));
     }
 
     // The feedback of the checklist, by its index in it
-    /** @return array<int, array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}> */
+    /** @return array<int, array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, due?: string, img?: string}> */
     public function getFeedback(): array
     {
         return array_filter($this->checklist, static fn (array $step): bool => $step['feedback'] ?? false);
@@ -586,8 +627,8 @@ class Card implements \Stringable
 
     // Lays new steps, each given with the index it had or null for a new one; the runs follow their step, one whose step left leaving it (withdrawn while under way), the card back to do once nothing runs or once a done one gets a box to tick
     /**
-     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}> $steps
-     * @param list<?int>                                                                                                                                                                                                                                  $from
+     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, due?: string, img?: string}> $steps
+     * @param list<?int>                                                                                                                                                                                                                                    $from
      */
     public function restep(array $steps, array $from, \DateTimeImmutable $now): static
     {
@@ -735,7 +776,8 @@ class Card implements \Stringable
     public function duplicate(string $suffix): self
     {
         $steps = array_map(static function (array $step): array {
-            unset($step['done'], $step['doneAt']);
+            // A screenshot belongs to the card it was sent on, the copy never sharing its file
+            unset($step['done'], $step['doneAt'], $step['img']);
 
             return $step;
         }, $this->checklist);

@@ -24,10 +24,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-// The picture of a card (a sheet's portrait): shown to whoever sees the card, sent or removed by whoever edits it, from its dialog or its page
+// The picture of a card (a sheet's portrait): shown to whoever sees the card, sent or removed by whoever edits it, from its dialog or its page; a feedback's screenshot served by its name
 class CardImageController extends AbstractController
 {
     use PilotPageTrait;
+
+    public const string FEEDBACK_ROUTE = 'pilot_feedback_image';
 
     public function __construct(
         private readonly PilotAccess $pilotAccess,
@@ -51,6 +53,19 @@ class CardImageController extends AbstractController
         }
 
         return new BinaryFileResponse($path, Response::HTTP_OK, ['Content-Type' => $type, 'X-Content-Type-Options' => 'nosniff']);
+    }
+
+    // A feedback's screenshot read without signing in, its random name being the permission (under /pilot/share/, public as the share links are), kept out of indexes and shared caches
+    #[Route('/pilot/share/image/{name}', name: self::FEEDBACK_ROUTE, requirements: ['name' => CardImages::FEEDBACK_NAME], methods: ['GET'])]
+    public function feedback(string $name): BinaryFileResponse
+    {
+        $path = $this->cardImages->feedbackPath($name);
+        $type = null === $path ? null : $this->cardImages->type($path);
+        if (null === $path || null === $type) {
+            throw $this->createNotFoundException();
+        }
+
+        return new BinaryFileResponse($path, Response::HTTP_OK, ['Content-Type' => $type, 'X-Content-Type-Options' => 'nosniff', 'X-Robots-Tag' => 'noindex, nofollow', 'Cache-Control' => 'private, max-age=31536000, immutable']);
     }
 
     // A picture sent replaces the one the card had, « remove » takes it off; the dialog then reads the card again

@@ -14,13 +14,13 @@ export default class extends Controller {
     // The text handed to the clipboard as a promise, so that the browser still counts the click while the link is being made
     copy(event) {
         event.stopPropagation();
-        const text = this.textValue ? Promise.resolve(this.textValue + this.context()) : this.make();
+        const text = this.textValue ? Promise.resolve(this.textValue + this.attached()) : this.make();
         const item = new ClipboardItem({ "text/plain": text.then((value) => new Blob([value], { type: "text/plain" })) });
         navigator.clipboard.write([item]).then(() => this.flash("fa-check"), () => this.flash("fa-xmark"));
     }
 
     // The text of the element the context names (a card's markdown), after a blank line, none without one
-    context() {
+    attached() {
         const source = this.contextValue ? document.getElementById(this.contextValue) : null;
 
         return source ? "\n\n" + source.value : "";

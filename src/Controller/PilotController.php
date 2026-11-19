@@ -47,6 +47,7 @@ use Psr\Clock\ClockInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -84,7 +85,7 @@ class PilotController extends AbstractController
     private const array GESTURE_LEVELS = [
         'step' => PilotAccess::WORK,
         'feedbackadd' => PilotAccess::WORK,
-        'stepask' => PilotAccess::WORK,
+        'feedbackimage' => PilotAccess::WORK,
         'runstep' => PilotAccess::RUN,
         'entrust' => PilotAccess::RUN,
         'launch' => PilotAccess::RUN,
@@ -111,6 +112,7 @@ class PilotController extends AbstractController
         private readonly PilotAccess $pilotAccess,
         private readonly MemberRepository $memberRepository,
         private readonly CardSetRepository $cardSetRepository,
+        private readonly CardImages $cardImages,
     ) {
     }
 
@@ -422,13 +424,16 @@ class PilotController extends AbstractController
         return array_values(array_filter($queued, static fn (string $action): bool => [] !== array_filter($machines, static fn (Machine $machine): bool => $machine->canRun($action, $card->getProject(), $now))));
     }
 
-    // A file on its own, with the cards pointing to it (what is to do, then what was done)
+    // A file on its own, with the cards pointing to it (what is to do, then what was done), deleted from here by who may delete in its space
     #[Route('/pilot/doc/{slug}', name: 'pilot_doc', requirements: ['slug' => '[a-z0-9-]+'])]
     public function doc(#[MapEntity(mapping: ['slug' => 'slug'])] Doc $doc): Response
     {
         $this->guardDoc($doc, PilotAccess::EDIT);
 
-        return $this->page('@c975LPilot/pilot/doc.html.twig', ['doc' => $doc, 'project' => $doc->getProject(), 'cards' => $this->cardRepository->findOfDoc($doc)]);
+        $project = $doc->getProject();
+        $canDelete = null === $project ? $this->pilotAccess->isAdmin() : $this->pilotAccess->can($project, PilotAccess::DELETE);
+
+        return $this->page('@c975LPilot/pilot/doc.html.twig', ['doc' => $doc, 'project' => $project, 'cards' => $this->cardRepository->findOfDoc($doc), 'can_delete' => $canDelete]);
     }
 
     // A file's title and two floors written on its page; in the dialog the answer says only whether it was kept
@@ -456,8 +461,50 @@ class PilotController extends AbstractController
     public function markdown(#[MapEntity(mapping: ['slug' => 'slug'])] Doc $doc): Response
     {
         $this->guardDoc($doc, PilotAccess::EDIT);
-        $response = new Response($doc->toMarkdown(), Response::HTTP_OK, ['Content-Type' => 'text/markdown; charset=UTF-8']);
-        $response->headers->set('Content-Disposition', $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $doc->getSlug() . '.md'));
+
+        return $this->markdownDownload($doc->toMarkdown(), $doc->getSlug());
+    }
+
+    // A file deleted for good, the cards pointing to it keeping their work without it; then back to its space, the dialog closing
+    #[Route('/pilot/doc/{slug}/delete', name: 'pilot_doc_delete', requirements: ['slug' => '[a-z0-9-]+'], methods: ['POST'])]
+    public function docDelete(#[MapEntity(mapping: ['slug' => 'slug'])] Doc $doc, Request $request): Response
+    {
+        $this->guardDoc($doc, PilotAccess::DELETE);
+        $project = $doc->getProject();
+        $deleted = $this->isCsrfTokenValid('pilot_doc_delete' . $doc->getId(), $request->request->getString('_token'));
+        if ($deleted) {
+            foreach ($this->cardRepository->findOfDoc($doc) as $card) {
+                $card->setDoc(null);
+            }
+            $this->entityManager->remove($doc);
+            $this->entityManager->flush();
+        }
+        if ($request->headers->has(self::DIALOG_HEADER)) {
+            return $deleted ? new Response(null, Response::HTTP_NO_CONTENT, [self::GONE_HEADER => '1']) : new Response($this->translator->trans('label.gesture_expired', [], 'pilot'), Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+        if (!$deleted) {
+            $this->addFlash('danger', $this->translator->trans('label.gesture_expired', [], 'pilot'));
+
+            return $this->redirectToRoute('pilot_doc', ['slug' => $doc->getSlug()]);
+        }
+
+        return null !== $project ? $this->redirectToRoute(self::PROJECT_ROUTE, ['slug' => $project->getSlug()]) : $this->redirectToRoute('pilot_dashboard');
+    }
+
+    // A card as one markdown download, the same text its steps are handed to an AI with
+    #[Route('/pilot/card/{id}.md', name: 'pilot_card_markdown', requirements: ['id' => '\d+'])]
+    public function cardMarkdown(Card $card, CardMarkdown $cardMarkdown): Response
+    {
+        $this->guard($card, PilotAccess::VIEW);
+
+        return $this->markdownDownload($cardMarkdown->write($card), 'card-' . $card->getId());
+    }
+
+    // A markdown text handed as a file to download under the given name
+    private function markdownDownload(string $markdown, string $name): Response
+    {
+        $response = new Response($markdown, Response::HTTP_OK, ['Content-Type' => 'text/markdown; charset=UTF-8']);
+        $response->headers->set('Content-Disposition', $response->headers->makeDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $name . '.md'));
 
         return $response;
     }
@@ -477,8 +524,8 @@ class PilotController extends AbstractController
         return new BinaryFileResponse($path, Response::HTTP_OK, $headers, true, null === $media ? ResponseHeaderBag::DISPOSITION_ATTACHMENT : null);
     }
 
-    // Done, back to do, a date (empty sends it back to the backlog), another space, its title and note, a feedback added or marked still to decide, its steps reordered, shared or given to edit or no longer, a step ticked or run, or a machine gesture; then back where the gesture came from
-    #[Route('/pilot/card/{id}/{gesture}', name: 'pilot_card_gesture', requirements: ['id' => '\d+', 'gesture' => 'done|reopen|schedule|move|edit|assign|unassign|stepadd|feedbackadd|stepask|stepdue|stepedit|steporder|share|unshare|lend|unlend|step|runstep|entrust|launch|cancel|validate|sendback'], methods: ['POST'])]
+    // Done, back to do, a date (empty sends it back to the backlog), another space, its title and note, a feedback added (with its screenshot), its screenshot set or removed, its steps reordered, shared or given to edit or no longer, a step ticked or run, or a machine gesture; then back where the gesture came from
+    #[Route('/pilot/card/{id}/{gesture}', name: 'pilot_card_gesture', requirements: ['id' => '\d+', 'gesture' => 'done|reopen|schedule|move|edit|assign|unassign|stepadd|feedbackadd|feedbackimage|stepdue|stepedit|steporder|share|unshare|lend|unlend|step|runstep|entrust|launch|cancel|validate|sendback'], methods: ['POST'])]
     public function gesture(Card $card, string $gesture, Request $request): Response
     {
         $this->guard($card, PilotAccess::VIEW);
@@ -489,8 +536,11 @@ class PilotController extends AbstractController
         };
         if (null === $refusal) {
             try {
+                // The screenshots a gesture took off its feedback removed once it is written
+                $images = $card->getFeedbackImages();
                 $this->apply($card, $gesture, $request);
                 $this->entityManager->flush();
+                $this->cardImages->forget(array_values(array_diff($images, $card->getFeedbackImages())));
             } catch (FlowException $exception) {
                 $refusal = $exception->reason->trans($this->translator);
             }
@@ -551,7 +601,7 @@ class PilotController extends AbstractController
 
     // A card deleted for good with its picture, its runs and the files they kept, refused while a machine works on it; then back to its space, the dialog closing
     #[Route('/pilot/card/{id}/delete', name: 'pilot_card_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function delete(Card $card, Request $request, RunOutputs $runOutputs, CardImages $cardImages): Response
+    public function delete(Card $card, Request $request, RunOutputs $runOutputs): Response
     {
         $this->guard($card, PilotAccess::DELETE);
         $project = $card->getProject();
@@ -561,7 +611,7 @@ class PilotController extends AbstractController
             default => null,
         };
         if (null === $refusal) {
-            $this->erase($card, $runOutputs, $cardImages);
+            $this->erase($card, $runOutputs);
         }
         if ($request->headers->has(self::DIALOG_HEADER)) {
             return null === $refusal ? new Response(null, Response::HTTP_NO_CONTENT, [self::GONE_HEADER => '1']) : new Response($refusal, Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -573,14 +623,16 @@ class PilotController extends AbstractController
         return $this->redirectToRoute(self::PROJECT_ROUTE, ['slug' => $project->getSlug()]);
     }
 
-    // The card removed, the files its runs kept and its picture deleted once the removal is written, so a failed flush loses nothing
-    private function erase(Card $card, RunOutputs $runOutputs, CardImages $cardImages): void
+    // The card removed, the files its runs kept, its picture and its screenshots deleted once the removal is written, so a failed flush loses nothing
+    private function erase(Card $card, RunOutputs $runOutputs): void
     {
         // Read before the flush, which sets the removed runs' ids back to null
         $folders = array_map($runOutputs->folder(...), $card->getRuns()->toArray());
-        $image = $cardImages->path($card);
+        $image = $this->cardImages->path($card);
+        $screenshots = $card->getFeedbackImages();
         $this->entityManager->remove($card);
         $this->entityManager->flush();
+        $this->cardImages->forget($screenshots);
         foreach ($folders as $folder) {
             $runOutputs->forget($folder);
         }
@@ -613,8 +665,8 @@ class PilotController extends AbstractController
             'edit' => $this->edit($card, $request),
             'assign', 'unassign' => $this->assignee($card, $request->request->getInt('member'), 'assign' === $gesture),
             'stepadd' => $card->addStep($request->request->getString('text')),
-            'feedbackadd' => $card->addFeedback($request->request->getString('text')),
-            'stepask' => $card->toggleAsk($request->request->getInt('index', -1)),
+            'feedbackadd' => $this->feedbackAdd($card, $request),
+            'feedbackimage' => $this->feedbackImage($card, $request),
             'stepedit' => $this->stepEdit($card, $request),
             'stepdue' => $card->setStepDue($request->request->getInt('index', -1), $this->day($request->request->getString('due'))),
             'steporder' => $this->stepOrder->reorder($card, array_values(array_map(intval(...), array_filter($request->request->all('order'), is_numeric(...))))),
@@ -658,6 +710,37 @@ class PilotController extends AbstractController
         }
 
         return $card->moveTo($project);
+    }
+
+    // A feedback added, with the screenshot sent or pasted along, a picture refused adding nothing
+    private function feedbackAdd(Card $card, Request $request): Card
+    {
+        $text = $request->request->getString('text');
+        $file = $request->files->get('image');
+        $image = $file instanceof UploadedFile && '' !== trim($text) ? $this->screenshot($file) : null;
+        $before = array_key_last($card->getChecklist());
+        $card->addFeedback($text);
+        $added = array_key_last($card->getChecklist());
+
+        return null !== $image && $added !== $before ? $card->setFeedbackImage((int) $added, $image) : $card;
+    }
+
+    // A feedback's screenshot replaced by the one sent, or removed by « remove »
+    private function feedbackImage(Card $card, Request $request): Card
+    {
+        $index = $request->request->getInt('index', -1);
+        $file = $request->files->get('image');
+        if ($request->request->getBoolean('remove')) {
+            return $card->setFeedbackImage($index, null);
+        }
+
+        return $file instanceof UploadedFile && $card->isFeedback($index) ? $card->setFeedbackImage($index, $this->screenshot($file)) : $card;
+    }
+
+    // A screenshot kept, refused when it is no picture or too heavy
+    private function screenshot(UploadedFile $file): string
+    {
+        return $this->cardImages->storeFeedback($file) ?? throw new FlowException(t('label.card_image_refused', [], 'pilot'));
     }
 
     // A step's text and, when posted, the machine action it names, edited in place; an empty text removes the step

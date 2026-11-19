@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.6.0
+
+Screenshots on the comments, ticked steps kept in place
+
+- A screenshot on each feedback, pasted, dropped or sent, served by its random name and handed to an AI by the robot button (19/11/2026)
+- Feedback called comments on screen (19/11/2026)
+- [BC-Break] Feedback no longer marked still to decide: `Card::toggleAsk()`, the `stepask` gesture, the « ? » prefix and `label.feedback_ask`, `label.feedback_decided`, `label.feedback_to_decide` removed (19/11/2026)
+- A ticked step left in its place, struck through, several ticked in a row folded together where they stand (19/11/2026)
+- The field of a step or a feedback added by Enter kept focused for the next one (19/11/2026)
+- A step or a feedback being added sent when focus leaves its field (19/11/2026)
+- Fixed the robot button copying nothing, its method clashing with Stimulus's own `context`; shown as a plain icon like its neighbours (19/11/2026)
+- A card downloaded as markdown or printed as a PDF from its dialog (19/11/2026)
+- A reference deleted from its page, the cards citing it staying without one (19/11/2026)
+- Headings of a reference's detail kept to the size of its text (19/11/2026)
+- A run's file missing from the site said too heavy or erased, no longer only too heavy (19/11/2026)
+- A feedback handed to an AI copied with the card's title and pitch only, not its other feedback (19/11/2026)
+- The buttons and badges of a step or a feedback centred on the line of its box, a ticked step keeping the room of its handle (19/11/2026)
+- The screenshot of a feedback opened full size in a dialog over the card, no longer in a new tab (19/11/2026)
+- The screenshot of a feedback opened full size over the shared page as well, without a script (19/11/2026)
+
 ## v0.5.0
 
 Piloting on its own pages at /pilot, shared by the members of each space

@@ -9,7 +9,7 @@ import { Controller } from "@hotwired/stimulus";
 
 // Opens a card or a file over the page it was clicked on, its own page read and shown in a dialog; the address keeps it as #card-<id> or #doc-<slug>, so a link or the back button reopen it
 export default class extends Controller {
-    static targets = ["dialog", "body", "confirm", "ask"];
+    static targets = ["dialog", "body", "confirm", "ask", "zoom", "zoomImage"];
     static values = { url: String };
 
     connect() {
@@ -21,6 +21,7 @@ export default class extends Controller {
         // A form asking first (data-pilot-confirm) is stopped before anything sends it, in the dialog or on the page, then sent once confirmed
         this.onConfirm = (event) => this.ask(event);
         this.confirmTarget.addEventListener("close", () => this.answered());
+        this.zoomTarget.addEventListener("click", () => this.zoomTarget.close());
         this.element.addEventListener("submit", this.onConfirm, true);
         // An open + or gear panel closes on a click beside it or on Escape, as a dialog would
         this.onOutside = (event) => this.fold(event.target);
@@ -28,6 +29,9 @@ export default class extends Controller {
         document.addEventListener("click", this.onOutside);
         document.addEventListener("keydown", this.onEscape);
         this.dialogTarget.addEventListener("submit", (event) => this.submit(event));
+        // A line being added (data-pilot-refocus) is sent when focus leaves it, as a field edited in place is saved; a press inside its own form (its picture button) keeps it
+        this.dialogTarget.addEventListener("pointerdown", (event) => { this.pressed = event.target; }, true);
+        this.dialogTarget.addEventListener("focusout", (event) => this.leave(event));
         window.addEventListener("popstate", this.onPopState);
         this.dialogTarget.addEventListener("close", () => this.closed());
         this.dialogTarget.addEventListener("click", (event) => { if (event.target === this.dialogTarget) this.dialogTarget.close(); });
@@ -82,6 +86,8 @@ export default class extends Controller {
 
     // A plain click on a card's title or a file's link (data-pilot-dialog naming it); a click asking for a new tab or window, or made during a guided project, keeps the browser's own behaviour
     click(event) {
+        if (this.zoomed(event)) return;
+
         const link = event.target.closest("a[data-pilot-dialog]");
         if (!link || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
 
@@ -93,6 +99,18 @@ export default class extends Controller {
         this.open(link.href);
     }
 
+    // A screenshot (data-pilot-zoom) shown full size in its own dialog rather than in a new tab, a click anywhere on it closing it
+    zoomed(event) {
+        const link = event.target.closest("a[data-pilot-zoom]");
+        if (!link || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return false;
+
+        event.preventDefault();
+        this.zoomImageTarget.src = link.href;
+        this.zoomTarget.showModal();
+
+        return true;
+    }
+
     // A gesture made in the dialog stays in it: posted, a refusal shown, then the card read again while the dialog is still open (a field edited in place is saved by the very click that closes it); the page behind is reloaded once the dialog closes
     submit(event) {
         const form = event.target;
@@ -100,6 +118,10 @@ export default class extends Controller {
 
         event.preventDefault();
         this.changed = true;
+        // The form on its way, focus leaving it meanwhile sending it no second time
+        this.sending = form;
+        // A line added by Enter (data-pilot-refocus) keeps its field focused once the card is read again, for the next one
+        this.refocus = form.querySelector("[data-pilot-refocus]")?.contains(document.activeElement) ? form.getAttribute("action") : null;
         let next = null;
         let gone = false;
         this.pending = fetch(form.action, { method: "POST", headers: { "X-Pilot-Dialog": "1" }, body: new FormData(form) })
@@ -116,7 +138,20 @@ export default class extends Controller {
                 if (next) window.history.replaceState(null, "", "#card-" + next.split("/").pop());
                 if (this.dialogTarget.open) this.open(next || this.current);
             })
-            .catch(() => form.submit());
+            .catch(() => form.submit())
+            .finally(() => { if (this.sending === form) this.sending = null; });
+    }
+
+    // The line typed sent once focus goes outside its form, an empty one left as it is
+    leave(event) {
+        const field = event.target;
+        const form = field.form;
+        const pressed = this.pressed;
+        this.pressed = null;
+        if (!field.matches?.("[data-pilot-refocus]") || !form.isConnected || form === this.sending || "" === field.value.trim()) return;
+        if (form.contains(event.relatedTarget) || form.contains(pressed)) return;
+
+        form.requestSubmit();
     }
 
     // What the address names: a link of the page naming it, a card by its id otherwise, or nothing
@@ -139,6 +174,8 @@ export default class extends Controller {
                 if (!content) throw new Error(url);
                 this.bodyTarget.replaceChildren(...content.childNodes);
                 if (!this.dialogTarget.open) this.dialogTarget.showModal();
+                if (this.refocus) this.bodyTarget.querySelector(`form[action="${CSS.escape(this.refocus)}"] [data-pilot-refocus]`)?.focus();
+                this.refocus = null;
             })
             .catch(() => { window.location.href = url; });
     }

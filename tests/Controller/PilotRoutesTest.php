@@ -38,6 +38,7 @@ class PilotRoutesTest extends TestCase
         yield 'setting edited' => ['/pilot/settings/template/3', 'pilot_settings_edit'];
         yield 'card by its number' => ['/pilot/card/12', 'pilot_card'];
         yield 'file' => ['/pilot/doc/catalog-file', 'pilot_doc'];
+        yield 'card as markdown' => ['/pilot/card/12.md', 'pilot_card_markdown'];
         yield 'shared card' => ['/pilot/share/' . str_repeat('a', 32), 'pilot_share'];
     }
 

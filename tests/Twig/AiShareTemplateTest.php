@@ -13,6 +13,9 @@ namespace c975L\PilotBundle\Tests\Twig;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Extension\TranslationExtension;
 use Symfony\Component\Translation\IdentityTranslator;
+use Symfony\Component\Translation\Loader\ArrayLoader;
+use Symfony\Component\Translation\Translator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
@@ -28,6 +31,17 @@ class AiShareTemplateTest extends TestCase
         $this->assertStringContainsString('data-pilot-copy-context-value="pilot-ai-context-7"', $html);
     }
 
+    // A feedback with a screenshot hands its address over with its text
+    public function testScreenshotAddressCopied(): void
+    {
+        $translator = new Translator('en');
+        $translator->addLoader('array', new ArrayLoader());
+        $translator->addResource('array', ['label.ai_task' => '« %step% »'], 'en', 'pilot');
+        $html = $this->twig($translator)->render('@c975LPilot/pilot/_ai_share.html.twig', ['step' => ['t' => 'item-1'], 'card' => ['id' => 7], 'ai_image' => 'https://example.com/pilot/share/image/item-1.png']);
+
+        $this->assertStringContainsString('« item-1 — https://example.com/pilot/share/image/item-1.png »', html_entity_decode($html));
+    }
+
     // A done step has nothing left to hand over
     public function testDoneStepHasNoButton(): void
     {
@@ -38,11 +52,17 @@ class AiShareTemplateTest extends TestCase
     /** @param array<string, mixed> $step */
     private function render(array $step): string
     {
+        return $this->twig(new IdentityTranslator())->render('@c975LPilot/pilot/_ai_share.html.twig', ['step' => $step, 'card' => ['id' => 7]]);
+    }
+
+    // The bundle's templates read with the given translator, an unknown variable refused
+    private function twig(TranslatorInterface $translator): Environment
+    {
         $loader = new FilesystemLoader();
         $loader->addPath(\dirname(__DIR__, 2) . '/templates', 'c975LPilot');
         $twig = new Environment($loader, ['strict_variables' => true]);
-        $twig->addExtension(new TranslationExtension(new IdentityTranslator()));
+        $twig->addExtension(new TranslationExtension($translator));
 
-        return $twig->render('@c975LPilot/pilot/_ai_share.html.twig', ['step' => $step, 'card' => ['id' => 7]]);
+        return $twig;
     }
 }

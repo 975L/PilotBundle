@@ -30,13 +30,19 @@ use c975L\PilotBundle\Security\PilotAccess;
 use c975L\PilotBundle\Service\CardFiller;
 use c975L\PilotBundle\Service\CardFlow;
 use c975L\PilotBundle\Service\CardImages;
+use c975L\PilotBundle\Service\CardMarkdown;
 use c975L\PilotBundle\Service\RunOutputs;
 use c975L\PilotBundle\Service\StepOrder;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class PilotControllerEditTest extends TestCase
@@ -151,42 +157,105 @@ class PilotControllerEditTest extends TestCase
         $this->assertSame($own, $method->invoke($controller, $this->report($own, ['site-2']), $request, null));
     }
 
-    // A card's run files and picture are deleted once its removal is written, kept when the flush fails
+    // A card's run files, picture and screenshots are deleted once its removal is written, kept when the flush fails
     public function testFilesDeletedAfterTheFlush(): void
     {
         $root = sys_get_temp_dir() . '/pilot-erase-' . bin2hex(random_bytes(4));
         $outputs = new RunOutputs($root);
         $images = new CardImages($root);
-        $card = $this->card()->setImage('card-7-a.png');
+        $shot = str_repeat('a', 32) . '.png';
+        $card = $this->card()->setImage('card-7-a.png')->addFeedback('feedback-1');
+        $card->setFeedbackImage(0, $shot);
         $run = new Run($card);
         new \ReflectionProperty(Run::class, 'id')->setValue($run, 7);
         $output = $outputs->folder($run) . '/item-1.txt';
         $image = $root . '/' . Card::IMAGE_DIRECTORY . '/card-7-a.png';
         new Filesystem()->dumpFile($output, 'catalog');
         new Filesystem()->dumpFile($image, 'catalog');
+        $screenshot = $root . '/' . Card::FEEDBACK_IMAGE_DIRECTORY . '/' . $shot;
+        new Filesystem()->dumpFile($screenshot, 'catalog');
         $failing = $this->createStub(EntityManagerInterface::class);
         $failing->method('flush')->willThrowException(new \RuntimeException());
 
         $refused = false;
         try {
-            $this->erase($this->controller(entityManager: $failing), $card, $outputs, $images);
+            $this->erase($this->controller(entityManager: $failing, images: $images), $card, $outputs);
         } catch (\RuntimeException) {
             $refused = true;
         }
         $this->assertTrue($refused);
         $this->assertFileExists($output);
         $this->assertFileExists($image);
+        $this->assertFileExists($screenshot);
 
-        $this->erase($this->controller(), $card, $outputs, $images);
+        $this->erase($this->controller(images: $images), $card, $outputs);
         $this->assertDirectoryDoesNotExist(\dirname($output));
         $this->assertFileDoesNotExist($image);
+        $this->assertFileDoesNotExist($screenshot);
         new Filesystem()->remove($root);
     }
 
     // The private removal run on a card
-    private function erase(PilotController $controller, Card $card, RunOutputs $outputs, CardImages $images): void
+    private function erase(PilotController $controller, Card $card, RunOutputs $outputs): void
     {
-        new \ReflectionMethod($controller, 'erase')->invoke($controller, $card, $outputs, $images);
+        new \ReflectionMethod($controller, 'erase')->invoke($controller, $card, $outputs);
+    }
+
+    // A feedback added with its screenshot keeps it under a random name; a picture refused adds nothing, an empty text keeps no file
+    public function testFeedbackAddedWithItsScreenshot(): void
+    {
+        $root = sys_get_temp_dir() . '/pilot-shot-' . bin2hex(random_bytes(4));
+        $controller = $this->controller(images: new CardImages($root));
+        $card = $this->card();
+        $this->gesture($controller, 'feedbackAdd', $card, ['text' => 'feedback-1'], $this->png());
+        $this->assertMatchesRegularExpression('/^' . CardImages::FEEDBACK_NAME . '$/', $card->getFeedbackImages()[0]);
+        $this->assertFileExists($root . '/' . Card::FEEDBACK_IMAGE_DIRECTORY . '/' . $card->getFeedbackImages()[0]);
+
+        $this->gesture($controller, 'feedbackAdd', $card, ['text' => ' '], $this->png());
+        $this->assertCount(1, $card->getFeedback());
+
+        $refused = false;
+        try {
+            $this->gesture($controller, 'feedbackAdd', $card, ['text' => 'feedback-2'], new UploadedFile(__FILE__, 'item-1.png', null, null, true));
+        } catch (FlowException) {
+            $refused = true;
+        }
+        $this->assertTrue($refused);
+        $this->assertCount(1, $card->getFeedback());
+        new Filesystem()->remove($root);
+    }
+
+    // A feedback's screenshot replaced by the one sent, removed by « remove », a step taking none
+    public function testFeedbackImageSetAndRemoved(): void
+    {
+        $root = sys_get_temp_dir() . '/pilot-shot-' . bin2hex(random_bytes(4));
+        $controller = $this->controller(images: new CardImages($root));
+        $card = $this->card()->addStep('step-1')->addFeedback('feedback-1');
+        $index = array_key_last($card->getChecklist());
+
+        $this->gesture($controller, 'feedbackImage', $card, ['index' => (string) $index], $this->png());
+        $this->assertCount(1, $card->getFeedbackImages());
+        $this->gesture($controller, 'feedbackImage', $card, ['index' => '0'], $this->png());
+        $this->assertArrayNotHasKey('img', $card->getChecklist()[0]);
+        $this->gesture($controller, 'feedbackImage', $card, ['index' => (string) $index, 'remove' => '1']);
+        $this->assertSame([], $card->getFeedbackImages());
+        new Filesystem()->remove($root);
+    }
+
+    // A private feedback gesture run on the posted fields and the picture sent
+    /** @param array<string, string> $fields */
+    private function gesture(PilotController $controller, string $method, Card $card, array $fields, ?UploadedFile $file = null): void
+    {
+        new \ReflectionMethod($controller, $method)->invoke($controller, $card, new Request(request: $fields, files: null === $file ? [] : ['image' => $file]));
+    }
+
+    // A one-pixel PNG sent as a pasted screenshot
+    private function png(): UploadedFile
+    {
+        $path = (string) tempnam(sys_get_temp_dir(), 'pilot');
+        file_put_contents($path, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', true));
+
+        return new UploadedFile($path, 'image.png', null, null, true);
     }
 
     // A report of the given space whose rows match these sites
@@ -199,6 +268,88 @@ class PilotControllerEditTest extends TestCase
     }
 
     // The private gesture run on the posted fields
+    // A reference deleted from its page leaves the cards citing it without one, the dialog told it is gone
+    public function testDocDeleted(): void
+    {
+        $card = $this->card();
+        $card->getDoc()?->setProject($card->getProject());
+        $doc = $card->getDoc();
+        $cards = $this->createStub(CardRepository::class);
+        $cards->method('findOfDoc')->willReturn([$card]);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->once())->method('remove')->with($doc);
+        $entityManager->expects($this->once())->method('flush');
+        $controller = $this->routed($this->controller(entityManager: $entityManager, access: $this->allowing(), cards: $cards), true);
+
+        $response = $controller->docDelete($doc, $this->dialogRequest());
+
+        $this->assertSame(204, $response->getStatusCode());
+        $this->assertSame('1', $response->headers->get(PilotController::GONE_HEADER));
+        $this->assertNull($card->getDoc());
+    }
+
+    // A reference whose token expired stays, the dialog told why
+    public function testDocKeptWithAnExpiredToken(): void
+    {
+        $card = $this->card();
+        $card->getDoc()?->setProject($card->getProject());
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('remove');
+        $controller = $this->routed($this->controller(entityManager: $entityManager, access: $this->allowing()), false);
+
+        $this->assertSame(422, $controller->docDelete($card->getDoc(), $this->dialogRequest())->getStatusCode());
+        $this->assertNotNull($card->getDoc());
+    }
+
+    // A card downloads as the markdown its steps are handed to an AI with, named after its number
+    public function testCardMarkdown(): void
+    {
+        $card = $this->card();
+        new \ReflectionProperty(Card::class, 'id')->setValue($card, 7);
+        $cardMarkdown = new CardMarkdown($this->createStub(DocRepository::class), $this->createStub(UrlGeneratorInterface::class));
+        $controller = $this->routed($this->controller(access: $this->allowing()), true);
+
+        $response = $controller->cardMarkdown($card, $cardMarkdown);
+
+        $this->assertSame($cardMarkdown->write($card), $response->getContent());
+        $this->assertStringStartsWith('text/markdown', (string) $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('card-7.md', (string) $response->headers->get('Content-Disposition'));
+    }
+
+    // An access granting every level
+    private function allowing(): PilotAccess
+    {
+        $access = $this->createStub(PilotAccess::class);
+        $access->method('can')->willReturn(true);
+
+        return $access;
+    }
+
+    // A request sent from the card's dialog
+    private function dialogRequest(): Request
+    {
+        $request = new Request(request: ['_token' => 't']);
+        $request->headers->set(PilotController::DIALOG_HEADER, '1');
+
+        return $request;
+    }
+
+    // The controller given a signed-in account, a router and a token checker answering as told
+    private function routed(PilotController $controller, bool $validToken): PilotController
+    {
+        $checker = $this->createStub(AuthorizationCheckerInterface::class);
+        $checker->method('isGranted')->willReturn(true);
+        $csrf = $this->createStub(CsrfTokenManagerInterface::class);
+        $csrf->method('isTokenValid')->willReturn($validToken);
+        $container = new Container();
+        $container->set('router', $this->createStub(UrlGeneratorInterface::class));
+        $container->set('security.authorization_checker', $checker);
+        $container->set('security.csrf.token_manager', $csrf);
+        $controller->setContainer($container);
+
+        return $controller;
+    }
+
     /** @param array<string, string> $fields */
     private function edit(Card $card, array $fields): void
     {
@@ -206,12 +357,12 @@ class PilotControllerEditTest extends TestCase
         new \ReflectionMethod($controller, 'edit')->invoke($controller, $card, new Request(request: $fields));
     }
 
-    // The controller on stubs, the spaces, the access and the entity manager given when a test needs them
-    private function controller(?ProjectRepository $projects = null, ?PilotAccess $access = null, ?EntityManagerInterface $entityManager = null): PilotController
+    // The controller on stubs, the spaces, the access, the entity manager and the cards given when a test needs them
+    private function controller(?ProjectRepository $projects = null, ?PilotAccess $access = null, ?EntityManagerInterface $entityManager = null, ?CardImages $images = null, ?CardRepository $cards = null): PilotController
     {
         return new PilotController(
             $entityManager ?? $this->createStub(EntityManagerInterface::class),
-            $this->createStub(CardRepository::class),
+            $cards ?? $this->createStub(CardRepository::class),
             $this->createStub(ReportRepository::class),
             $this->createStub(DocRepository::class),
             $projects ?? $this->createStub(ProjectRepository::class),
@@ -224,6 +375,7 @@ class PilotControllerEditTest extends TestCase
             $access ?? $this->createStub(PilotAccess::class),
             $this->createStub(MemberRepository::class),
             $this->createStub(CardSetRepository::class),
+            $images ?? new CardImages(sys_get_temp_dir()),
         );
     }
 }

@@ -4,9 +4,11 @@
 {% set waiting = not (step.done ?? false) and card.isStepWaiting(index) %}
 {% set step_run = step_runs[index] ?? null %}
 {% set step_failed = step_run and step_run.status.value in ['failed', 'blocked'] %}
-<li class="d-flex align-items-start gap-2 mb-1" data-pilot-step-sort-target="item" data-index="{{ index }}">
-    {# Moved by hand only while open and on a card of its own, a template setting the order of the cards following it #}
-    {% if not (step.done ?? false) and not (card.template and card.template.checklist) %}<span class="text-body-secondary pilot-sort-handle pilot-step-handle" data-pilot-step-sort-handle title="{{ 'label.step_move'|trans({}, 'pilot') }}" aria-hidden="true"><i class="fas fa-grip-vertical fa-xs"></i></span>{% endif %}
+<li class="d-flex align-items-start gap-2 mb-1 pilot-step-line" data-pilot-step-sort-target="item" data-index="{{ index }}">
+    {# Moved by hand only while open and on a card of its own, a template setting the order of the cards following it; a ticked step keeps the handle's room so its box lines up with the others #}
+    {% if not (card.template and card.template.checklist) %}
+        {% if step.done ?? false %}<span class="pilot-sort-handle invisible" aria-hidden="true"><i class="fas fa-grip-vertical fa-xs"></i></span>{% else %}<span class="text-body-secondary pilot-sort-handle pilot-step-handle" data-pilot-step-sort-handle title="{{ 'label.step_move'|trans({}, 'pilot') }}" aria-hidden="true"><i class="fas fa-grip-vertical fa-xs"></i></span>{% endif %}
+    {% endif %}
     <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'step'}) }}" class="form-check mb-0 me-n1">
         <input type="hidden" name="_token" value="{{ token }}">
         <input type="hidden" name="index" value="{{ index }}">

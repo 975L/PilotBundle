@@ -3,6 +3,31 @@
         "date": "2026-11-19",
         "description": [
             {
+                "en": "Piloting: a card downloads as a Markdown file or prints, as a PDF from the print window, from its download and printer buttons.",
+                "fr": "Pilotage : une carte se télécharge en Markdown ou s'imprime, en PDF depuis la fenêtre d'impression, par ses boutons téléchargement et imprimante.",
+                "es": "Pilotaje: una tarjeta se descarga en Markdown o se imprime, en PDF desde la ventana de impresión, con sus botones de descarga e impresora."
+            },
+            {
+                "en": "Piloting: a reference is deleted from the bottom of its page, the cards citing it staying; its headings no longer show oversized.",
+                "fr": "Pilotage : une référence se supprime en bas de sa page, les cartes qui la citent restant ; ses titres ne s'affichent plus en très gros.",
+                "es": "Pilotaje: una referencia se elimina desde el final de su página, las tarjetas que la citan se quedan; sus títulos ya no se muestran enormes."
+            },
+            {
+                "en": "Piloting: feedback becomes comments, and each comment takes a screenshot, pasted with Ctrl+V or dropped on the field while it is written, or sent by its picture button; the robot button hands its address to the AI along with the comment; the « to decide » mark is gone, a comment being done or deleted.",
+                "fr": "Pilotage : les retours deviennent des commentaires, et chaque commentaire prend une capture, collée par Ctrl+V ou déposée sur le champ pendant la saisie, ou envoyée par son bouton image ; le bouton robot en donne l'adresse à l'IA avec le commentaire ; le marquage « à trancher » disparaît, un commentaire se fait ou se supprime.",
+                "es": "Pilotaje: las observaciones pasan a llamarse comentarios, y cada comentario admite una captura, pegada con Ctrl+V o soltada sobre el campo al escribirlo, o enviada con su botón de imagen; el botón robot entrega su dirección a la IA junto con el comentario; la marca « por decidir » desaparece, un comentario se hace o se borra."
+            },
+            {
+                "en": "Piloting: a ticked step stays in its place on the card, struck through, so the steps keep their order; only several ticked in a row fold together where they stand.",
+                "fr": "Pilotage : une étape cochée reste à sa place sur la carte, barrée, pour garder l'ordre des étapes ; seules plusieurs cochées à la suite se replient ensemble là où elles sont.",
+                "es": "Pilotaje: un paso marcado se queda en su sitio en la tarjeta, tachado, para conservar el orden de los pasos; solo varios marcados seguidos se pliegan juntos donde están."
+            },
+            {
+                "en": "Piloting: after adding a step or a comment with Enter, the field stays ready for the next one; clicking elsewhere adds it too.",
+                "fr": "Pilotage : après l'ajout d'une étape ou d'un commentaire par Entrée, le champ reste prêt pour le suivant ; un clic ailleurs l'ajoute aussi.",
+                "es": "Pilotaje: tras añadir un paso o un comentario con Intro, el campo sigue listo para el siguiente; un clic en otro sitio también lo añade."
+            },
+            {
                 "en": "Piloting: the piloting pages leave the back office for their own address, /pilot, opened from the « Dashboard » link of the back office; the settings are there too.",
                 "fr": "Pilotage : les pages de pilotage quittent le back-office pour leur propre adresse, /pilot, ouverte par le lien « Tableau de bord » du back-office ; les réglages y sont aussi.",
                 "es": "Pilotaje: las páginas de pilotaje dejan el back-office por su propia dirección, /pilot, abierta desde el enlace « Panel » del back-office; los ajustes también están allí."

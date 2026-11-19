@@ -28,10 +28,10 @@ class CardImagesTest extends TestCase
 
     protected function tearDown(): void
     {
-        foreach (glob($this->root . '/' . Card::IMAGE_DIRECTORY . '/*') ?: [] as $path) {
+        foreach ([...glob($this->root . '/' . Card::IMAGE_DIRECTORY . '/*') ?: [], ...glob($this->root . '/' . Card::FEEDBACK_IMAGE_DIRECTORY . '/*') ?: []] as $path) {
             unlink($path);
         }
-        foreach ([Card::IMAGE_DIRECTORY, 'private/pilot', 'private', ''] as $folder) {
+        foreach ([Card::IMAGE_DIRECTORY, Card::FEEDBACK_IMAGE_DIRECTORY, 'private/pilot', 'private', ''] as $folder) {
             if (is_dir($this->root . '/' . $folder)) {
                 rmdir($this->root . '/' . $folder);
             }
@@ -73,6 +73,22 @@ class CardImagesTest extends TestCase
         $this->assertFalse($images->store($card, $this->upload('item-1.jpg')));
         $this->assertNull($card->getImage());
         unlink($text);
+    }
+
+    // A screenshot kept under 128 random bits, found by that name alone, a sheet's picture never served by it, then forgotten
+    public function testFeedbackScreenshot(): void
+    {
+        $images = new CardImages($this->root);
+        $name = (string) $images->storeFeedback($this->upload('image.png'));
+
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{32}\\.png$/', $name);
+        $this->assertFileExists((string) $images->feedbackPath($name));
+        $this->assertNull($images->storeFeedback($this->upload('image.jpg')));
+        $this->assertNull($images->feedbackPath('../cards/card-7-a1b2c3d4.png'));
+        $this->assertNull($images->feedbackPath(str_repeat('b', 32) . '.png'));
+
+        $images->forget([$name]);
+        $this->assertNull($images->feedbackPath($name));
     }
 
     // A one-pixel PNG sent under the given name

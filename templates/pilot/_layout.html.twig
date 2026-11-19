@@ -23,6 +23,8 @@
         .pilot-dialog { width: min(48rem, calc(100vw - 2rem)); max-height: calc(100vh - 2rem); border: 0; border-radius: .75rem; padding: 0; box-shadow: 0 1rem 3rem rgba(0, 0, 0, .3); background: var(--bs-body-bg); color: var(--bs-body-color); }
         .pilot-confirm { width: min(32rem, calc(100vw - 2rem)); overflow: hidden; }
         .pilot-dialog::backdrop { background: rgba(0, 0, 0, .45); }
+        .pilot-zoom { width: auto; max-width: calc(100vw - 2rem); cursor: zoom-out; }
+        .pilot-zoom img { max-width: calc(100vw - 2rem); max-height: calc(100vh - 2rem); }
         .pilot-dialog-close { position: sticky; top: 0; float: right; z-index: 3; }
         .pilot-sort-handle { cursor: grab; }
         .pilot-fold-head { cursor: pointer; }
@@ -40,14 +42,28 @@
         .pilot-inline-form:not([hidden]) { display: inline-flex; flex-wrap: wrap; gap: .25rem; }
         /* A long step wraps beside its box instead of dropping below it */
         .pilot-step-body { flex: 0 1 auto; min-width: 0; overflow-wrap: anywhere; }
+        .pilot-step-line > :not(.pilot-step-body) { min-height: 1.5rem; display: flex; align-items: center; }
+        .pilot-step-line > .form-check .form-check-input { margin-top: 0; }
+        .pilot-step-line .btn-sm { line-height: 1.25; min-height: 0; height: 1.375rem; }
         .pilot-drop { min-height: 3.5rem; border-radius: .5rem; }
         .pilot-cards.pilot-sheets { grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); }
         .pilot-sheet-image { aspect-ratio: 1; object-fit: cover; }
         .pilot-sheet-full { max-height: 70vh; }
+        .pilot-feedback-shot img { max-width: 8rem; max-height: 5rem; }
+        .pilot-feedback-shot-preview { max-height: 2rem; }
         .pilot-sheet-initial { place-items: center; font-size: 2.4rem; background: var(--bs-tertiary-bg); }
         .pilot-dragging .pilot-project-link.pilot-drop-over, .pilot-dragging .pilot-tabs-nav .nav-link.pilot-drop-over { outline: 2px solid var(--bs-primary); outline-offset: -2px; }
         .pilot-dragging .pilot-collection-new summary.pilot-drop-over { background: var(--bs-primary); border-color: var(--bs-primary); color: var(--bs-white); transform: scale(1.15); }
         .pilot-dragging .pilot-drop { outline: 2px dashed var(--bs-border-color); outline-offset: 4px; }
+        /* Headings written in a file's markdown kept to the size of its text */
+        .pilot-doc-body :is(h1, h2, h3, h4, h5, h6) { font-size: 1em; font-weight: 600; margin: .75em 0 .25em; }
+        /* Printed: the card or the page alone, its dialog laid flat when it shows one, without the spaces, the buttons nor the fields */
+        @media print {
+            .pilot-projects, .pilot-dialog-close, .pilot-sort-handle, .btn, .form-control, .form-select { display: none !important; }
+            .pilot-shell > main { width: 100%; }
+            body:has(.pilot-dialog[open]) .pilot-shell > main { display: none; }
+            .pilot-dialog[open] { position: static; width: auto; max-height: none; overflow: visible; box-shadow: none; }
+        }
         {% for item in pilot_projects|filter(item => item.color matches '/^#[0-9a-fA-F]{3,8}$/') %}
         .pilot-color-{{ item.slug }} { background-color: {{ item.color }}; }
         .pilot-ink-{{ item.slug }} { --pilot-ink: {{ item.color }}; }
@@ -98,6 +114,10 @@
         <dialog class="pilot-dialog" data-pilot-card-modal-target="dialog" aria-label="{{ 'label.card'|trans({}, 'pilot') }}">
             <form method="dialog" class="pilot-dialog-close p-2"><button class="btn-close" aria-label="{{ 'label.close'|trans({}, 'pilot') }}"></button></form>
             <div class="p-4 pt-2" data-pilot-card-modal-target="body"></div>
+        </dialog>
+        {# A screenshot opened full size over the page or the card's dialog, closed by a click anywhere #}
+        <dialog class="pilot-dialog pilot-zoom" data-pilot-card-modal-target="zoom" aria-label="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}">
+            <img alt="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}" class="d-block" data-pilot-card-modal-target="zoomImage">
         </dialog>
         {# The asking before a deletion, over the page or the card's dialog, as the back office asks it #}
         <dialog class="pilot-dialog pilot-confirm" data-pilot-card-modal-target="confirm" aria-labelledby="pilot-confirm-title">

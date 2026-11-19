@@ -10,8 +10,10 @@
 
 namespace c975L\PilotBundle\Service;
 
+use c975L\PilotBundle\Controller\CardImageController;
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Repository\DocRepository;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 // A card as one markdown text, read and rewritten through its editing link: title, date and awaited answer, note, steps, feedback, then its reference in full
 class CardMarkdown
@@ -31,6 +33,7 @@ class CardMarkdown
 
     public function __construct(
         private readonly DocRepository $docRepository,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
@@ -134,11 +137,11 @@ class CardMarkdown
         $card->restep($laid, $from, $day);
     }
 
-    // One task list read against the items of its kind the card has: an item kept by its text (each one once, in order) keeping what it spends, its run and the action it names (shown after it, read back as its own); a step in the group of the « ### » heading above it; a feedback starting with « ? » still to decide
+    // One task list read against the items of its kind the card has: an item kept by its text (each one once, in order) keeping what it spends, its run and the action it names (shown after it, read back as its own); a step in the group of the « ### » heading above it
     /**
-     * @param array<int, array{t: string, done?: bool, doneAt?: string, feedback?: bool, ask?: bool}> $own
+     * @param array<int, array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string}> $own
      *
-     * @return array{list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, ask?: bool}>, list<?int>}
+     * @return array{list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string}>, list<?int>}
      */
     private function readList(string $text, array $own, bool $feedback, \DateTimeImmutable $day): array
     {
@@ -146,8 +149,14 @@ class CardMarkdown
         $steps = [];
         $from = [];
         $group = null;
-        preg_match_all('/^(?:### (.+)|- \[([ xX])\] (.+))$/m', $text, $items, \PREG_SET_ORDER);
+        preg_match_all('/^(?:### (.+)|- \[([ xX])\] (.+)|\s+!\[[^\]]*\]\(\S*\/(' . CardImages::FEEDBACK_NAME . ')\))$/m', $text, $items, \PREG_SET_ORDER);
         foreach ($items as $item) {
+            // The screenshot written under a feedback is its own, its file kept by its name, only one the card already holds
+            if ('' !== ($item[4] ?? '')) {
+                $steps = self::withImage($steps, $feedback && \in_array($item[4], array_column($own, 'img'), true), $item[4]);
+
+                continue;
+            }
             if ('' !== $item[1]) {
                 // « ### - » closes a group, the steps under it in none
                 $name = trim($item[1]);
@@ -161,15 +170,29 @@ class CardMarkdown
             // So is the day the step is planned for, written « @2027-02-03 » after its text
             $due = !$feedback && 1 === preg_match('/ @(\d{4}-\d{2}-\d{2})$/', $title, $planned) ? $planned[1] : null;
             $title = null !== $due ? mb_substr($title, 0, -12) : $title;
-            $ask = $feedback && str_starts_with($title, '?');
-            $title = $ask ? ltrim(substr($title, 1)) : $title;
             $index = StepOrder::take($free, $title);
             $from[] = $index;
             $step = null === $index ? ['t' => mb_substr($title, 0, 500)] : $own[$index];
-            $steps[] = $this->mark($feedback ? $step : self::planned(StepOrder::grouped($step, ['group' => $group ?? '']), $due), ' ' !== $mark, $feedback ? $ask : null, $day);
+            unset($step['img']);
+            $steps[] = $this->mark($feedback ? $step : self::planned(StepOrder::grouped($step, ['group' => $group ?? '']), $due), ' ' !== $mark, $feedback, $day);
         }
 
         return [$steps, $from];
+    }
+
+    // The screenshot given to the feedback read just before it, when it may take it, a step or nothing above it taking none
+    /**
+     * @param list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string}> $steps
+     *
+     * @return list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string}>
+     */
+    private static function withImage(array $steps, bool $allowed, string $name): array
+    {
+        if ($allowed && [] !== $steps) {
+            $steps[\count($steps) - 1]['img'] = $name;
+        }
+
+        return $steps;
     }
 
     // A step planned for the day read, a valid one only, or for none
@@ -189,13 +212,13 @@ class CardMarkdown
         return $step;
     }
 
-    // An item ticked or not, dated the day it is ticked, and for a feedback still to decide or not
+    // An item ticked or not, dated the day it is ticked, a feedback kept as such
     /**
-     * @param array{t: string, done?: bool, doneAt?: string, feedback?: bool, ask?: bool} $step
+     * @param array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string} $step
      *
-     * @return array{t: string, done?: bool, doneAt?: string, feedback?: bool, ask?: bool}
+     * @return array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string}
      */
-    private function mark(array $step, bool $done, ?bool $ask, \DateTimeImmutable $day): array
+    private function mark(array $step, bool $done, bool $feedback, \DateTimeImmutable $day): array
     {
         if (!$done) {
             unset($step['done'], $step['doneAt']);
@@ -203,12 +226,8 @@ class CardMarkdown
             $step['done'] = true;
             $step['doneAt'] = $day->format('Y-m-d');
         }
-        if (null !== $ask) {
+        if ($feedback) {
             $step['feedback'] = true;
-            unset($step['ask']);
-            if ($ask) {
-                $step['ask'] = true;
-            }
         }
 
         return $step;
@@ -224,7 +243,7 @@ class CardMarkdown
         $card->setDoc($doc->fromMarkdown($text));
     }
 
-    // The steps as task list items under the « ### » heading of their group, the day one is planned for after its text, then the feedback, one still to decide starting with « ? »
+    // The steps as task list items under the « ### » heading of their group, the day one is planned for after its text, then the feedback, its screenshot as an image on the indented line under it
     /** @return list<string> */
     private function steps(Card $card): array
     {
@@ -240,11 +259,20 @@ class CardMarkdown
                     $group = $step['g'] ?? null;
                     array_push($lines, '', '### ' . ($group ?? '-'), '');
                 }
-                $lines[] = '- [' . (($step['done'] ?? false) ? 'x' : ' ') . '] ' . (($step['ask'] ?? false) ? '? ' : '') . $step['t'] . (isset($step['due']) ? ' @' . $step['due'] : '') . (isset($step['action']) ? ' `' . $step['action'] . '`' : '');
+                $lines[] = '- [' . (($step['done'] ?? false) ? 'x' : ' ') . '] ' . $step['t'] . (isset($step['due']) ? ' @' . $step['due'] : '') . (isset($step['action']) ? ' `' . $step['action'] . '`' : '');
+                if (isset($step['img'])) {
+                    $lines[] = '  ![screenshot](' . $this->imageUrl($step['img']) . ')';
+                }
             }
         }
 
         return $lines;
+    }
+
+    // Absolute address of a feedback's screenshot, readable by whoever holds it, an AI fetching it included
+    private function imageUrl(string $name): string
+    {
+        return $this->urlGenerator->generate(CardImageController::FEEDBACK_ROUTE, ['name' => $name], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
     // The reference the card points to, whole as its own markdown file writes it: the summary for a human, the detail for whoever works on it

@@ -17,6 +17,7 @@ use c975L\PilotBundle\Entity\Run;
 use c975L\PilotBundle\Repository\DocRepository;
 use c975L\PilotBundle\Service\CardMarkdown;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CardMarkdownTest extends TestCase
 {
@@ -59,14 +60,14 @@ class CardMarkdownTest extends TestCase
         $this->assertSame("# item-1\n\n- Project: Catalog\n- Status: ready\n- Due: \n- Waiting on: \n", $this->markdown()->write(new Card(new Project('catalog', 'Catalog'), 'item-1')));
     }
 
-    // The feedback after the steps, a question still to decide written with « ? »: read back the same, a list left out keeping what the card had
+    // The feedback after the steps, read back the same, a list left out keeping what the card had
     public function testFeedback(): void
     {
-        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1', 'done' => true]])->addFeedback('feedback-1')->addFeedback('? feedback-2');
-        $this->assertWrittenAndReadBack($card, "## Steps\n\n- [x] step-1\n\n## Feedback\n\n- [ ] feedback-1\n- [ ] ? feedback-2\n");
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1', 'done' => true]])->addFeedback('feedback-1')->addFeedback('feedback-2');
+        $this->assertWrittenAndReadBack($card, "## Steps\n\n- [x] step-1\n\n## Feedback\n\n- [ ] feedback-1\n- [ ] feedback-2\n");
 
-        $this->read($card, "## Feedback\n\n- [x] ? feedback-2\n- [ ] feedback-3\n");
-        $this->assertSame([['t' => 'step-1', 'done' => true], ['t' => 'feedback-2', 'feedback' => true, 'done' => true, 'doneAt' => '2026-11-21', 'ask' => true], ['t' => 'feedback-3', 'feedback' => true]], $card->getChecklist());
+        $this->read($card, "## Feedback\n\n- [x] feedback-2\n- [ ] feedback-3\n");
+        $this->assertSame([['t' => 'step-1', 'done' => true], ['t' => 'feedback-2', 'feedback' => true, 'done' => true, 'doneAt' => '2026-11-21'], ['t' => 'feedback-3', 'feedback' => true]], $card->getChecklist());
 
         $this->read($card, "## Steps\n\n- [ ] step-1\n");
         $this->assertSame(['step-1', 'feedback-2', 'feedback-3'], array_column($card->getChecklist(), 't'));
@@ -123,7 +124,7 @@ class CardMarkdownTest extends TestCase
         $docs = $this->createMock(DocRepository::class);
         $docs->expects($this->once())->method('newFile')->with($card->getProject(), 'item-1')->willReturn(new Doc('catalog-item-1', 'item-1'));
 
-        new CardMarkdown($docs)->read($card, "## Reference\n\n# File\n\ndetail-1", new \DateTimeImmutable('2026-11-21'));
+        new CardMarkdown($docs, $this->urls())->read($card, "## Reference\n\n# File\n\ndetail-1", new \DateTimeImmutable('2026-11-21'));
 
         $this->assertSame('detail-1', $card->getDoc()?->getDetail());
     }
@@ -171,6 +172,34 @@ class CardMarkdownTest extends TestCase
         $this->assertSame($markdown, $this->markdown()->write($this->read($card, $markdown)));
     }
 
+    // A feedback's screenshot written as an image under it, read back with it, and dropped when its line is removed
+    public function testScreenshot(): void
+    {
+        $shot = str_repeat('a', 32) . '.png';
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->addFeedback('feedback-1');
+        $card->setFeedbackImage(0, $shot);
+        $markdown = $this->markdown()->write($card);
+        $this->assertStringContainsString("- [ ] feedback-1\n  ![screenshot](https://example.com/pilot/share/image/" . $shot . ")\n", $markdown);
+
+        $this->markdown()->read($card, $markdown, new \DateTimeImmutable('2026-11-21'));
+        $this->assertSame([$shot], $card->getFeedbackImages());
+
+        $this->markdown()->read($card, "## Feedback\n\n- [ ] feedback-1 rewritten\n  ![screenshot](https://example.com/pilot/share/image/" . $shot . ")\n- [ ] feedback-2\n", new \DateTimeImmutable('2026-11-21'));
+        $this->assertSame([$shot], $card->getFeedbackImages());
+
+        $this->markdown()->read($card, "## Feedback\n\n- [ ] feedback-1 rewritten\n", new \DateTimeImmutable('2026-11-21'));
+        $this->assertSame([], $card->getFeedbackImages());
+    }
+
+    // A screenshot the card does not hold, written under one of its feedback, never taken, so that its removal cannot delete another card's file
+    public function testForeignScreenshotIgnored(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->addFeedback('feedback-1');
+        $this->read($card, "## Feedback\n\n- [ ] feedback-1\n  ![screenshot](https://example.com/pilot/share/image/" . str_repeat('b', 32) . ".png)\n");
+
+        $this->assertSame([], $card->getFeedbackImages());
+    }
+
     // A text read into the card on a fixed day
     private function read(Card $card, string $text): Card
     {
@@ -179,7 +208,7 @@ class CardMarkdownTest extends TestCase
 
     private function markdown(): CardMarkdown
     {
-        return new CardMarkdown($this->createStub(DocRepository::class));
+        return new CardMarkdown($this->createStub(DocRepository::class), $this->urls());
     }
 
     // Each group of steps written under its « ### » heading, « ### - » closing it, read back the same; a step moved under another heading changes group
@@ -220,5 +249,14 @@ class CardMarkdownTest extends TestCase
 
         $this->read($card, "# item-1\n\n- Result: ftp://example.com\n");
         $this->assertNull($card->getResultUrl());
+    }
+
+    // Addresses of the screenshots, as the router writes them
+    private function urls(): UrlGeneratorInterface
+    {
+        $urls = $this->createStub(UrlGeneratorInterface::class);
+        $urls->method('generate')->willReturnCallback(static fn (string $route, array $parameters): string => 'https://example.com/pilot/share/image/' . $parameters['name']);
+
+        return $urls;
     }
 }

@@ -16,6 +16,7 @@ use c975L\PilotBundle\Exception\FlowException;
 use c975L\PilotBundle\Repository\CardRepository;
 use c975L\PilotBundle\Service\ActionOffer;
 use c975L\PilotBundle\Service\CardFlow;
+use c975L\PilotBundle\Service\CardImages;
 use c975L\PilotBundle\Service\CardMarkdown;
 use c975L\PilotBundle\Service\StepOrder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -45,6 +46,7 @@ class ShareController extends AbstractController
         private readonly CardFlow $cardFlow,
         private readonly ActionOffer $actionOffer,
         private readonly StepOrder $stepOrder,
+        private readonly CardImages $cardImages,
     ) {
     }
 
@@ -74,7 +76,7 @@ class ShareController extends AbstractController
         return $this->unlisted(new Response($this->cardMarkdown->write($card), Response::HTTP_OK, ['Content-Type' => 'text/markdown; charset=UTF-8']));
     }
 
-    // The card rewritten through its editing link, steps only moved around carried to its template like a drag: the page's form back to the page, a markdown body sent as such answered 204
+    // The card rewritten through its editing link, steps only moved around carried to its template like a drag, the screenshots of the feedback it no longer holds removed: the page's form back to the page, a markdown body sent as such answered 204
     #[Route('/pilot/share/{token}', name: 'pilot_share_save', requirements: ['token' => self::TOKEN], methods: ['POST'])]
     public function save(string $token, Request $request): Response
     {
@@ -84,14 +86,16 @@ class ShareController extends AbstractController
             throw new NotFoundHttpException();
         }
         $before = $card->getChecklist();
+        $images = $card->getFeedbackImages();
         $this->cardMarkdown->read($card, $form ? $request->request->getString('markdown') : $request->getContent(), $this->clock->now());
         $this->stepOrder->follow($card, $before);
         $this->entityManager->flush();
+        $this->cardImages->forget(array_values(array_diff($images, $card->getFeedbackImages())));
 
         return $form ? $this->redirectToRoute(self::ROUTE, ['token' => $token], Response::HTTP_SEE_OTHER) : $this->unlisted(new Response(null, Response::HTTP_NO_CONTENT));
     }
 
-    // A gesture through the editing link: a step ticked or moved up (carried to its template), a feedback added (« ? » first for one still to decide), the machine action a step names queued or withdrawn, or the card handed to an action offered on its project asking nothing; the page's form back to the page, any other call answered 204, a refusal 422
+    // A gesture through the editing link: a step ticked or moved up (carried to its template), a feedback added, the machine action a step names queued or withdrawn, or the card handed to an action offered on its project asking nothing; the page's form back to the page, any other call answered 204, a refusal 422
     #[Route('/pilot/share/{token}/{gesture}', name: 'pilot_share_gesture', requirements: ['token' => self::TOKEN, 'gesture' => 'step|stepup|feedback|runstep|cancel|entrust'], methods: ['POST'])]
     public function gesture(string $token, string $gesture, Request $request): Response
     {

@@ -1,5 +1,5 @@
-{# A step or a feedback still open handed to an AI: the click copies it with the card's markdown, ready to paste into a session #}
+{# A step or a feedback still open handed to an AI: the click copies it, with the address of its screenshot (ai_image) for the AI to fetch, and the card's markdown (a feedback only the card's title and pitch), ready to paste into a session #}
 {% if not (step.done ?? false) %}
     {% set ai_label = 'label.ai_share'|trans({}, 'pilot') %}
-    <button type="button" class="btn btn-sm btn-outline-secondary py-0 flex-shrink-0 pilot-ai-share" data-controller="pilot-copy" data-action="pilot-copy#copy" data-pilot-copy-text-value="{{ 'label.ai_task'|trans({'%step%': step.t}, 'pilot') }}" data-pilot-copy-context-value="pilot-ai-context-{{ card.id }}" title="{{ ai_label }}" aria-label="{{ ai_label }}"><i class="fas fa-robot"></i></button>
+    <button type="button" class="btn btn-sm btn-link text-body-secondary py-0 flex-shrink-0 pilot-ai-share" data-controller="pilot-copy" data-action="pilot-copy#copy" data-pilot-copy-text-value="{{ 'label.ai_task'|trans({'%step%': step.t ~ ((ai_image ?? null) ? ' — ' ~ ai_image : '')}, 'pilot') }}" data-pilot-copy-context-value="{{ ai_context ?? ('pilot-ai-context-' ~ card.id) }}" title="{{ ai_label }}" aria-label="{{ ai_label }}"><i class="fas fa-robot"></i></button>
 {% endif %}

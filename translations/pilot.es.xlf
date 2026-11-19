@@ -334,6 +334,10 @@
                 <source>label.dashboard</source>
                 <target>Panel</target>
             </trans-unit>
+            <trans-unit id="11I2KVA">
+                <source>label.doc_delete</source>
+                <target>Eliminar la referencia</target>
+            </trans-unit>
             <trans-unit id="yAOLzB4">
                 <source>label.doc_detail</source>
                 <target>El detalle (para Claude, en markdown)</target>
@@ -398,17 +402,17 @@
                 <source>label.feedback_add</source>
                 <target>Añadir un comentario</target>
             </trans-unit>
-            <trans-unit id="FSugLaO">
-                <source>label.feedback_ask</source>
-                <target>Marcar por decidir</target>
+            <trans-unit id="ak7s6JW">
+                <source>label.feedback_image</source>
+                <target>Adjuntar una captura</target>
             </trans-unit>
-            <trans-unit id="ugFRcxb">
-                <source>label.feedback_decided</source>
-                <target>Marcar decidido</target>
+            <trans-unit id="knyhcYc">
+                <source>label.feedback_image_remove</source>
+                <target>Quitar la captura</target>
             </trans-unit>
-            <trans-unit id="Im4Fgl0">
-                <source>label.feedback_to_decide</source>
-                <target>Por decidir</target>
+            <trans-unit id="_7kRkv3">
+                <source>label.feedback_image_view</source>
+                <target>Captura</target>
             </trans-unit>
             <trans-unit id="_J1nX.h">
                 <source>label.gesture_expired</source>
@@ -486,13 +490,17 @@
                 <source>label.info_credits</source>
                 <target>Los saldos de los servicios de pago, mostrados en el panel. Los que lee una máquina aparecen solos; añada aquí un servicio sin API y escriba su saldo en el panel.</target>
             </trans-unit>
+            <trans-unit id="4BsAj9K">
+                <source>label.info_doc_delete</source>
+                <target>La referencia se elimina sin vuelta atrás, las tarjetas que la citan se quedan, sin referencia.</target>
+            </trans-unit>
             <trans-unit id="FxX95j_">
                 <source>label.info_entrust</source>
                 <target>Una máquina (el runner en tu equipo) ejecuta para esta tarjeta una de sus acciones, por ejemplo un script, y luego muestra su resultado para validarlo o devolverlo con un comentario.</target>
             </trans-unit>
             <trans-unit id="Qjf4vqF">
                 <source>label.info_feedback_add</source>
-                <target>Una corrección o una idea; « ? » delante para una pregunta por decidir</target>
+                <target>Una corrección o una idea; una captura se pega aquí</target>
             </trans-unit>
             <trans-unit id="vUIKvYe">
                 <source>label.info_machine_projects</source>
@@ -648,7 +656,7 @@
             </trans-unit>
             <trans-unit id="fKU3y1e">
                 <source>label.output_elsewhere</source>
-                <target>Quedó en la máquina (demasiado pesado para enviarlo)</target>
+                <target>No está en el sitio (demasiado pesado o borrado), quedó en la máquina</target>
             </trans-unit>
             <trans-unit id="f8icqBu">
                 <source>label.pilot</source>
@@ -669,6 +677,10 @@
             <trans-unit id="ybu4fs_">
                 <source>label.plan_title</source>
                 <target>Título del plan</target>
+            </trans-unit>
+            <trans-unit id="ysrNeeK">
+                <source>label.print</source>
+                <target>Imprimir o guardar en PDF</target>
             </trans-unit>
             <trans-unit id="1QBj5KM">
                 <source>label.project</source>

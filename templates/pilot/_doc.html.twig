@@ -7,7 +7,7 @@
                 <span class="h6">{{ doc.title }}</span>{{ download }}
                 {% if doc.summary %}<div class="small mt-1">{{ doc.summary|pilot_markdown }}</div>{% endif %}
             </summary>
-            <div class="small">{{ doc.detail|pilot_markdown }}</div>
+            <div class="small pilot-doc-body">{{ doc.detail|pilot_markdown }}</div>
         </details>
     {% else %}
         <h3 class="h6 mb-1">{{ doc.title }}{{ download }}</h3>

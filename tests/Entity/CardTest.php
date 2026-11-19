@@ -314,22 +314,19 @@ class CardTest extends TestCase
         $this->assertTrue($card->markDone(new \DateTimeImmutable('2026-11-19'))->isDone());
     }
 
-    // A feedback goes after the steps, still to decide when it starts with « ? », an empty one adding nothing; a step added goes before it, the runs following their step
+    // A feedback goes after the steps, an empty one adding nothing; a step added goes before it, the runs following their step
     public function testFeedback(): void
     {
         $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1']]);
-        $card->addFeedback(' feedback-1 ')->addFeedback('? feedback-2')->addFeedback(' ? ');
+        $card->addFeedback(' feedback-1 ')->addFeedback('feedback-2')->addFeedback('  ');
         $run = new Run($card, 'build', [], 1);
         $card->addStep('step-2');
 
         $this->assertSame(['step-1', 'step-2', 'feedback-1', 'feedback-2'], array_column($card->getChecklist(), 't'));
         $this->assertSame([0, 1], array_keys($card->getSteps()));
-        $this->assertSame([2 => ['t' => 'feedback-1', 'feedback' => true], 3 => ['t' => 'feedback-2', 'feedback' => true, 'ask' => true]], $card->getFeedback());
+        $this->assertSame([2 => ['t' => 'feedback-1', 'feedback' => true], 3 => ['t' => 'feedback-2', 'feedback' => true]], $card->getFeedback());
         $this->assertSame(2, $run->getStep());
         $this->assertTrue($card->isFeedback(2));
-        $this->assertFalse($card->toggleAsk(3)->toggleAsk(2)->toggleAsk(0)->getChecklist()[3]['ask'] ?? false);
-        $this->assertTrue($card->getChecklist()[2]['ask'] ?? false);
-        $this->assertArrayNotHasKey('ask', $card->getChecklist()[0]);
     }
 
     // A feedback waits for nothing, a step after one waits for the step before it; a reorder of the steps keeps the feedback after them
@@ -368,6 +365,29 @@ class CardTest extends TestCase
         $this->assertSame(['Book', null, 'Film'], array_column($groups, 'group'));
         $this->assertSame([0, 1], array_keys($groups[0]['steps']));
         $this->assertSame([3], array_keys($groups[2]['steps']));
+    }
+
+    // Ticked steps kept in their order: a lone one left among the open ones, several in a row folded in place
+    public function testStepParts(): void
+    {
+        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1', 'done' => true], ['t' => 'step-2'], ['t' => 'step-3', 'done' => true], ['t' => 'step-4', 'done' => true], ['t' => 'step-5'], ['t' => 'step-6', 'done' => true]]);
+        $parts = $card->getStepGroups()[0]['parts'];
+
+        $this->assertSame([false, true, false], array_column($parts, 'folded'));
+        $this->assertSame([[0, 1], [2, 3], [4, 5]], array_map(static fn (array $part): array => array_keys($part['steps']), $parts));
+        $this->assertSame([], new Card($this->project, 'item-2')->getStepGroups());
+    }
+
+    // A screenshot set on a feedback only, listed, cleared, and never carried to a copy of the card
+    public function testFeedbackImage(): void
+    {
+        $card = new Card($this->project, 'item-1')->addStep('step-1')->addFeedback('feedback-1');
+        $card->setFeedbackImage(0, 'item-1.png')->setFeedbackImage(1, 'item-2.png');
+        $this->assertSame(['item-2.png'], $card->getFeedbackImages());
+        $this->assertSame([], $card->duplicate(' (copy)')->getFeedbackImages());
+
+        $card->setFeedbackImage(1, null);
+        $this->assertSame([], $card->getFeedbackImages());
     }
 
     // A step planned for a day, cleared by none, an index out of the list changing nothing
