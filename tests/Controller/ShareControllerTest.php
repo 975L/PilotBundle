@@ -98,6 +98,14 @@ class ShareControllerTest extends TestCase
         $this->assertSame(['step-2', 'step-1'], array_column($this->card->getChecklist(), 't'));
     }
 
+    // The editing link adds a feedback, still to decide when it starts with « ? »
+    public function testEditLinkAddsFeedback(): void
+    {
+        $this->controller()->gesture((string) $this->card->getEditToken(), 'feedback', new Request(request: ['text' => '? feedback-1']));
+
+        $this->assertSame([2 => ['t' => 'feedback-1', 'feedback' => true, 'ask' => true]], $this->card->getFeedback());
+    }
+
     // An action the project does not offer right now is refused, the card left as it was
     public function testActionNotOfferedIsRefused(): void
     {

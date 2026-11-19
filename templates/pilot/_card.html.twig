@@ -1,0 +1,36 @@
+{# A card as a tile in the project's colour, opened by a click anywhere on it, dragged with the mouse to another day, to the backlog or onto another space (on a space's page only while it has no date): title, project (left out on the project's own page), date coloured by its nearness, steps ticked, feedback still open, status, the next action, one gesture; on a tint of that colour while open, a grey background once done. The rest is on its page #}
+{% import '@c975LPilot/pilot/_due.html.twig' as due %}
+{% set next = card.steps|filter(step => not (step.done ?? false))|first %}
+{% set ticked = card.steps|filter(step => step.done ?? false)|length %}
+{% set feedback_open = card.feedback|filter(step => not (step.done ?? false))|length %}
+<div class="card h-100 pilot-card{{ card.sheet ? ' pilot-sheet' }}{{ card.done ? ' pilot-card-done' }} pilot-ink-{{ card.project.slug }}" {% if not card.done and (project is not defined or not card.due) %} data-pilot-card-drag-target="card"{% endif %} data-card-id="{{ card.id }}" data-project-id="{{ card.project.id }}" data-schedule-url="{{ path('pilot_card_gesture', {id: card.id, gesture: 'schedule'}) }}" data-move-url="{{ path('pilot_card_gesture', {id: card.id, gesture: 'move'}) }}" data-edit-url="{{ path('pilot_card_gesture', {id: card.id, gesture: 'edit'}) }}" data-token="{{ csrf_token('pilot_card_gesture' ~ card.id) }}">
+    {# A sheet shows its picture, or its initial without one, then its title and the first line of its pitch #}
+    {% if card.sheet %}
+        {% if card.image %}<img src="{{ path('pilot_card_image', {id: card.id}) }}" alt="{{ card.title }}" class="card-img-top pilot-sheet-image" loading="lazy" draggable="false">{% else %}<div class="card-img-top d-grid pilot-sheet-image pilot-sheet-initial">{{ card.title|first|upper }}</div>{% endif %}
+    {% endif %}
+    <div class="card-body d-flex flex-column gap-2 p-3">
+        <a href="{{ pilot_card_path(card) }}" draggable="false" data-pilot-dialog="card-{{ card.id }}" class="fw-semibold text-decoration-none text-body stretched-link pilot-card-open">{{ card.title }}</a>
+        {% if card.sheet %}
+            {% if card.note %}<div class="small text-body-secondary">{{ card.note|split("\n")|first }}</div>{% endif %}
+        {% else %}
+        {% if next %}
+            <div class="small text-body-secondary">{{ 'label.next'|trans({}, 'pilot') }} {{ next.t }}{% if next.due is defined %} <span class="badge {{ due.tone(next.due, true) }}"><i class="far fa-calendar"></i> {{ next.due|date('d/m/Y') }}</span>{% endif %}</div>
+        {% endif %}
+        <div class="d-flex flex-wrap align-items-center gap-1 small mt-auto">
+            {% if project is not defined %}<span class="badge text-white pilot-badge pilot-color-{{ card.project.slug }}">{{ card.project.name }}</span>{% endif %}
+            {% if card.due %}
+                {# Coloured by its nearness while it is still to do #}
+                <span class="badge {{ due.tone(card.due, card.status.value != 'done') }}">{{ card.due|format_date('short') }}</span>
+            {% endif %}
+            {% if card.steps is not empty %}<span class="text-body-secondary" title="{{ 'label.steps_done'|trans({}, 'pilot') }}">{{ ticked }}/{{ card.steps|length }}</span>{% endif %}
+            {% if feedback_open > 0 %}<span class="badge text-bg-warning" title="{{ 'label.feedback'|trans({}, 'pilot') }}"><i class="fas fa-comment"></i> {{ feedback_open }}</span>{% endif %}
+            {# The state only when it says more than « to do »: running, to validate, done #}
+            {% if card.status.value != 'ready' %}<span class="badge text-bg-light">{{ card.status.label|trans }}</span>{% endif %}
+            {% if card.waitingOn %}<span class="badge text-bg-info">{{ 'label.waiting_on'|trans({'%who%': card.waitingOn}, 'pilot') }}</span>{% endif %}
+            {% if card.sourceUrl %}<a href="{{ card.sourceUrl }}" target="_blank" rel="noopener noreferrer" class="text-body-secondary pilot-card-gesture" title="{{ 'label.card_source'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_source'|trans({}, 'pilot') }}"><i class="fas fa-arrow-right-to-bracket"></i></a>{% endif %}
+            {% if card.resultUrl %}<a href="{{ card.resultUrl }}" target="_blank" rel="noopener noreferrer" class="text-body-secondary pilot-card-gesture" title="{{ 'label.card_result'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_result'|trans({}, 'pilot') }}"><i class="fas fa-arrow-up-right-from-square"></i></a>{% endif %}
+            {% include '@c975LPilot/pilot/_done_toggle.html.twig' with {toggle_class: 'ms-auto pilot-card-gesture'} %}
+        </div>
+        {% endif %}
+    </div>
+</div>

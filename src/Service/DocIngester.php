@@ -28,7 +28,7 @@ class DocIngester
     ) {
     }
 
-    // Reads a kept file of a run; false when it is not a file to write
+    // Reads a kept file of a run into a file of the card's space; false when it is not a file to write
     public function ingest(string $name, string $path, Card $card): bool
     {
         $slug = str_ends_with($name, self::SUFFIX) ? substr($name, 0, -\strlen(self::SUFFIX)) : '';
@@ -37,6 +37,10 @@ class DocIngester
             return false;
         }
         $doc = $this->docRepository->findOneBy(['slug' => $slug]) ?? new Doc($slug, $card->getTitle())->setProject($card->getProject());
+        // A file of another space is never written through this card
+        if ($doc->getProject() !== $card->getProject()) {
+            return true;
+        }
         $card->setDoc($doc->fromMarkdown($markdown));
         $this->entityManager->persist($doc);
         $this->entityManager->flush();

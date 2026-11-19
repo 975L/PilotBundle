@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 // Reusable model of a plan, its steps kept as a list of definitions, offered on the projects chosen for it
 #[ORM\Entity(repositoryClass: PlanTemplateRepository::class)]
 #[ORM\Table(name: 'pilot_plan_template')]
-class PlanTemplate
+class PlanTemplate implements \Stringable
 {
     use OfferedToProjectsTrait;
 
@@ -49,6 +49,11 @@ class PlanTemplate
         private array $steps,
     ) {
         $this->projects = new ArrayCollection();
+    }
+
+    public function __toString(): string
+    {
+        return $this->name;
     }
 
     // Template id

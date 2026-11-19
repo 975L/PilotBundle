@@ -19,7 +19,8 @@ export default class extends Controller {
         this.formTarget.hidden = false;
         const field = this.formTarget.querySelector("input:not([type=hidden]), textarea, select");
         field?.focus();
-        if (field && "select" !== field.localName) field.setSelectionRange(field.value.length, field.value.length);
+        // The caret at the end of a text, a date or a choice having none
+        if (field?.matches("textarea, input:not([type]), input[type=text], input[type=url]")) field.setSelectionRange(field.value.length, field.value.length);
     }
 
     // Focus leaving the form saves it, unless the form was given up or nothing changed

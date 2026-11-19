@@ -24,15 +24,6 @@ class Doc implements \Stringable
     // Heading of the summary section, the one the Pilotage artifact writes and the import splits on
     public const string SUMMARY_HEADING = "## L'essentiel";
 
-    // A task list item, as GitHub-flavoured markdown renders it with a box to tick: bulleted or numbered, quoted or not
-    private const string TASK = '/^((?:\s*>)*\s*(?:[-*+]|\d{1,9}[.)]) )\[([ xX])\] (.*)$/';
-
-    // The line opening or closing a fenced code block, inside which no box is rendered
-    private const string FENCE = '/^(?:\s*>)*\s*(`{3,}|~{3,})/';
-
-    // Where the pictures of the files are kept, from the project's root
-    public const string IMAGE_DIRECTORY = 'private/pilot/docs';
-
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -50,11 +41,6 @@ class Doc implements \Stringable
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $detail = null;
-
-    // File name of its picture (a character's portrait), kept under IMAGE_DIRECTORY
-    #[ORM\Column(length: 100, nullable: true)]
-    #[Assert\Length(max: 100)]
-    private ?string $image = null;
 
     #[ORM\Column]
     private \DateTimeImmutable $updatedAt;
@@ -164,65 +150,12 @@ class Doc implements \Stringable
         return $this->write('' === $summary ? null : $summary, '' === $text ? null : $text);
     }
 
-    // Ticks the task list item at this place (summary first, then detail) with the day it was reached, or unticks it and drops its day; false when there is none there
-    public function toggleTask(int $index, \DateTimeImmutable $day): bool
-    {
-        $seen = 0;
-        $found = false;
-        $toggle = static function (array $match) use ($index, $day, &$seen, &$found): string {
-            if ($seen++ !== $index) {
-                return $match[0];
-            }
-            $found = true;
-            if (' ' === $match[2]) {
-                return $match[1] . '[x] ' . $match[3] . ' (' . $day->format('d/m/Y') . ')';
-            }
-
-            return $match[1] . '[ ] ' . preg_replace('/ \(\d{2}\/\d{2}\/\d{4}\)$/', '', $match[3]);
-        };
-        $summary = null === $this->summary ? null : self::eachTask($this->summary, $toggle);
-        $detail = null === $this->detail ? null : self::eachTask($this->detail, $toggle);
-        if ($found) {
-            $this->write($summary, $detail);
-        }
-
-        return $found;
-    }
-
-    // Each task list item of a text handed to the callback, those of a fenced code block left out like the renderer does
-    private static function eachTask(string $text, \Closure $toggle): string
-    {
-        $fence = null;
-        $lines = explode("\n", $text);
-        foreach ($lines as $number => $line) {
-            if (1 === preg_match(self::FENCE, $line, $match)) {
-                $fence = null === $fence ? $match[1][0] : ($match[1][0] === $fence ? null : $fence);
-            } elseif (null === $fence) {
-                $lines[$number] = (string) preg_replace_callback(self::TASK, $toggle, $line);
-            }
-        }
-
-        return implode("\n", $lines);
-    }
-
     // Both floors at once, the date following
     public function write(?string $summary, ?string $detail): static
     {
         $this->summary = $summary;
         $this->detail = $detail;
         $this->updatedAt = new \DateTimeImmutable();
-
-        return $this;
-    }
-
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
-
-    public function setImage(?string $image): static
-    {
-        $this->image = $image;
 
         return $this;
     }

@@ -104,15 +104,30 @@ class RunQueueTest extends TestCase
         $this->assertSame(CardStatus::Review, $this->run->getCard()->getStatus());
     }
 
-    // A step's run done hands the next step's run to the entity manager
-    public function testFinishPersistsTheNextStepsRun(): void
+    // A step's run done ticks its step and queues nothing more, the next step left to a hand
+    public function testFinishTicksTheStepOnly(): void
     {
         $card = new Card(new Project('catalog', 'Catalog'), 'item-2')->setChecklist([['t' => 'first', 'action' => 'hello'], ['t' => 'second', 'action' => 'copy']]);
         $run = new CardFlow($this->clock)->runStep($card, 0)->claim($this->machine, $this->clock->now());
         $entityManager = $this->createMock(EntityManagerInterface::class);
-        $entityManager->expects($this->once())->method('persist')->with($this->callback(static fn (Run $next): bool => 1 === $next->getStep()));
+        $entityManager->expects($this->never())->method('persist');
 
         new RunQueue($entityManager, $this->createStub(RunRepository::class), $this->createStub(ActionRepository::class), new CardFlow($this->clock), $this->clock)->finish($run, $this->machine, RunStatus::Done, null, [], null);
+        $this->assertTrue($card->getChecklist()[0]['done'] ?? false);
+        $this->assertSame([], $card->activeRuns());
+    }
+
+    // A title the action gave renames its card, an empty one leaving it as it was
+    public function testFinishRenamesTheCard(): void
+    {
+        $this->run->claim($this->machine, $this->clock->now());
+        $title = $this->run->getCard()->getTitle();
+        $this->queue($this->createStub(RunRepository::class))->finish($this->run, $this->machine, RunStatus::Failed, 'stop', [], null, '  ');
+        $this->assertSame($title, $this->run->getCard()->getTitle());
+
+        $this->run->claim($this->machine, $this->clock->now());
+        $this->queue($this->createStub(RunRepository::class))->finish($this->run, $this->machine, RunStatus::Done, 'ok', [], null, ' 011 item-1 ');
+        $this->assertSame('011 item-1', $this->run->getCard()->getTitle());
     }
 
     private function queue(RunRepository $runs): RunQueue

@@ -1,5 +1,80 @@
 [
     {
+        "date": "2026-11-19",
+        "description": [
+            {
+                "en": "Piloting: the piloting pages leave the back office for their own address, /pilot, opened from the « Dashboard » link of the back office; the settings are there too.",
+                "fr": "Pilotage : les pages de pilotage quittent le back-office pour leur propre adresse, /pilot, ouverte par le lien « Tableau de bord » du back-office ; les réglages y sont aussi.",
+                "es": "Pilotaje: las páginas de pilotaje dejan el back-office por su propia dirección, /pilot, abierta desde el enlace « Panel » del back-office; los ajustes también están allí."
+            },
+            {
+                "en": "Piloting: projects become spaces; a space's page shows its open cards as tiles on a tint of its colour and the done ones folded on a grey background, put back to do from their tile; the objectives give way to dated cards; a card being added from the + in one line or several from a pasted list, each with its collection's template.",
+                "fr": "Pilotage : les projets deviennent des espaces ; la page d'un espace montre ses cartes ouvertes en tuiles teintées de sa couleur et les terminées repliées sur fond gris, remises à faire depuis leur tuile ; les objectifs laissent place aux cartes datées ; une carte s'ajoutant par le + en une ligne ou plusieurs d'une liste collée, chacune avec le modèle de sa collection.",
+                "es": "Pilotaje: los proyectos pasan a ser espacios; la página de un espacio muestra sus tarjetas abiertas como mosaicos teñidos de su color y las terminadas plegadas con fondo gris, devueltas a hacer desde su mosaico; los objetivos dejan paso a las tarjetas fechadas; una tarjeta añadiéndose con el + en una línea o varias desde una lista pegada, cada una con la plantilla de su colección."
+            },
+            {
+                "en": "Piloting: a space gathers its cards in collections (the stories, the replies), each in its own tab with its own template, and each card can carry a source and a result link.",
+                "fr": "Pilotage : un espace range ses cartes en collections (les histoires, les répliques), chacune dans son onglet avec son modèle, et chaque carte peut porter un lien source et un lien résultat.",
+                "es": "Pilotaje: un espacio ordena sus tarjetas en colecciones (las historias, las réplicas), cada una en su pestaña con su plantilla, y cada tarjeta puede llevar un enlace de origen y uno de resultado."
+            },
+            {
+                "en": "Piloting: a template's steps can be gathered in groups (Book, Film…) that fold on the card, and a card without a date is dragged onto another space to move it there.",
+                "fr": "Pilotage : les étapes d'un modèle se rangent en groupes (Livre, Film…) repliables sur la carte, et une carte sans date se glisse sur un autre espace pour l'y déplacer.",
+                "es": "Pilotaje: los pasos de una plantilla se agrupan (Libro, Película…) en bloques plegables en la tarjeta, y una tarjeta sin fecha se arrastra a otro espacio para moverla allí."
+            },
+            {
+                "en": "Piloting: a step can carry its planned day (a release, a publication), every day coloured by its nearness, from purple once past to green within two months; a deletion is asked in a dialog.",
+                "fr": "Pilotage : une étape peut porter son jour prévu (une sortie, une publication), chaque date colorée selon sa proximité, du violet une fois passée au vert à deux mois ; une suppression se confirme dans une fenêtre.",
+                "es": "Pilotaje: un paso puede llevar su día previsto (una salida, una publicación), cada fecha coloreada según su cercanía, del violeta una vez pasada al verde a dos meses; una eliminación se confirma en una ventana."
+            },
+            {
+                "en": "Piloting: a card following a template takes the order of its steps from the template alone; a queued step says when no machine online can take it; a machine action only leaves by its button, never by a tick.",
+                "fr": "Pilotage : une carte qui suit un modèle prend l'ordre de ses étapes du modèle seul ; une étape en file signale quand aucune machine en ligne ne peut la prendre ; une action machine ne part que par son bouton, jamais en cochant.",
+                "es": "Pilotaje: una tarjeta que sigue una plantilla toma el orden de sus pasos solo de la plantilla; un paso en cola indica cuando ninguna máquina en línea puede tomarlo; una acción de máquina solo sale por su botón, nunca al marcar."
+            },
+            {
+                "en": "Piloting: a space has members, each with a role (guest, contributor, editor, owner), and a card can be given to some of them; each account sees only what its role allows.",
+                "fr": "Pilotage : un espace a des membres, chacun avec un rôle (invité, contributeur, éditeur, propriétaire), et une carte peut être confiée à certains ; chaque compte ne voit que ce que son rôle permet.",
+                "es": "Pilotaje: un espacio tiene miembros, cada uno con un rol (invitado, colaborador, editor, propietario), y una tarjeta puede asignarse a algunos; cada cuenta solo ve lo que su rol permite."
+            },
+            {
+                "en": "Piloting: a card takes feedback (a fix, an idea) after its steps, a question still to decide marked as such; a done card opens again as soon as a box is unticked or added, and can be deleted for good.",
+                "fr": "Pilotage : une carte reçoit des retours (une correction, une idée) après ses étapes, une question à trancher marquée comme telle ; une carte terminée se rouvre dès qu'une case est décochée ou ajoutée, et peut être supprimée définitivement.",
+                "es": "Pilotaje: una tarjeta recibe comentarios (una corrección, una idea) después de sus pasos, una pregunta por decidir señalada como tal; una tarjeta terminada se reabre en cuanto se desmarca o se añade una casilla, y puede eliminarse definitivamente."
+            },
+            {
+                "en": "Piloting: each open step or feedback of a card is copied with its card by its robot button, ready to paste into a conversation with an AI.",
+                "fr": "Pilotage : chaque étape ou retour ouvert d'une carte se copie avec sa carte par son bouton robot, prêt à coller dans une conversation avec une IA.",
+                "es": "Pilotaje: cada paso o comentario abierto de una tarjeta se copia con su tarjeta mediante su botón robot, listo para pegar en una conversación con una IA."
+            },
+            {
+                "en": "Piloting: a card's ticked steps gather at the end, folded until opened, and no longer move.",
+                "fr": "Pilotage : les étapes cochées d'une carte se regroupent à la fin, repliées jusqu'à ce qu'on les ouvre, et ne se déplacent plus.",
+                "es": "Pilotaje: los pasos marcados de una tarjeta se agrupan al final, plegados hasta abrirlos, y ya no se mueven."
+            },
+            {
+                "en": "Piloting: when a machine step fails, the reason is written under the step; a machine action can rename its card, to give it a number for instance.",
+                "fr": "Pilotage : quand une étape machine échoue, la raison s'écrit sous l'étape ; une action machine peut renommer sa carte, pour lui donner un numéro par exemple.",
+                "es": "Pilotaje: cuando un paso de máquina falla, el motivo se escribe bajo el paso; una acción de máquina puede renombrar su tarjeta, para darle un número por ejemplo."
+            },
+            {
+                "en": "Piloting: a collection can show its cards as sheets, with a picture and no steps (characters, places, apps); the collection tabs are dragged into a new order and renamed by a double click.",
+                "fr": "Pilotage : une collection peut afficher ses cartes en fiches, avec une image et sans étapes (personnages, lieux, applis) ; les onglets des collections se réordonnent par glisser-déposer et se renomment d'un double clic.",
+                "es": "Pilotaje: una colección puede mostrar sus tarjetas como fichas, con una imagen y sin pasos (personajes, lugares, apps); las pestañas de las colecciones se reordenan arrastrándolas y se renombran con un doble clic."
+            },
+            {
+                "en": "Piloting: every card now belongs to a collection, the cards that had none gathered in « Other cards », renamed and moved like the other tabs.",
+                "fr": "Pilotage : chaque carte appartient désormais à une collection, celles qui n'en avaient pas rassemblées dans « Autres cartes », qui se renomme et se déplace comme les autres onglets.",
+                "es": "Pilotaje: cada tarjeta pertenece ahora a una colección, las que no tenían ninguna reunidas en « Otras tarjetas », que se renombra y se mueve como las demás pestañas."
+            },
+            {
+                "en": "Piloting: a card's editing link, which can launch the machines, is given only by an account that may launch them itself.",
+                "fr": "Pilotage : le lien d'édition d'une carte, qui permet de lancer les machines, n'est donné que par un compte qui peut lui-même les lancer.",
+                "es": "Pilotaje: el enlace de edición de una tarjeta, que permite lanzar las máquinas, solo lo da una cuenta que puede lanzarlas ella misma."
+            }
+        ]
+    },
+    {
         "date": "2026-11-18",
         "description": [
             {

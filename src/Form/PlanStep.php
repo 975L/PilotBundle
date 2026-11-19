@@ -13,7 +13,7 @@ namespace c975L\PilotBundle\Form;
 use c975L\PilotBundle\Enum\Executor;
 use Symfony\Component\DependencyInjection\Attribute\Exclude;
 
-// One step of a plan template while it is edited, its title naming it in the list of steps; the template keeps it as a plain array
+// One step of a plan template while it is edited, its title naming it in the list of steps, its group gathering it with its neighbours on a card; the template keeps it as a plain array
 #[Exclude]
 class PlanStep implements \Stringable
 {
@@ -24,6 +24,7 @@ class PlanStep implements \Stringable
         public ?string $action = null,
         public array $params = [],
         public string $after = '',
+        public string $group = '',
     ) {
     }
 
@@ -33,22 +34,27 @@ class PlanStep implements \Stringable
     }
 
     // A step read from the template, the steps it waits for shown as their numbers, « - » for none
-    /** @param array{title?: string, executor?: string, action?: ?string, params?: array<string, string>, after?: list<int>} $step */
+    /** @param array{title?: string, executor?: string, action?: ?string, params?: array<string, string>, after?: list<int>, group?: string} $step */
     public static function fromArray(array $step): self
     {
         $after = isset($step['after']) ? ([] === $step['after'] ? '-' : implode(', ', $step['after'])) : '';
 
-        return new self($step['title'] ?? '', $step['executor'] ?? Executor::Human->value, $step['action'] ?? null, $step['params'] ?? [], $after);
+        return new self($step['title'] ?? '', $step['executor'] ?? Executor::Human->value, $step['action'] ?? null, $step['params'] ?? [], $after, $step['group'] ?? '');
     }
 
     // The step as the template keeps it, without the empty parts; « after » only when typed, the step before being waited for otherwise
-    /** @return array{title: string, executor: string, action?: string, params?: array<string, string>, after?: list<int>} */
+    /** @return array{title: string, executor: string, action?: string, params?: array<string, string>, after?: list<int>, group?: string} */
     public function toArray(): array
     {
         $step = array_filter(['title' => $this->title, 'executor' => $this->executor, 'action' => $this->action, 'params' => $this->params], static fn (mixed $value): bool => null !== $value && [] !== $value);
         $after = trim($this->after);
         if ('' !== $after) {
             $step['after'] = '-' === $after ? [] : array_values(array_unique(array_map(intval(...), preg_split('/\D+/', $after, -1, \PREG_SPLIT_NO_EMPTY) ?: [])));
+        }
+
+        $group = trim($this->group);
+        if ('' !== $group) {
+            $step['group'] = $group;
         }
 
         return $step;

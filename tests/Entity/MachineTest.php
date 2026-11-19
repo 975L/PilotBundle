@@ -11,6 +11,7 @@
 namespace c975L\PilotBundle\Tests\Entity;
 
 use c975L\PilotBundle\Entity\Machine;
+use c975L\PilotBundle\Entity\Project;
 use PHPUnit\Framework\TestCase;
 
 class MachineTest extends TestCase
@@ -30,5 +31,35 @@ class MachineTest extends TestCase
     public function testEmptiedNameIsKeptEmpty(): void
     {
         $this->assertSame('', new Machine('machine-1', '')->setName(null)->getName());
+    }
+
+    // A machine with no space chosen serves them all and the whole site, one with spaces only those
+    public function testServes(): void
+    {
+        $catalog = new Project('catalog', 'Catalog');
+        $other = new Project('other', 'Other');
+        $machine = new Machine('machine-1', str_repeat('a', 64));
+
+        $this->assertTrue($machine->serves($other));
+        $this->assertTrue($machine->servesAll());
+        $machine->addProject($catalog);
+        $this->assertTrue($machine->serves($catalog));
+        $this->assertFalse($machine->serves($other));
+        $this->assertFalse($machine->servesAll());
+    }
+
+    // A machine takes an action only while online, for a space it serves, when it declared the action
+    public function testCanRun(): void
+    {
+        $catalog = new Project('catalog', 'Catalog');
+        $machine = new Machine('machine-1', str_repeat('a', 64))->addProject($catalog);
+        $now = new \DateTimeImmutable('2026-11-19 10:00:00');
+        $this->assertFalse($machine->canRun('build', $catalog, $now));
+
+        $machine->seen(['build' => ['label' => 'Build', 'params' => []]], $now);
+        $this->assertTrue($machine->canRun('build', $catalog, $now->modify('+30 seconds')));
+        $this->assertFalse($machine->canRun('copy', $catalog, $now));
+        $this->assertFalse($machine->canRun('build', new Project('other', 'Other'), $now));
+        $this->assertFalse($machine->canRun('build', $catalog, $now->modify('+2 minutes')));
     }
 }

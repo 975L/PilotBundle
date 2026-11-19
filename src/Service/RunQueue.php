@@ -47,7 +47,7 @@ class RunQueue
         return \count($expired);
     }
 
-    // Gives the oldest queued run among the declared actions to the machine, null when there is nothing to do
+    // Gives the oldest queued run among the declared actions, of the spaces it serves, to the machine, null when there is nothing to do
     /** @param array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> $capabilities */
     public function claim(Machine $machine, array $capabilities): ?Run
     {
@@ -56,7 +56,7 @@ class RunQueue
         $machine->seen($capabilities, $now);
         $this->actionRepository->declare($capabilities);
         $this->entityManager->flush();
-        foreach ($this->runRepository->queuedIds(array_map(strval(...), array_keys($capabilities))) as $id) {
+        foreach ($this->runRepository->queuedIds(array_map(strval(...), array_keys($capabilities)), $machine->projectIds()) as $id) {
             if ($this->runRepository->take($id, $machine, $now)) {
                 $run = $this->runRepository->find($id);
                 if (null !== $run) {
@@ -82,7 +82,7 @@ class RunQueue
 
     // Closes a run the machine holds and moves its card on
     /** @param list<string> $outputs */
-    public function finish(Run $run, Machine $machine, RunStatus $status, ?string $message, array $outputs, ?string $log): void
+    public function finish(Run $run, Machine $machine, RunStatus $status, ?string $message, array $outputs, ?string $log, ?string $title = null): void
     {
         $this->expectHeld($run, $machine);
         if (!$status->isFinished()) {
@@ -90,11 +90,13 @@ class RunQueue
         }
         $now = $this->clock->now();
         $run->finish($status, $message, $outputs, $log, $now);
-        $machine->seen($machine->getCapabilities(), $now);
-        $next = $this->cardFlow->runFinished($run);
-        if (null !== $next) {
-            $this->entityManager->persist($next);
+
+        // The title the action gave its card, a number it took for instance
+        if ('' !== trim((string) $title)) {
+            $run->getCard()->setTitle(trim((string) $title));
         }
+        $machine->seen($machine->getCapabilities(), $now);
+        $this->cardFlow->runFinished($run);
         $this->entityManager->flush();
     }
 

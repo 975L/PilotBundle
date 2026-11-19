@@ -14,6 +14,7 @@ use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Repository\CardRepository;
+use c975L\PilotBundle\Security\PilotScope;
 use c975L\PilotBundle\Service\Planning;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
@@ -31,7 +32,7 @@ class PlanningTest extends TestCase
         $config = $this->createStub(ConfigServiceInterface::class);
         $config->method('get')->willReturn(7);
 
-        $planning = new Planning($cards, $config, new MockClock('2026-11-17 10:00'))->build();
+        $planning = new Planning($cards, $config, new MockClock('2026-11-17 10:00'))->build(new PilotScope(true));
 
         $this->assertCount(1, $planning['late']);
         $this->assertSame(['2026-11-18'], array_keys($planning['days']));

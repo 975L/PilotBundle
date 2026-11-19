@@ -10,9 +10,7 @@
 
 namespace c975L\PilotBundle\Tests\Entity;
 
-use Doctrine\DBAL\DriverManager;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMSetup;
+use c975L\PilotBundle\Tests\Fixtures\TestEntityManager;
 use Doctrine\ORM\Tools\SchemaValidator;
 use PHPUnit\Framework\TestCase;
 
@@ -21,9 +19,7 @@ class MappingTest extends TestCase
 {
     public function testMappingIsValidAndPrefixed(): void
     {
-        $config = ORMSetup::createAttributeMetadataConfig([\dirname(__DIR__, 2) . '/src/Entity'], true);
-        $config->enableNativeLazyObjects(true);
-        $entityManager = new EntityManager(DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]), $config);
+        $entityManager = TestEntityManager::create();
 
         $this->assertSame([], new SchemaValidator($entityManager)->validateMapping());
         foreach ($entityManager->getMetadataFactory()->getAllMetadata() as $metadata) {

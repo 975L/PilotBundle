@@ -4,11 +4,11 @@
         <body>
             <trans-unit id="e70l2zx">
                 <source>description.pilot_horizon_days</source>
-                <target>Days the Planning shows one by one, before grouping by month</target>
+                <target>Days the dashboard shows one by one, before grouping by month</target>
             </trans-unit>
             <trans-unit id="VdOkW5Q">
                 <source>label.pilot_horizon_days</source>
-                <target>Planning horizon (days)</target>
+                <target>Dashboard horizon (days)</target>
             </trans-unit>
         </body>
     </file>

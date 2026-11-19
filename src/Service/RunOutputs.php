@@ -51,6 +51,19 @@ class RunOutputs
         return is_file($path) ? $path : null;
     }
 
+    // The files kept in a run's folder removed with it, the card it worked for being deleted
+    public function forget(string $folder): void
+    {
+        foreach (glob($folder . '/*') ?: [] as $path) {
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
+        if (is_dir($folder)) {
+            rmdir($folder);
+        }
+    }
+
     // Preview of every output of a run: name, kind (text, image, video, file, elsewhere when only the machine holds it) and text content
     /** @return list<array{name: string, kind: string, text: ?string}> */
     public function previews(Run $run): array
@@ -71,7 +84,7 @@ class RunOutputs
     }
 
     // Folder of a run
-    private function folder(Run $run): string
+    public function folder(Run $run): string
     {
         return $this->projectDir . '/' . self::DIRECTORY . '/' . $run->getId();
     }

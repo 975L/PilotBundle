@@ -10,25 +10,22 @@
 
 namespace c975L\PilotBundle\Tests\Management;
 
-use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\ConfigBundle\Test\ManagementTargetsTestCase;
 use c975L\PilotBundle\Management\MenuProvider;
-use c975L\PilotBundle\Management\PilotGuidedProjectProvider;
 
-// Every controller and route the menu names, checked against what the controllers declare (see ManagementTargetsTestCase)
+// Every controller and route the menu names, checked against what the controllers declare, the piloting pages' own included (see ManagementTargetsTestCase)
 class ManagementTargetsTest extends ManagementTargetsTestCase
 {
     protected function managementProviders(): iterable
     {
         return [
             new MenuProvider(),
-            new PilotGuidedProjectProvider($this->urlGenerator(), $this->adminUrlGenerator(), $this->createStub(ConfigServiceInterface::class)),
         ];
     }
 
     #[\Override]
     protected function controllerDirectories(): array
     {
-        return [...parent::controllerDirectories(), __DIR__ . '/../../src/Controller/Management'];
+        return [...parent::controllerDirectories(), __DIR__ . '/../../src/Controller'];
     }
 }

@@ -11,6 +11,8 @@
 namespace c975L\PilotBundle\Tests\Entity;
 
 use c975L\PilotBundle\Entity\Card;
+use c975L\PilotBundle\Entity\CardSet;
+use c975L\PilotBundle\Entity\Doc;
 use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\Plan;
 use c975L\PilotBundle\Entity\PlanTemplate;
@@ -288,5 +290,112 @@ class CardTest extends TestCase
 
         $this->assertSame(['text:check again'], $card->getChecklist()[1]['after'] ?? null);
         $this->assertSame([0], $card->stepNeeds(1));
+    }
+
+    // The template of a card is its plan's, otherwise the checklist one it follows; its copy follows it too
+    public function testTemplate(): void
+    {
+        $checklist = new PlanTemplate('catalog-checklist', [])->setChecklist(true);
+        $perStep = new PlanTemplate('catalog-steps', []);
+        $card = new Card($this->project, 'item-1');
+
+        $this->assertNull($card->getTemplate());
+        $this->assertSame($checklist, $card->follow($checklist)->getTemplate());
+        $this->assertSame($checklist, $card->duplicate(' (copy)')->getTemplate());
+        $card->placeIn(new Plan($perStep, $this->project, 'item-1'), 1);
+        $this->assertSame($perStep, $card->getTemplate());
+    }
+
+    // A card is done once marked so
+    public function testDone(): void
+    {
+        $card = new Card($this->project, 'item-1');
+        $this->assertFalse($card->isDone());
+        $this->assertTrue($card->markDone(new \DateTimeImmutable('2026-11-19'))->isDone());
+    }
+
+    // A feedback goes after the steps, still to decide when it starts with « ? », an empty one adding nothing; a step added goes before it, the runs following their step
+    public function testFeedback(): void
+    {
+        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1']]);
+        $card->addFeedback(' feedback-1 ')->addFeedback('? feedback-2')->addFeedback(' ? ');
+        $run = new Run($card, 'build', [], 1);
+        $card->addStep('step-2');
+
+        $this->assertSame(['step-1', 'step-2', 'feedback-1', 'feedback-2'], array_column($card->getChecklist(), 't'));
+        $this->assertSame([0, 1], array_keys($card->getSteps()));
+        $this->assertSame([2 => ['t' => 'feedback-1', 'feedback' => true], 3 => ['t' => 'feedback-2', 'feedback' => true, 'ask' => true]], $card->getFeedback());
+        $this->assertSame(2, $run->getStep());
+        $this->assertTrue($card->isFeedback(2));
+        $this->assertFalse($card->toggleAsk(3)->toggleAsk(2)->toggleAsk(0)->getChecklist()[3]['ask'] ?? false);
+        $this->assertTrue($card->getChecklist()[2]['ask'] ?? false);
+        $this->assertArrayNotHasKey('ask', $card->getChecklist()[0]);
+    }
+
+    // A feedback waits for nothing, a step after one waits for the step before it; a reorder of the steps keeps the feedback after them
+    public function testFeedbackOutOfTheChain(): void
+    {
+        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1'], ['t' => 'feedback-1', 'feedback' => true], ['t' => 'step-2']]);
+
+        $this->assertSame([], $card->stepNeeds(1));
+        $this->assertSame([0], $card->stepNeeds(2));
+        $this->assertSame(['step-2', 'step-1', 'feedback-1'], array_column($card->reorderSteps([2, 0])->getChecklist(), 't'));
+    }
+
+    // A done card opens again once a box is to tick: a step unticked, a step or a feedback added, a rewrite bringing one; ticking leaves it done
+    public function testReopenedByABoxToTick(): void
+    {
+        $day = new \DateTimeImmutable('2026-11-19');
+        $done = fn (): Card => new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1', 'done' => true]])->markDone($day);
+
+        $this->assertSame(CardStatus::Ready, $done()->toggleStep(0, $day)->getStatus());
+        $this->assertNull($done()->toggleStep(0, $day)->getDoneAt());
+        $this->assertSame(CardStatus::Ready, $done()->addStep('step-2')->getStatus());
+        $this->assertSame(CardStatus::Ready, $done()->addFeedback('feedback-1')->getStatus());
+        $this->assertSame(CardStatus::Ready, $done()->restep([['t' => 'step-1', 'done' => true], ['t' => 'step-2']], [0, null], $day)->getStatus());
+        $this->assertSame(CardStatus::Done, $done()->restep([['t' => 'step-1', 'done' => true]], [0], $day)->getStatus());
+        $this->assertSame(CardStatus::Done, $done()->addStep(' ')->getStatus());
+        $ticked = new Card($this->project, 'item-2')->setChecklist([['t' => 'step-1'], ['t' => 'step-2', 'done' => true]])->markDone($day);
+        $this->assertSame(CardStatus::Done, $ticked->toggleStep(0, $day)->getStatus());
+    }
+
+    // The steps gathered in runs of one group as they follow each other, the feedback left out, each step keeping its index
+    public function testStepGroups(): void
+    {
+        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1', 'g' => 'Book'], ['t' => 'step-2', 'g' => 'Book'], ['t' => 'step-3'], ['t' => 'step-4', 'g' => 'Film']])->addFeedback('feedback-1');
+        $groups = $card->getStepGroups();
+
+        $this->assertSame(['Book', null, 'Film'], array_column($groups, 'group'));
+        $this->assertSame([0, 1], array_keys($groups[0]['steps']));
+        $this->assertSame([3], array_keys($groups[2]['steps']));
+    }
+
+    // A step planned for a day, cleared by none, an index out of the list changing nothing
+    public function testStepDue(): void
+    {
+        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1'], ['t' => 'step-2']]);
+        $card->setStepDue(1, new \DateTimeImmutable('2027-02-03'))->setStepDue(5, new \DateTimeImmutable('2027-02-03'));
+        $this->assertSame([['t' => 'step-1'], ['t' => 'step-2', 'due' => '2027-02-03']], $card->getChecklist());
+
+        $card->setStepDue(1, null);
+        $this->assertSame([['t' => 'step-1'], ['t' => 'step-2']], $card->getChecklist());
+    }
+
+    // A card goes only into a collection of its own space, leaves it and a file of the space it leaves when moved, a shared file staying
+    public function testCollectionAndMove(): void
+    {
+        $other = new Project('other', 'Other');
+        $set = new CardSet($this->project, 'Stories');
+        $card = new Card($this->project, 'item-1')->setCardSet(new CardSet($other, 'Elsewhere'));
+        $this->assertNull($card->getCardSet());
+
+        $card->setCardSet($set)->setDoc(new Doc('catalog-file', 'File')->setProject($this->project));
+        $this->assertSame($set, $card->duplicate(' (copy)')->getCardSet());
+        $card->moveTo($other);
+        $this->assertNull($card->getCardSet());
+        $this->assertNull($card->getDoc());
+
+        $shared = new Doc('shared-file', 'Shared');
+        $this->assertSame($shared, $card->setDoc($shared)->moveTo($this->project)->getDoc());
     }
 }

@@ -14,6 +14,7 @@ use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Entity\Run;
 use c975L\PilotBundle\Enum\RunStatus;
+use c975L\PilotBundle\Security\PilotScope;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -27,9 +28,9 @@ class RunRepository extends ServiceEntityRepository
         parent::__construct($registry, Run::class);
     }
 
-    // Runs waiting in the queue or held by a machine, of one project or all, oldest first
+    // Runs waiting in the queue or held by a machine, of one project or all, on the cards the account sees, oldest first
     /** @return list<Run> */
-    public function findActive(?Project $project = null): array
+    public function findActive(PilotScope $scope, ?Project $project = null): array
     {
         $builder = $this->createQueryBuilder('r')
             ->addSelect('c')
@@ -41,7 +42,7 @@ class RunRepository extends ServiceEntityRepository
             $builder->andWhere('c.project = :project')->setParameter('project', $project);
         }
 
-        return $builder->getQuery()->getResult();
+        return $scope->restrictCards($builder)->getQuery()->getResult();
     }
 
     // Claimed runs whose lease ended before now
@@ -57,13 +58,14 @@ class RunRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // Oldest queued run ids whose action the machine declared, candidates for a claim: one run of a card at a time, the next one waiting until the one taken and those queued before it are gone
+    // Oldest queued run ids whose action the machine declared, of the spaces it serves, candidates for a claim: one run of a card at a time, the next one waiting until the one taken and those queued before it are gone
     /**
      * @param list<string> $actions
+     * @param list<int>    $projects spaces the machine serves, empty for every space
      *
      * @return list<int>
      */
-    public function queuedIds(array $actions, int $limit = 5): array
+    public function queuedIds(array $actions, array $projects = [], int $limit = 5): array
     {
         if ([] === $actions) {
             return [];
@@ -73,7 +75,7 @@ class RunRepository extends ServiceEntityRepository
             ->where('o.card = r.card')
             ->andWhere('o.status = :claimed OR (o.status = :queued AND o.id < r.id)');
 
-        return array_map(intval(...), $this->createQueryBuilder('r')
+        $builder = $this->createQueryBuilder('r')
             ->select('r.id')
             ->join('r.card', 'c')
             ->where('r.status = :queued')
@@ -83,9 +85,12 @@ class RunRepository extends ServiceEntityRepository
             ->setParameter('claimed', RunStatus::Claimed)
             ->setParameter('actions', $actions)
             ->orderBy('r.id', \SortDirection::Ascending)
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getSingleColumnResult());
+            ->setMaxResults($limit);
+        if ([] !== $projects) {
+            $builder->andWhere('IDENTITY(c.project) IN (:projects)')->setParameter('projects', $projects);
+        }
+
+        return array_map(intval(...), $builder->getQuery()->getSingleColumnResult());
     }
 
     // Takes a queued run for a machine in one statement, false when another machine was faster

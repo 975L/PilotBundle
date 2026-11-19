@@ -11,6 +11,7 @@
 namespace c975L\PilotBundle\Repository;
 
 use c975L\PilotBundle\Entity\Project;
+use c975L\PilotBundle\Security\PilotScope;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -24,10 +25,14 @@ class ProjectRepository extends ServiceEntityRepository
         parent::__construct($registry, Project::class);
     }
 
-    // Every project in the order chosen, then by name
+    // The spaces the account sees in the order chosen, then by name, every one without a scope
     /** @return list<Project> */
-    public function findOrdered(): array
+    public function findOrdered(?PilotScope $scope = null): array
     {
-        return $this->findBy([], ['position' => 'ASC', 'name' => 'ASC']);
+        if (null === $scope || $scope->all) {
+            return $this->findBy([], ['position' => 'ASC', 'name' => 'ASC']);
+        }
+
+        return [] === $scope->projectIds() ? [] : $this->findBy(['id' => $scope->projectIds()], ['position' => 'ASC', 'name' => 'ASC']);
     }
 }

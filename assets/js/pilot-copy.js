@@ -7,16 +7,23 @@
  */
 import { Controller } from "@hotwired/stimulus";
 
-// Copies a card's link to the clipboard: the one it has, or the one a gesture makes the first time (sent back in X-Pilot-Share); its icon telling for a moment whether it worked
+// Copies a card's link to the clipboard (the one it has, or the one a gesture makes the first time, sent back in X-Pilot-Share), or a text followed by the context an element holds; its icon telling for a moment whether it worked
 export default class extends Controller {
-    static values = { text: String, url: String, token: String };
+    static values = { text: String, url: String, token: String, context: String };
 
     // The text handed to the clipboard as a promise, so that the browser still counts the click while the link is being made
     copy(event) {
         event.stopPropagation();
-        const text = this.textValue ? Promise.resolve(this.textValue) : this.make();
+        const text = this.textValue ? Promise.resolve(this.textValue + this.context()) : this.make();
         const item = new ClipboardItem({ "text/plain": text.then((value) => new Blob([value], { type: "text/plain" })) });
         navigator.clipboard.write([item]).then(() => this.flash("fa-check"), () => this.flash("fa-xmark"));
+    }
+
+    // The text of the element the context names (a card's markdown), after a blank line, none without one
+    context() {
+        const source = this.contextValue ? document.getElementById(this.contextValue) : null;
+
+        return source ? "\n\n" + source.value : "";
     }
 
     // The gesture making the link, the same link kept for the next clicks

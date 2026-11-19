@@ -15,7 +15,7 @@ use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Repository\CardRepository;
 use Psr\Clock\ClockInterface;
 
-// Keeps a checklist template and its open cards in step: a card's new order goes to the template and its other cards, a template saved lays its steps on its cards, each keeping its ticks and its own steps
+// Keeps a checklist template and its open cards in step: the template alone orders the steps of the cards following it, a template saved lays its steps on its cards, each keeping its ticks and its own steps
 class StepOrder
 {
     public function __construct(
@@ -24,37 +24,18 @@ class StepOrder
     ) {
     }
 
-    // Puts the card's steps in the given order of their current indices and carries that order to its template and the template's other open cards
+    // Puts the card's steps in the given order of their current indices; a card following a checklist template keeps the template's order, changed on the template only
     /** @param list<int> $order */
     public function reorder(Card $card, array $order): Card
     {
-        return $this->carry($card->reorderSteps($order));
+        return self::templated($card) ? $card : $card->reorderSteps($order);
     }
 
-    // Carries the card's order of steps to its checklist template and the template's other open cards
-    private function carry(Card $card): Card
-    {
-        $template = $card->getPlan()?->getTemplate();
-        if (null === $template || !$template->isChecklist()) {
-            return $card;
-        }
-        $keys = self::keys($card->getChecklist());
-        $steps = $template->getSteps();
-        $template->setSteps(array_map(static fn (int $index): array => $steps[$index], self::order(array_map(self::templateKey(...), $steps), $keys)));
-        foreach ($this->cardRepository->findOpenOfTemplate($template) as $other) {
-            if ($other !== $card) {
-                $other->reorderSteps(self::order(self::keys($other->getChecklist()), $keys));
-            }
-        }
-
-        return $card;
-    }
-
-    // Moves a step one place up, carried like any new order
+    // Moves a step one place up, like any new order; a step and a feedback never swap
     public function up(Card $card, int $index): Card
     {
         $order = array_keys($card->getChecklist());
-        if ($index < 1 || !isset($order[$index])) {
+        if ($index < 1 || !isset($order[$index]) || $card->isFeedback($index) !== $card->isFeedback($index - 1)) {
             return $card;
         }
         [$order[$index - 1], $order[$index]] = [$order[$index], $order[$index - 1]];
@@ -62,7 +43,7 @@ class StepOrder
         return $this->reorder($card, $order);
     }
 
-    // After a rewrite that only moved the steps around (its runs already following their step), the move is carried like a dragged one; any other rewrite stays the card's own
+    // After a rewrite that only moved the steps around (its runs already following their step), a card following a checklist template gets the template's order back; any other rewrite stays the card's own
     /** @param list<array{t: string, action?: string}> $before */
     public function follow(Card $card, array $before): Card
     {
@@ -73,7 +54,13 @@ class StepOrder
         $known = $previous;
         sort($known);
 
-        return $after === $previous || $sorted !== $known ? $card : $this->carry($card);
+        return $after === $previous || $sorted !== $known || !self::templated($card) ? $card : $card->reorderSteps(self::order($after, $previous));
+    }
+
+    // Whether the card follows a checklist template, which alone sets the order of its steps
+    private static function templated(Card $card): bool
+    {
+        return true === $card->getTemplate()?->isChecklist();
     }
 
     // A checklist template saved: each open card takes its steps in the template's order, gains the steps added, those it shares keeping their ticks, loses the ones removed unless ticked, its own steps kept after
@@ -85,30 +72,33 @@ class StepOrder
         }
         $steps = $template->getSteps();
         $current = array_map(self::templateKey(...), $steps);
-        $removed = array_diff(array_map(self::templateKey(...), $previous), $current);
+        $before = array_map(self::templateKey(...), $previous);
         foreach ($this->cardRepository->findOpenOfTemplate($template) as $card) {
-            $this->relay($card, $steps, $current, $removed);
+            $this->relay($card, $steps, $current, $before);
         }
     }
 
-    // One card laid again after its template: shared steps as they were, new ones filled with the values the card's steps already give
+    // One card laid again after its template: shared steps as they were, in their template step's group (a title holding {variables} known by the text that fills it), new ones filled with the values the card's steps already give, or the card's title on a card laid outside any plan
     /**
      * @param list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>, after?: list<int>}> $steps
      * @param list<string>                                                                                                                    $current
-     * @param array<int, string>                                                                                                              $removed
+     * @param list<string>                                                                                                                    $before
      */
-    private function relay(Card $card, array $steps, array $current, array $removed): void
+    private function relay(Card $card, array $steps, array $current, array $before): void
     {
         $own = $card->getChecklist();
         $keys = self::keys($own);
+        $current = self::filled($current, $keys);
+        $removed = array_diff(self::filled($before, $keys), $current);
         $values = array_merge([], ...array_map(static fn (array $step): array => $step['params'] ?? [], $own));
+        $title = null === $card->getPlan() ? $card->getTitle() : null;
         $free = $keys;
         $laid = [];
         $from = [];
         foreach ($steps as $position => $step) {
             $index = self::take($free, $current[$position]);
             $from[] = $index;
-            $laid[] = null === $index ? self::fresh($step, $values) : $own[$index];
+            $laid[] = self::grouped(null === $index ? self::fresh($step, $values, $title) : $own[$index], $step);
         }
         foreach ($free as $index => $key) {
             if (!\in_array($key, $removed, true) || ($own[$index]['done'] ?? false)) {
@@ -139,6 +129,23 @@ class StepOrder
         return $laid;
     }
 
+    // A card's step in the group its template step names, out of any when it names none
+    /**
+     * @param array{t: string, g?: string} $item
+     * @param array{group?: string}        $step
+     *
+     * @return array{t: string, g?: string}
+     */
+    public static function grouped(array $item, array $step): array
+    {
+        unset($item['g']);
+        if ('' !== ($step['group'] ?? '')) {
+            $item['g'] = $step['group'];
+        }
+
+        return $item;
+    }
+
     // Index of the first step of the given key not taken yet, taken from now on, null when none is left
     /** @param array<int, string> $free */
     public static function take(array &$free, string $key): ?int
@@ -152,16 +159,16 @@ class StepOrder
         return $index;
     }
 
-    // A step the template added, its {variables} filled with the values the card's steps already give
+    // A step the template added, its {variables} filled with the values the card's steps already give, else with the fallback given, else left as they are
     /**
      * @param array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>} $step
      * @param array<string, string>                                                                                  $values
      *
      * @return array{t: string, action?: string, params?: array<string, string>}
      */
-    private static function fresh(array $step, array $values): array
+    private static function fresh(array $step, array $values, ?string $fallback = null): array
     {
-        $fill = static fn (string $text): string => (string) preg_replace_callback('/\{(\w+)\}/', static fn (array $match): string => $values[$match[1]] ?? $match[0], $text);
+        $fill = static fn (string $text): string => (string) preg_replace_callback('/\{(\w+)\}/', static fn (array $match): string => $values[$match[1]] ?? $fallback ?? $match[0], $text);
         $item = ['t' => $fill($step['title'])];
         if (null !== ($step['action'] ?? null) && '' !== $step['action']) {
             $item['action'] = $step['action'];
@@ -169,6 +176,43 @@ class StepOrder
         }
 
         return $item;
+    }
+
+    // The template's keys as a card names them: one whose title holds {variables} known by the first card step it fits, an exact key kept as it is, each card step taken once
+    /**
+     * @param list<string> $templateKeys
+     * @param list<string> $cardKeys
+     *
+     * @return list<string>
+     */
+    private static function filled(array $templateKeys, array $cardKeys): array
+    {
+        $free = array_diff($cardKeys, $templateKeys);
+        $filled = [];
+        foreach ($templateKeys as $key) {
+            $filled[] = self::fitting($key, $free) ?? $key;
+        }
+
+        return $filled;
+    }
+
+    // The first free card key a template key holding {variables} fits, taken from now on; null when it holds none or none fits
+    /** @param array<int, string> $free */
+    private static function fitting(string $key, array &$free): ?string
+    {
+        if (1 !== preg_match('/\{\w+\}/', $key)) {
+            return null;
+        }
+        $pattern = '/^' . preg_replace('/\\\\\{\w+\\\\\}/', '.+', preg_quote($key, '/')) . '$/su';
+        foreach ($free as $index => $candidate) {
+            if (1 === preg_match($pattern, $candidate)) {
+                unset($free[$index]);
+
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     // Key of a template's step

@@ -12,17 +12,17 @@ namespace c975L\PilotBundle\Management;
 
 use c975L\ConfigBundle\Management\BackupPath;
 use c975L\ConfigBundle\Management\BackupPathProviderInterface;
-use c975L\PilotBundle\Entity\Doc;
+use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Service\RunOutputs;
 
-// The files the machines sent for their runs, kept nowhere else once the machine cleans up, and the pictures of the files
+// The files the machines sent for their runs, kept nowhere else once the machine cleans up, and the pictures of the cards
 class PilotBackupPathProvider implements BackupPathProviderInterface
 {
     public function getBackupPaths(): array
     {
         return [
             new BackupPath(RunOutputs::DIRECTORY, BackupPath::MODE_MIRROR),
-            new BackupPath(Doc::IMAGE_DIRECTORY, BackupPath::MODE_MIRROR),
+            new BackupPath(Card::IMAGE_DIRECTORY, BackupPath::MODE_MIRROR),
         ];
     }
 }

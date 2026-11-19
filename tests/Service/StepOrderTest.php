@@ -22,22 +22,35 @@ use Symfony\Component\Clock\MockClock;
 
 class StepOrderTest extends TestCase
 {
-    // A card of a checklist template carries its new order to the template and to the template's other open cards, each keeping its ticks
-    public function testReorderCarriesTheOrderToTheTemplate(): void
+    // A card following a checklist template keeps the template's order, the template and its other cards untouched
+    public function testReorderKeepsTheTemplateOrder(): void
     {
         $project = new Project('catalog', 'Catalog');
-        $template = new PlanTemplate('catalog', [['title' => 'build', 'executor' => 'runner', 'action' => 'build'], ['title' => 'check', 'executor' => 'human'], ['title' => 'publish', 'executor' => 'runner', 'action' => 'publish']])->setChecklist(true);
-        $card = $this->card($project, $template, [['t' => 'build', 'action' => 'build'], ['t' => 'check'], ['t' => 'publish', 'action' => 'publish']]);
-        $other = $this->card($project, $template, [['t' => 'build', 'action' => 'build', 'done' => true], ['t' => 'extra'], ['t' => 'check'], ['t' => 'publish', 'action' => 'publish']]);
+        $template = new PlanTemplate('catalog', [['title' => 'a', 'executor' => 'human'], ['title' => 'b', 'executor' => 'human']])->setChecklist(true);
+        $card = new Card($project, 'item-1')->follow($template)->setChecklist([['t' => 'a'], ['t' => 'b']]);
+
+        new StepOrder($this->createStub(CardRepository::class), new MockClock('2026-11-19 10:00'))->reorder($card, [1, 0]);
+
+        $this->assertSame(['a', 'b'], array_column($card->getChecklist(), 't'));
+        $this->assertSame(['a', 'b'], array_column($template->getSteps(), 'title'));
+    }
+
+    // A step whose title holds a {variable} is still known on the cards that filled it: a template saved keeps its tick, a step added is filled with the card's title
+    public function testStepsWithVariables(): void
+    {
+        $project = new Project('catalog', 'Catalog');
+        $template = new PlanTemplate('catalog', [['title' => 'Write {item}', 'executor' => 'human'], ['title' => 'Build', 'executor' => 'runner', 'action' => 'build']])->setChecklist(true);
+        $card = new Card($project, 'item-1')->follow($template)->setChecklist([['t' => 'Write item-1', 'done' => true], ['t' => 'Build', 'action' => 'build']]);
         $repository = $this->createStub(CardRepository::class);
-        $repository->method('findOpenOfTemplate')->willReturn([$card, $other]);
+        $repository->method('findOpenOfTemplate')->willReturn([$card]);
+        $order = new StepOrder($repository, new MockClock('2026-11-19 10:00'));
 
-        new StepOrder($repository, new MockClock('2026-11-18 10:00'))->reorder($card, [2, 0, 1]);
+        $order->fromTemplate($template, $template->getSteps());
+        $this->assertSame([['t' => 'Write item-1', 'done' => true], ['t' => 'Build', 'action' => 'build']], $card->getChecklist());
 
-        $this->assertSame(['publish', 'build', 'check'], array_column($card->getChecklist(), 't'));
-        $this->assertSame(['publish', 'build', 'check'], array_column($template->getSteps(), 'title'));
-        $this->assertSame(['publish', 'build', 'check', 'extra'], array_column($other->getChecklist(), 't'));
-        $this->assertTrue($other->getChecklist()[1]['done'] ?? false);
+        $previous = $template->getSteps();
+        $order->fromTemplate($template->setSteps([...$previous, ['title' => 'Clip {item}', 'executor' => 'human']]), $previous);
+        $this->assertSame(['Write item-1', 'Build', 'Clip item-1'], array_column($card->getChecklist(), 't'));
     }
 
     // A step moved one place up; the first one stays
@@ -51,7 +64,19 @@ class StepOrderTest extends TestCase
         $this->assertSame(['a', 'c', 'b'], array_column($card->getChecklist(), 't'));
     }
 
-    // A rewrite that only moved the steps is carried to the template, the runs following their step; a rewrite adding a step stays the card's own
+    // A step and a feedback never swap places
+    public function testUpKeepsTheFeedbackApart(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'a'], ['t' => 'b', 'feedback' => true], ['t' => 'c', 'feedback' => true]]);
+        $order = new StepOrder($this->createStub(CardRepository::class), new MockClock('2026-11-19 10:00'));
+
+        $order->up($card, 1);
+        $this->assertSame(['a', 'b', 'c'], array_column($card->getChecklist(), 't'));
+        $order->up($card, 2);
+        $this->assertSame(['a', 'c', 'b'], array_column($card->getChecklist(), 't'));
+    }
+
+    // A rewrite that only moved the steps of a template's card gets the template's order back, the runs following their step; a rewrite adding a step stays the card's own
     public function testFollowARewrite(): void
     {
         $project = new Project('catalog', 'Catalog');
@@ -62,12 +87,13 @@ class StepOrderTest extends TestCase
         $order = new StepOrder($this->createStub(CardRepository::class), new MockClock('2026-11-18 10:00'));
 
         $order->follow($card->restep([['t' => 'b', 'action' => 'build', 'done' => true], ['t' => 'a']], [1, 0], new \DateTimeImmutable()), $before);
-        $this->assertSame(['b', 'a'], array_column($template->getSteps(), 'title'));
-        $this->assertSame(0, $run->getStep());
-        $this->assertTrue($card->getChecklist()[0]['done'] ?? false);
+        $this->assertSame(['a', 'b'], array_column($card->getChecklist(), 't'));
+        $this->assertSame(['a', 'b'], array_column($template->getSteps(), 'title'));
+        $this->assertSame(1, $run->getStep());
+        $this->assertTrue($card->getChecklist()[1]['done'] ?? false);
 
-        $order->follow($card->setChecklist([['t' => 'b', 'action' => 'build'], ['t' => 'a'], ['t' => 'c']]), [['t' => 'b', 'action' => 'build'], ['t' => 'a']]);
-        $this->assertSame(['b', 'a'], array_column($template->getSteps(), 'title'));
+        $order->follow($card->setChecklist([['t' => 'b', 'action' => 'build'], ['t' => 'a'], ['t' => 'c']]), [['t' => 'a'], ['t' => 'b', 'action' => 'build']]);
+        $this->assertSame(['b', 'a', 'c'], array_column($card->getChecklist(), 't'));
     }
 
     // A template saved lays its steps on its open cards: new order, a step added filled from the card's values, a removed one dropped unless ticked, the card's own steps kept after, runs following
@@ -138,5 +164,17 @@ class StepOrderTest extends TestCase
     private function card(Project $project, PlanTemplate $template, array $steps): Card
     {
         return new Card($project, 'item-1')->setChecklist($steps)->placeIn(new Plan($template, $project, 'item-1'), 0);
+    }
+
+    // A template saved puts each shared step of its open cards in the group it now names, out of any when it names none
+    public function testFromTemplateLaysGroups(): void
+    {
+        $project = new Project('catalog', 'Catalog');
+        $previous = [['title' => 'a', 'executor' => 'human'], ['title' => 'b', 'executor' => 'human', 'group' => 'Old']];
+        $template = new PlanTemplate('catalog', [['title' => 'a', 'executor' => 'human', 'group' => 'Book'], ['title' => 'b', 'executor' => 'human'], ['title' => 'c', 'executor' => 'human', 'group' => 'Film']])->setChecklist(true);
+        $card = $this->card($project, $template, [['t' => 'a', 'done' => true], ['t' => 'b', 'g' => 'Old']]);
+        $this->saveTemplate($card, $template, $previous);
+
+        $this->assertSame([['t' => 'a', 'done' => true, 'g' => 'Book'], ['t' => 'b'], ['t' => 'c', 'g' => 'Film']], array_map(static fn (array $step): array => array_diff_key($step, ['after' => 1, 'doneAt' => 1]), $card->getChecklist()));
     }
 }

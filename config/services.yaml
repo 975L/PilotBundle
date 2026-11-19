@@ -8,7 +8,6 @@ services:
         resource: '../src/'
         exclude: '../src/{Entity,Enum,Exception}'
 
-    # The script of the piloting pages, loaded on the dashboard by UiBundle's registry
-    c975L\PilotBundle\Management\ScriptProvider:
+    c975L\PilotBundle\EventListener\CardHomeListener:
         tags:
-            - { name: 'ui.admin_script' }
+            - { name: doctrine.event_listener, event: onFlush }

@@ -44,6 +44,8 @@
         {{ card.project.name }} · {{ card.status.label|trans }}
         {% if card.due %} · {{ card.due|format_date('long') }}{% endif %}
         {% if card.waitingOn %} · {{ 'label.waiting_on'|trans({'%who%': card.waitingOn}, 'pilot') }}{% endif %}
+        {% if card.sourceUrl %} · <a href="{{ card.sourceUrl }}" rel="noopener noreferrer">{{ 'label.card_source'|trans({}, 'pilot') }}</a>{% endif %}
+        {% if card.resultUrl %} · <a href="{{ card.resultUrl }}" rel="noopener noreferrer">{{ 'label.card_result'|trans({}, 'pilot') }}</a>{% endif %}
     </p>
 
     {% if run and run.step is null and run.action not in card.checklist|map(step => step.action ?? null) %}
@@ -51,32 +53,29 @@
         <p class="pilot-share-meta">{{ 'label.machine'|trans({}, 'pilot') }} · {{ run.action }} · {{ run.status.label|trans }}{% if run.status.value == 'claimed' %} · {{ run.progress }} %{% endif %}{% if run.message %} · {{ run.message }}{% endif %}</p>
     {% endif %}
 
-    {% if card.checklist is not empty %}
+    {% if card.steps is not empty %}
         <h2>{{ 'label.share_steps'|trans({}, 'pilot') }}</h2>
-        {# The steps, ticked and launched from here through the editing link, each naming the machine action it hands the card to #}
+        {# The steps, ticked and launched from here through the editing link, each naming the machine action it hands the card to, under the name of their group #}
+        {% set step_runs = card.stepRuns %}
+        {% for run in card.stepGroups %}
+        {% if run.group %}<h3>{{ run.group }}</h3>{% endif %}
         <ul class="pilot-share-steps">
-            {% set step_runs = card.stepRuns %}
-            {% for step in card.checklist %}
+            {% for index, step in run.steps %}
                 {% set done = step.done ?? false %}
                 <li{{ done ? ' class="pilot-share-done"' }}>
-                    {% if editable %}
-                        <form method="post" action="{{ path('pilot_share_gesture', {token: token, gesture: 'step'}) }}" class="pilot-share-inline">
-                            <input type="hidden" name="page" value="1"><input type="hidden" name="index" value="{{ loop.index0 }}">
-                            <button title="{{ 'label.objective_reached'|trans({}, 'pilot') }}" aria-label="{{ 'label.objective_reached'|trans({}, 'pilot') }}">{{ done ? '☑' : '☐' }}</button>
-                        </form>
-                    {% else %}{{ done ? '☑' : '☐' }}{% endif %}
-                    {% if editable and not loop.first %}
+                    {% include '@c975LPilot/share/_tick.html.twig' %}
+                    {% if editable and not loop.first and not (card.template and card.template.checklist) %}
                         {# One place up, the new order going to the card's template and its other cards #}
                         <form method="post" action="{{ path('pilot_share_gesture', {token: token, gesture: 'stepup'}) }}" class="pilot-share-inline">
-                            <input type="hidden" name="page" value="1"><input type="hidden" name="index" value="{{ loop.index0 }}">
+                            <input type="hidden" name="page" value="1"><input type="hidden" name="index" value="{{ index }}">
                             <button title="{{ 'label.step_up'|trans({}, 'pilot') }}" aria-label="{{ 'label.step_up'|trans({}, 'pilot') }}">↑</button>
                         </form>
                     {% endif %}
-                    {% set waiting = not done and card.isStepWaiting(loop.index0) %}
-                    <span class="pilot-share-text{{ waiting ? ' pilot-share-waiting' }}">{{ step.t }}</span>
+                    {% set waiting = not done and card.isStepWaiting(index) %}
+                    <span class="pilot-share-text{{ waiting ? ' pilot-share-waiting' }}">{{ step.t }}</span>{% if step.due is defined %} <small>· {{ step.due|date('d/m/Y') }}</small>{% endif %}
                     {% if step.action is defined %}
                         {% if not editable %}<code>{{ step.action }}</code>{% endif %}
-                        {% set step_run = step_runs[loop.index0] ?? null %}
+                        {% set step_run = step_runs[index] ?? null %}
                         {% set busy = step_run and step_run.status.value in ['queued', 'claimed'] %}
                         {% if busy or (step_run and not done and step_run.status.value in ['failed', 'blocked']) %}
                             <strong>{{ step_run.status.label|trans }}{% if step_run.status.value == 'claimed' %} · {{ step_run.progress }} %{% endif %}</strong>{% if step_run.message %} <span class="pilot-share-meta">{{ step_run.message }}</span>{% endif %}
@@ -89,14 +88,37 @@
                         {% endif %}
                         {% if editable and not done and not busy and card.status.value not in ['review', 'done'] %}
                             <form method="post" action="{{ path('pilot_share_gesture', {token: token, gesture: 'runstep'}) }}" class="pilot-share-inline">
-                                <input type="hidden" name="page" value="1"><input type="hidden" name="index" value="{{ loop.index0 }}">
-                                <button{% if waiting %} disabled{% endif %} title="{{ waiting ? 'label.step_waiting'|trans({'%steps%': card.stepAwaits(loop.index0)|join(', ')}, 'pilot') : 'label.step_run'|trans({}, 'pilot') }}">▶ {{ action_labels[step.action] ?? step.action }}</button>
+                                <input type="hidden" name="page" value="1"><input type="hidden" name="index" value="{{ index }}">
+                                <button{% if waiting %} disabled{% endif %} title="{{ waiting ? 'label.step_waiting'|trans({'%steps%': card.stepAwaits(index)|join(', ')}, 'pilot') : 'label.step_run'|trans({}, 'pilot') }}">▶ {{ action_labels[step.action] ?? step.action }}</button>
                             </form>
                         {% endif %}
                     {% endif %}
                 </li>
             {% endfor %}
         </ul>
+        {% endfor %}
+    {% endif %}
+
+    {% if card.feedback is not empty or editable %}
+        <h2>{{ 'label.feedback'|trans({}, 'pilot') }}</h2>
+        {# The feedback on the card, ticked from here through the editing link, a question still to decide marked as such #}
+        <ul class="pilot-share-steps">
+            {% for index, step in card.feedback %}
+                {% set done = step.done ?? false %}
+                <li{{ done ? ' class="pilot-share-done"' }}>
+                    {% include '@c975LPilot/share/_tick.html.twig' %}
+                    {% if step.ask ?? false %}<strong>{{ 'label.feedback_to_decide'|trans({}, 'pilot') }}</strong>{% endif %}
+                    <span class="pilot-share-text">{{ step.t }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+        {% if editable %}
+            <form method="post" action="{{ path('pilot_share_gesture', {token: token, gesture: 'feedback'}) }}">
+                <input type="hidden" name="page" value="1">
+                <input name="text" maxlength="500" required placeholder="{{ 'label.info_feedback_add'|trans({}, 'pilot') }}" aria-label="{{ 'label.feedback_add'|trans({}, 'pilot') }}">
+                <button>{{ 'label.feedback_add'|trans({}, 'pilot') }}</button>
+            </form>
+        {% endif %}
     {% endif %}
 
     {% if actions is not empty and card.status.value not in ['running', 'done'] %}

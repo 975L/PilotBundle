@@ -12,6 +12,7 @@ namespace c975L\PilotBundle\Repository;
 
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Entity\Report;
+use c975L\PilotBundle\Security\PilotScope;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -25,13 +26,13 @@ class ReportRepository extends ServiceEntityRepository
         parent::__construct($registry, Report::class);
     }
 
-    // Reports a page shows, by label: those of the project or matching its sites, those marked for the Planning when no project is given
+    // Reports a page shows, by label: those of the project or matching its sites, those marked for the dashboard when no project is given, of the spaces the account works in whole
     /** @return list<Report> */
-    public function findShownOn(?Project $project): array
+    public function findShownOn(?Project $project, PilotScope $scope): array
     {
         $builder = $this->createQueryBuilder('r')->orderBy('r.label', \SortDirection::Ascending);
         if (null === $project) {
-            $builder->where('r.home = true');
+            $scope->restrictProjects($builder->where('r.home = true'), 'IDENTITY(r.project)');
         } else {
             $builder->where('r.project = :project OR r.match IS NOT NULL')->setParameter('project', $project);
         }

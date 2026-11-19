@@ -11,16 +11,20 @@
 namespace c975L\PilotBundle\Entity;
 
 use c975L\PilotBundle\Repository\MachineRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
-// A runner machine, known by the hash of its token
+// A runner machine, known by the hash of its token, serving the spaces chosen for it, every space when none is
 #[ORM\Entity(repositoryClass: MachineRepository::class)]
 #[ORM\Table(name: 'pilot_machine')]
 class Machine implements UserInterface
 {
+    use OfferedToProjectsTrait;
+
     // Seconds without a call after which a machine shows offline
     public const ONLINE_SECONDS = 45;
 
@@ -36,6 +40,12 @@ class Machine implements UserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastSeenAt = null;
 
+    // The spaces whose cards it takes, reports it fills and files it writes
+    /** @var Collection<int, Project> */
+    #[ORM\ManyToMany(targetEntity: Project::class)]
+    #[ORM\JoinTable(name: 'pilot_machine_project')]
+    private Collection $projects;
+
     // A machine with its name and the sha256 of its token
     public function __construct(
         #[ORM\Column(length: 100, unique: true)]
@@ -46,6 +56,32 @@ class Machine implements UserInterface
         #[Assert\Length(max: 64)]
         private string $tokenHash,
     ) {
+        $this->projects = new ArrayCollection();
+    }
+
+    // Whether it works for a space: every one when no space was chosen for it
+    public function serves(Project $project): bool
+    {
+        return $this->projects->isEmpty() || $this->projects->contains($project);
+    }
+
+    // Whether it can take the given action for the space now: online, serving the space and declaring the action
+    public function canRun(string $action, Project $project, \DateTimeImmutable $now): bool
+    {
+        return $this->isOnline($now) && $this->serves($project) && isset($this->getCapabilities()[$action]);
+    }
+
+    // Whether it works for the whole site, the only machines reporting the paid services' balances
+    public function servesAll(): bool
+    {
+        return $this->projects->isEmpty();
+    }
+
+    // Ids of the spaces chosen for it, empty for every space
+    /** @return list<int> */
+    public function projectIds(): array
+    {
+        return array_values(array_map(static fn (Project $project): int => (int) $project->getId(), $this->projects->toArray()));
     }
 
     // Machine id

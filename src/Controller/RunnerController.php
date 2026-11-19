@@ -95,7 +95,7 @@ class RunnerController extends AbstractController
             }
             $name = $this->runOutputs->store($run, $file);
             $path = $this->runOutputs->path($run, $name);
-            if (null !== $path && !$this->reportIngester->ingest($name, $path, $run->getCard()->getProject())) {
+            if (null !== $path && !$this->reportIngester->ingest($name, $path, $run->getCard()->getProject(), $machine)) {
                 $this->docIngester->ingest($name, $path, $run->getCard());
             }
         });
@@ -112,14 +112,15 @@ class RunnerController extends AbstractController
         }
         $outputs = array_values(array_filter((array) ($payload['outputs'] ?? []), is_string(...)));
 
-        return $this->guard($request, fn (Machine $machine) => $this->runQueue->finish($run, $machine, $status, $this->text($payload['message'] ?? null), $outputs, $this->text($payload['log'] ?? null)));
+        return $this->guard($request, fn (Machine $machine) => $this->runQueue->finish($run, $machine, $status, $this->text($payload['message'] ?? null), $outputs, $this->text($payload['log'] ?? null), $this->text($payload['title'] ?? null)));
     }
 
-    // Balances of paid services the machine read, sent apart from any run: {"credits": {"key": {"label", "remaining", "total", "unit", "renewsOn"}}}
+    // Balances of paid services the machine read, sent apart from any run by a machine serving every space: {"credits": {"key": {"label", "remaining", "total", "unit", "renewsOn"}}}
     #[Route('/credits', name: 'credits')]
     public function credits(Request $request, CreditRepository $creditRepository, EntityManagerInterface $entityManager, ClockInterface $clock): JsonResponse
     {
-        if (null === $this->machine($request)) {
+        // Only a machine serving the whole site reports the balances, which belong to it
+        if (true !== $this->machine($request)?->servesAll()) {
             return $this->denied();
         }
         $reports = [];

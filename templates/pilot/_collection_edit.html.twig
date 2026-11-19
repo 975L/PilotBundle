@@ -1,0 +1,26 @@
+{# A collection's settings folded behind a gear: its name, its word for a card, its template and its sheets, saved together; deleted once the browser asked, its cards staying in the space #}
+<details class="pilot-card-new pilot-collection-edit">
+    <summary class="btn btn-sm btn-link text-body-secondary p-0" title="{{ 'label.collection_edit'|trans({}, 'pilot') }}" aria-label="{{ 'label.collection_edit'|trans({}, 'pilot') }}"><i class="fas fa-gear"></i></summary>
+    <div class="pilot-card-new-panel card card-body p-2 shadow">
+        <form method="post" action="{{ path('pilot_collection_edit', {id: set.id}) }}" class="d-grid gap-2">
+            <input type="hidden" name="_token" value="{{ csrf_token('pilot_collection_edit' ~ set.id) }}">
+            <label class="small">{{ 'label.collection_name'|trans({}, 'pilot') }}<input name="name" value="{{ set.name }}" maxlength="100" required class="form-control form-control-sm"></label>
+            <label class="small">{{ 'label.collection_item'|trans({}, 'pilot') }}<input name="item" value="{{ set.item }}" maxlength="50" class="form-control form-control-sm"></label>
+            <label class="small">{{ 'label.template'|trans({}, 'pilot') }}
+                <select name="template" class="form-select form-select-sm">
+                    <option value="">{{ 'label.collection_no_template'|trans({}, 'pilot') }}</option>
+                    {% for template in templates %}<option value="{{ template.id }}"{{ set.template and set.template.id == template.id ? ' selected' }}>{{ template.name }}</option>{% endfor %}
+                </select>
+            </label>
+            <div class="form-check small">
+                <input type="checkbox" name="sheets" value="1" id="pilot-collection-sheets-{{ set.id }}" class="form-check-input"{{ set.sheets ? ' checked' }}>
+                <label class="form-check-label" for="pilot-collection-sheets-{{ set.id }}" title="{{ 'label.info_collection_sheets'|trans({}, 'pilot') }}">{{ 'label.collection_sheets'|trans({}, 'pilot') }}</label>
+            </div>
+            <button class="btn btn-sm btn-primary">{{ 'label.collection_save'|trans({}, 'pilot') }}</button>
+        </form>
+        <form method="post" action="{{ path('pilot_collection_delete', {id: set.id}) }}" class="mt-2" data-pilot-confirm="{{ 'label.info_collection_delete'|trans({}, 'pilot') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('pilot_collection_delete' ~ set.id) }}">
+            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash me-1"></i>{{ 'label.collection_delete'|trans({}, 'pilot') }}</button>
+        </form>
+    </div>
+</details>

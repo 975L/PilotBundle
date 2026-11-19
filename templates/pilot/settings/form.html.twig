@@ -1,0 +1,34 @@
+{% extends '@c975LPilot/pilot/_layout.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{# One row of a setting created or edited; a template's steps added, removed and ordered in place (pilot-collection) #}
+{% block pilot %}
+    <h1>{{ 'label.settings'|trans({}, 'pilot') }}</h1>
+    {% include '@c975LPilot/pilot/settings/_nav.html.twig' %}
+    <h2 class="h5">{{ settings.label|trans({}, 'pilot') }}{% if row %} · {{ row }}{% endif %}</h2>
+    {{ form_start(form, {attr: {class: 'pilot-settings-form'}}) }}
+        {% for child in form %}
+            {% if child.vars.name == 'steps' %}
+                <fieldset class="mb-3" data-controller="pilot-collection" data-pilot-collection-index-value="{{ child|length }}" data-pilot-collection-prototype-value="{{ form_widget(child.vars.prototype)|e('html_attr') }}" data-pilot-collection-remove-label-value="{{ 'label.step_remove'|trans({}, 'pilot') }}">
+                    <legend class="h6">{{ form_label(child) }}</legend>
+                    <ol class="list-unstyled d-grid gap-2" data-pilot-collection-target="list">
+                        {% for step in child %}
+                            <li class="border rounded p-2" data-pilot-collection-target="entry">
+                                {{ form_widget(step) }}
+                                <button type="button" class="btn btn-sm btn-link text-danger p-0" data-action="pilot-collection#remove">{{ 'label.step_remove'|trans({}, 'pilot') }}</button>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-action="pilot-collection#add"><i class="fas fa-plus me-1"></i>{{ 'label.step_new'|trans({}, 'pilot') }}</button>
+                    {{ form_errors(child) }}
+                </fieldset>
+            {% elseif child.vars.name != '_token' %}
+                {{ form_row(child) }}
+            {% endif %}
+        {% endfor %}
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary">{{ 'label.settings_save'|trans({}, 'pilot') }}</button>
+            <a href="{{ path('pilot_settings_list', {kind: kind}) }}" class="btn btn-link">{{ 'label.settings_back'|trans({}, 'pilot') }}</a>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

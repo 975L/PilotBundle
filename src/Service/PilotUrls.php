@@ -1,0 +1,31 @@
+<?php
+
+/*
+ * (c) 2026: 975L <contact@975l.com>
+ * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+namespace c975L\PilotBundle\Service;
+
+use c975L\PilotBundle\Entity\Card;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
+// The addresses of the piloting pages following their levels: /pilot/{space}, then a card under its space
+class PilotUrls
+{
+    public const string CARD_ROUTE = 'pilot_space_card';
+
+    public function __construct(
+        private readonly UrlGeneratorInterface $urlGenerator,
+    ) {
+    }
+
+    // A card's page: /pilot/{space}/{id}
+    public function card(Card $card): string
+    {
+        return $this->urlGenerator->generate(self::CARD_ROUTE, ['space' => $card->getProject()->getSlug(), 'id' => $card->getId()]);
+    }
+}

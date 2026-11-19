@@ -74,20 +74,13 @@ class CardFlowTest extends TestCase
         $this->flow->cancel($this->card);
     }
 
-    // Ticking a step whose next one names an action queues it; unticking or a plain next step does nothing
-    public function testTickLaunchesTheNextStepsAction(): void
+    // Ticking a step never queues the next one, even one naming a machine action: actions only leave by their button
+    public function testTickQueuesNothing(): void
     {
         $this->card->setChecklist([['t' => 'first'], ['t' => 'second', 'action' => 'hello', 'params' => ['text' => 'catalog']], ['t' => 'third']]);
 
-        $run = $this->flow->tick($this->card, 0);
-        $this->assertNotNull($run);
-        $this->assertSame('hello', $run->getAction());
-        $this->assertSame(['text' => 'catalog'], $run->getParams());
-        $this->assertSame(1, $run->getStep());
-        $this->assertSame(CardStatus::Running, $this->card->getStatus());
-
-        $this->assertNull($this->flow->tick($this->card, 1));
-        $this->assertNull($this->flow->tick($this->card, 0));
+        $this->flow->tick($this->card, 0);
+        $this->assertFirstTickedAndIdle();
     }
 
     // A finished run puts the card to validate, a failed one marks it failed
@@ -137,8 +130,7 @@ class CardFlowTest extends TestCase
     public function testStepRunDoneTicksItsStep(): void
     {
         $this->card->setChecklist([['t' => 'first'], ['t' => 'second', 'action' => 'hello'], ['t' => 'third']]);
-        $run = $this->flow->tick($this->card, 0);
-        $this->assertNotNull($run);
+        $run = $this->flow->runStep($this->flow->tick($this->card, 0), 1);
         $this->finish($run, RunStatus::Done);
         $this->flow->runFinished($run);
 
@@ -149,7 +141,7 @@ class CardFlowTest extends TestCase
     // Steps launched one after the other queue behind each other and run in turn, each done one ticking its step
     public function testStepRunsChain(): void
     {
-        $this->card->setChecklist([['t' => 'first', 'action' => 'hello'], ['t' => 'second', 'action' => 'copy', 'params' => ['text' => 'item-1'], 'after' => []]]);
+        $this->machineSteps(['after' => []]);
         $first = $this->flow->runStep($this->card, 0);
         $second = $this->flow->runStep($this->card, 1);
         $this->assertSame([$first, $second], $this->card->activeRuns());
@@ -246,22 +238,15 @@ class CardFlowTest extends TestCase
         $this->flow->validate($this->card);
     }
 
-    // A step's run done ticks its step like a hand would: the next machine step is queued at once and handed back
-    public function testStepRunDoneQueuesTheNextStep(): void
+    // A step's run done ticks its step but never queues the next machine step, left to a hand
+    public function testStepRunDoneLeavesTheNextStep(): void
     {
-        $this->card->setChecklist([['t' => 'first', 'action' => 'hello'], ['t' => 'second', 'action' => 'copy', 'params' => ['text' => 'item-1']]]);
+        $this->machineSteps();
         $first = $this->flow->runStep($this->card, 0);
         $this->finish($first, RunStatus::Done);
+        $this->flow->runFinished($first);
 
-        $next = $this->flow->runFinished($first);
-        $this->assertNotNull($next);
-        $this->assertSame(1, $next->getStep());
-        $this->assertSame(['text' => 'item-1'], $next->getParams());
-        $this->assertSame(CardStatus::Running, $this->card->getStatus());
-
-        $this->finish($next, RunStatus::Done);
-        $this->assertNull($this->flow->runFinished($next));
-        $this->assertSame(CardStatus::Ready, $this->card->getStatus());
+        $this->assertFirstTickedAndIdle();
     }
 
     // The last run done on a step that left the checklist is sent back like the card's own: refused outside review
@@ -277,7 +262,7 @@ class CardFlowTest extends TestCase
         $this->flow->sendBack($this->card, 'Again');
     }
 
-    // A step whose previous step is still to tick cannot be launched, and is queued as soon as that step is ticked
+    // A step whose previous step is still to tick cannot be launched, and can be once that step is ticked
     public function testRunStepWaitsForThePreviousStep(): void
     {
         $this->card->setChecklist([['t' => 'first'], ['t' => 'second', 'action' => 'copy']]);
@@ -288,18 +273,17 @@ class CardFlowTest extends TestCase
             $this->assertSame([], $this->card->activeRuns());
         }
 
-        $run = $this->flow->tick($this->card, 0);
-        $this->assertSame('copy', $run?->getAction());
+        $run = $this->flow->runStep($this->flow->tick($this->card, 0), 1);
+        $this->assertSame('copy', $run->getAction());
         $this->assertSame(1, $run->getStep());
     }
 
-    // Ticking a step does not queue the next one while that one still waits for another of its steps
+    // A step still waiting for another of its steps once the one before is ticked
     public function testTickLeavesTheNextStepWaitingForItsOtherSteps(): void
     {
         $this->card->setChecklist([['t' => 'first'], ['t' => 'second', 'action' => 'copy', 'after' => ['text:first', 'text:third']], ['t' => 'third']]);
 
-        $this->assertNull($this->flow->tick($this->card, 0));
-        $this->assertSame([], $this->card->activeRuns());
+        $this->flow->tick($this->card, 0);
         $this->assertSame(['third'], $this->card->stepAwaits(1));
     }
 
@@ -318,6 +302,21 @@ class CardFlowTest extends TestCase
         $this->card->setChecklist([['t' => 'first', 'action' => 'hello'], ['t' => 'second', 'action' => 'copy', 'after' => []]]);
 
         return [$this->flow->runStep($this->card, 0), $this->flow->runStep($this->card, 1)];
+    }
+
+    // Two steps each naming a machine action, the second's text given, with what else the second carries
+    /** @param array<string, mixed> $second */
+    private function machineSteps(array $second = []): void
+    {
+        $this->card->setChecklist([['t' => 'first', 'action' => 'hello'], ['t' => 'second', 'action' => 'copy', 'params' => ['text' => 'item-1']] + $second]);
+    }
+
+    // The first step ticked, nothing queued and the card back to do
+    private function assertFirstTickedAndIdle(): void
+    {
+        $this->assertTrue($this->card->getChecklist()[0]['done'] ?? false);
+        $this->assertSame([], $this->card->activeRuns());
+        $this->assertSame(CardStatus::Ready, $this->card->getStatus());
     }
 
     // A run claimed by a machine and finished with a status

@@ -67,6 +67,20 @@ class PlanFactory
     /** @param array<string, string> $values */
     private function checklist(PlanTemplate $template, Plan $plan, Project $project, string $title, array $values): Plan
     {
+        new Card($project, $title)->setChecklist($this->steps($template, $values))->setStatus(CardStatus::Todo)->placeIn($plan, 0);
+        $this->cardFlow->start($plan);
+
+        return $plan;
+    }
+
+    // The steps of a checklist template as a card's boxes, their {variables} filled, each naming the machine action it hands the card to and the steps it waits for
+    /**
+     * @param array<string, string> $values
+     *
+     * @return list<array{t: string, action?: string, params?: array<string, string>, after?: list<string>}>
+     */
+    public function steps(PlanTemplate $template, array $values): array
+    {
         $steps = [];
         foreach ($template->getSteps() as $step) {
             $item = ['t' => $this->fill($step['title'], $values)];
@@ -74,12 +88,10 @@ class PlanFactory
                 $item['action'] = $step['action'];
                 $item['params'] = array_map(fn (string $value): string => $this->fill($value, $values), $step['params'] ?? []);
             }
-            $steps[] = $item;
+            $steps[] = StepOrder::grouped($item, $step);
         }
-        new Card($project, $title)->setChecklist(StepOrder::linkAfter($steps, $template->getSteps()))->setStatus(CardStatus::Todo)->placeIn($plan, 0);
-        $this->cardFlow->start($plan);
 
-        return $plan;
+        return StepOrder::linkAfter($steps, $template->getSteps());
     }
 
     // A text with its {variables} replaced, an unknown one left empty

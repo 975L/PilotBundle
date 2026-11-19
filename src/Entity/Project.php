@@ -15,11 +15,14 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-// A project, shown as a tile in its own colour, holding its backlog, its plans and its files
+// A project, called a space on screen, shown in its own colour, holding its cards (each new one laid with its checklist template), its backlog, its plans and its files, its slug opening its address /pilot/{slug}
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 #[ORM\Table(name: 'pilot_project')]
 class Project implements \Stringable
 {
+    // The first segment of the piloting pages' addresses, the words their own pages take left out
+    public const string SLUG = '/^(?!(?:search|share|card|cards|collection|projects|credit|report|doc|run|space|settings)$)[a-z0-9-]+$/';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -40,7 +43,7 @@ class Project implements \Stringable
     public function __construct(
         #[ORM\Column(length: 50, unique: true)]
         #[Assert\NotBlank]
-        #[Assert\Regex('/^[a-z0-9-]+$/')]
+        #[Assert\Regex(self::SLUG)]
         #[Assert\Length(max: 50)]
         private string $slug,
         #[ORM\Column(length: 100)]

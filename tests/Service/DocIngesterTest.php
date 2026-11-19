@@ -11,6 +11,7 @@
 namespace c975L\PilotBundle\Tests\Service;
 
 use c975L\PilotBundle\Entity\Card;
+use c975L\PilotBundle\Entity\Doc;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Repository\DocRepository;
 use c975L\PilotBundle\Service\DocIngester;
@@ -34,6 +35,22 @@ class DocIngesterTest extends TestCase
         $this->assertSame('Catalog', $card->getDoc()->getTitle());
         $this->assertSame($project, $card->getDoc()->getProject());
         $this->assertSame('Short', $card->getDoc()->getSummary());
+        unlink($path);
+    }
+
+    // A file of another space is never written through a card, the card left without it
+    public function testFileOfAnotherSpaceLeftAlone(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'doc');
+        file_put_contents($path, "# Other\n\n## L'essentiel\n\nShort");
+        $other = new Doc('other-file', 'Other')->setProject(new Project('other', 'Other'));
+        $docs = $this->createStub(DocRepository::class);
+        $docs->method('findOneBy')->willReturn($other);
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1');
+
+        $this->assertTrue(new DocIngester($docs, $this->createStub(EntityManagerInterface::class))->ingest('other-file.doc.md', $path, $card));
+        $this->assertNull($card->getDoc());
+        $this->assertNull($other->getSummary());
         unlink($path);
     }
 }

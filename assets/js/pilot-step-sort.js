@@ -8,8 +8,27 @@
 import { addSortGesture } from "@c975l/ui-bundle/pointer-sort.js";
 import PilotListSort from "./pilot-list-sort.js";
 
-// Orders a card's steps by dragging them by their handle, saved on the drop then read again, the indices the other forms carry having moved
+// Orders a card's steps by dragging them by their handle within their group, saved on the drop then read again, the indices the other forms carry having moved
 export default class extends PilotListSort {
+    // A step moves among the steps of its own list, its group's
+    moveTo(dragged, y) {
+        const list = dragged.parentNode;
+        const before = [...list.children].find((item) => {
+            if (item === dragged) return false;
+            const box = item.getBoundingClientRect();
+
+            return y < box.top + box.height / 2;
+        });
+        if (before) list.insertBefore(dragged, before);
+        else list.appendChild(dragged);
+    }
+
+    revert(item) {
+        item.classList.remove("opacity-50");
+        if (this.origin) item.parentNode.insertBefore(item, this.origin);
+        else item.parentNode.appendChild(item);
+    }
+
     // Each step grabbed by its handle only, its text and buttons keeping their own click
     itemTargetConnected(item) {
         const handle = item.querySelector("[data-pilot-step-sort-handle]");

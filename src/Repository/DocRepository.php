@@ -14,7 +14,7 @@ use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Doc;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Enum\CardStatus;
-use c975L\PilotBundle\Enum\DocKind;
+use c975L\PilotBundle\Security\PilotScope;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\String\Slugger\AsciiSlugger;
@@ -29,14 +29,14 @@ class DocRepository extends ServiceEntityRepository
         parent::__construct($registry, Doc::class);
     }
 
-    // Files whose title or text holds the words
+    // Files whose title or text holds the words, among those of the spaces the account works in whole
     /**
      * @return list<Doc>
      */
-    public function search(string $words, int $limit = 20): array
+    public function search(string $words, PilotScope $scope, int $limit = 20): array
     {
-        return $this->createQueryBuilder('d')
-            ->where('d.title LIKE :words OR d.summary LIKE :words OR d.detail LIKE :words')
+        return $scope->restrictProjects($this->createQueryBuilder('d'), 'IDENTITY(d.project)')
+            ->andWhere('d.title LIKE :words OR d.summary LIKE :words OR d.detail LIKE :words')
             ->setParameter('words', '%' . addcslashes($words, '%_') . '%')
             ->orderBy('d.title', \SortDirection::Ascending)
             ->setMaxResults($limit)
@@ -44,7 +44,7 @@ class DocRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // A project's references common to its work: its files but the one that belongs to a single open card (shown on that card), characters and objectives left out, by title
+    // A project's references common to its work: its files but the one that belongs to a single open card (shown on that card), by title
     /**
      * @return list<Doc>
      */
@@ -52,17 +52,15 @@ class DocRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('d')
             ->where('d.project = :project')
-            ->andWhere('d.kind NOT IN (:hidden)')
             ->andWhere('d.id NOT IN (SELECT IDENTITY(c.doc) FROM ' . Card::class . ' c WHERE c.doc IS NOT NULL GROUP BY c.doc HAVING COUNT(c.id) = 1 AND SUM(CASE WHEN c.status = :done THEN 0 ELSE 1 END) = 1)')
             ->setParameter('done', CardStatus::Done)
             ->setParameter('project', $project)
-            ->setParameter('hidden', [DocKind::Character, DocKind::Objectives])
             ->orderBy('d.title', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
     }
 
-    // Files of a project a card can be attached to, characters and objectives left out, by title
+    // Files of a project a card can be attached to, by title
     /**
      * @return list<Doc>
      */
@@ -70,18 +68,10 @@ class DocRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('d')
             ->where('d.project = :project')
-            ->andWhere('d.kind NOT IN (:hidden)')
             ->setParameter('project', $project)
-            ->setParameter('hidden', [DocKind::Character, DocKind::Objectives])
             ->orderBy('d.title', \SortDirection::Ascending)
             ->getQuery()
             ->getResult();
-    }
-
-    // The objectives of a project, written in a document of their own, created empty the first time
-    public function objectivesOf(Project $project, string $title): Doc
-    {
-        return $this->findOneBy(['project' => $project, 'kind' => DocKind::Objectives]) ?? $this->newFile($project, $title)->setKind(DocKind::Objectives);
     }
 
     // A new file of a project, its slug made from the project and the title and kept unique by a number

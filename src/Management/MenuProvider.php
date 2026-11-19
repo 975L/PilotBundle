@@ -11,14 +11,9 @@
 namespace c975L\PilotBundle\Management;
 
 use c975L\ConfigBundle\Management\MenuProviderInterface;
-use c975L\PilotBundle\Controller\Management\ActionCrudController;
-use c975L\PilotBundle\Controller\Management\CreditCrudController;
-use c975L\PilotBundle\Controller\Management\MachineCrudController;
-use c975L\PilotBundle\Controller\Management\PilotController;
-use c975L\PilotBundle\Controller\Management\PlanTemplateCrudController;
-use c975L\PilotBundle\Controller\Management\ProjectCrudController;
+use c975L\PilotBundle\Controller\PilotController;
 
-// The piloting section of the sidebar: the planning, whose pages list the search and the projects in their own column, then the settings
+// The piloting section of the sidebar: a link to the piloting pages, which list the search, the spaces and the settings in their own column
 class MenuProvider implements MenuProviderInterface
 {
     public function getMenuSection(): array
@@ -30,58 +25,23 @@ class MenuProvider implements MenuProviderInterface
         ];
     }
 
+    // The settings live on the piloting pages themselves, none in the back office
     public function getMenus(): array
     {
-        return [
-            'pilot_week' => [
-                'controller' => PilotController::class,
-                'action' => 'week',
-                'label' => 'label.week',
-                'translation_domain' => 'pilot',
-                'icon' => 'fas fa-calendar-days',
-                'description' => 'label.info_pilot',
-                'first' => true,
-            ],
-            'pilot_projects' => [
-                'controller' => ProjectCrudController::class,
-                'label' => 'label.projects',
-                'translation_domain' => 'pilot',
-                'icon' => 'fas fa-folder',
-                'description' => 'label.info_projects',
-            ],
-            'pilot_templates' => [
-                'controller' => PlanTemplateCrudController::class,
-                'label' => 'label.templates',
-                'translation_domain' => 'pilot',
-                'icon' => 'fas fa-list-ol',
-                'description' => 'label.info_templates',
-            ],
-            'pilot_actions' => [
-                'controller' => ActionCrudController::class,
-                'label' => 'label.actions',
-                'translation_domain' => 'pilot',
-                'icon' => 'fas fa-bolt',
-                'description' => 'label.info_actions',
-            ],
-            'pilot_machines' => [
-                'controller' => MachineCrudController::class,
-                'label' => 'label.machines',
-                'translation_domain' => 'pilot',
-                'icon' => 'fas fa-desktop',
-                'description' => 'label.info_machines',
-            ],
-            'pilot_credits' => [
-                'controller' => CreditCrudController::class,
-                'label' => 'label.credits',
-                'translation_domain' => 'pilot',
-                'icon' => 'fas fa-coins',
-                'description' => 'label.info_credits',
-            ],
-        ];
+        return [];
     }
 
+    // The piloting pages themselves, on their own shell outside the back office, opened from its section
     public function getLinks(): array
     {
-        return [];
+        return [
+            'pilot_dashboard' => [
+                'name' => PilotController::DASHBOARD_ROUTE,
+                'label' => 'label.dashboard',
+                'translation_domain' => 'pilot',
+                'icon' => 'fas fa-gauge-high',
+                'description' => 'label.info_pilot',
+            ],
+        ];
     }
 }

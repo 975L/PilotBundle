@@ -1,0 +1,375 @@
+{% extends '@c975LPilot/pilot/_layout.html.twig' %}
+
+{% block pilot %}
+    {# Wrapped so the dialog of the listing pages takes this content alone #}
+    <div class="pilot-dialog-page">
+        {% import '@c975LPilot/pilot/_due.html.twig' as due %}
+        {% set token = csrf_token('pilot_card_gesture' ~ card.id) %}
+        {# Read again every few seconds while a run waits or works, so its progress and its end show without reloading (pilot-run-watch) #}
+        {% if card.activeRuns is not empty %}
+            <div hidden data-controller="pilot-run-watch" data-pilot-run-watch-url-value="{{ pilot_card_path(card) }}" data-pilot-run-watch-state-value="{{ card.activeRuns|map(run => run.id ~ ':' ~ run.status.value ~ ':' ~ run.progress ~ ':' ~ run.message)|join('|') }}"></div>
+        {% endif %}
+        {# Each field edited in place: its text clicked shows the form beside it, saved when left (pilot-inline-edit); read only without the right to write the card #}
+        {% if can.edit %}
+        <div data-controller="pilot-inline-edit">
+            <h1 class="pilot-inline-view pilot-card-title" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}">{{ card.title }}</h1>
+            <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'edit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="mb-2">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <input name="title" value="{{ card.title }}" class="form-control form-control-lg" required aria-label="{{ 'label.card_title'|trans({}, 'pilot') }}">
+            </form>
+        </div>
+        {# The pitch right under the title, written in markdown, shown laid out and edited in place #}
+        <div data-controller="pilot-inline-edit" class="mb-2">
+            <div class="pilot-inline-view pilot-description{{ card.note ? '' : ' text-body-secondary' }}" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}">{{ card.note ? card.note|pilot_markdown : 'label.card_note'|trans({}, 'pilot') }}</div>
+            <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'edit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <textarea name="note" rows="10" class="form-control font-monospace small" aria-label="{{ 'label.card_note'|trans({}, 'pilot') }}" placeholder="{{ 'label.info_card_note'|trans({}, 'pilot') }}">{{ card.note }}</textarea>
+            </form>
+        </div>
+        {% else %}
+        <h1 class="pilot-card-title">{{ card.title }}</h1>
+        {% if card.note %}<div class="pilot-description mb-2">{{ card.note|pilot_markdown }}</div>{% endif %}
+        {% endif %}
+        {# A sheet's picture at full size, to download as a reference for an image generator, replaced or removed in place #}
+        {% if card.sheet %}
+            <div class="mb-3 pilot-sheet-picture">
+                {% if card.image %}
+                    {% set image = path('pilot_card_image', {id: card.id}) %}
+                    <img src="{{ image }}" alt="{{ card.title }}" class="img-fluid rounded mb-2 pilot-sheet-full">
+                {% endif %}
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    {% if card.image %}<a href="{{ image }}" download="{{ card.image }}" class="btn btn-sm btn-outline-primary pilot-sheet-download"><i class="fas fa-download me-1"></i>{{ 'label.card_image_download'|trans({}, 'pilot') }}</a>{% endif %}
+                    {% if can.edit %}
+                        <form method="post" action="{{ path('pilot_card_image_set', {id: card.id}) }}" enctype="multipart/form-data">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <label class="btn btn-sm btn-outline-secondary mb-0 pilot-sheet-upload"><i class="fas fa-image me-1"></i>{{ 'label.card_image_send'|trans({}, 'pilot') }}
+                                <input type="file" name="image" accept="image/png, image/jpeg, image/webp, image/gif" hidden data-pilot-autosubmit>
+                            </label>
+                        </form>
+                        {% if card.image %}
+                            <form method="post" action="{{ path('pilot_card_image_set', {id: card.id}) }}">
+                                <input type="hidden" name="_token" value="{{ token }}">
+                                <input type="hidden" name="remove" value="1">
+                                <button class="btn btn-sm btn-link text-danger pilot-sheet-remove">{{ 'label.card_image_remove'|trans({}, 'pilot') }}</button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        <div class="d-flex flex-wrap gap-1 align-items-center mb-3">
+            <a href="{{ path('pilot_project', {slug: card.project.slug}) }}" class="badge text-white text-decoration-none pilot-badge pilot-color-{{ card.project.slug }}">{{ card.project.name }}</a>
+            {% if card.status.value != 'ready' %}<span class="badge text-bg-light">{{ card.status.label|trans }}</span>{% endif %}
+            {% if card.template %}
+                {# The template the card comes from, its plan's or the one it was laid from, where its steps are kept for every card built from it #}
+                <a href="{{ path('pilot_settings_edit', {kind: 'template', id: card.template.id}) }}" class="badge border text-body-secondary text-decoration-none pilot-card-template"><i class="fas fa-list-ol"></i> {{ 'label.card_template'|trans({'%name%': card.template.name}, 'pilot') }}</a>
+            {% endif %}
+            {# Whom the card waits on, shown and edited only once set (by the markdown or an editing link) #}
+            {% if card.waitingOn %}
+            <span data-controller="pilot-inline-edit">
+                <span class="badge pilot-inline-view text-bg-info" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}">{{ 'label.waiting_on'|trans({'%who%': card.waitingOn}, 'pilot') }}</span>
+                <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'edit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
+                    <input type="hidden" name="_token" value="{{ token }}">
+                    <input name="waitingOn" value="{{ card.waitingOn }}" maxlength="100" class="form-control form-control-sm" placeholder="{{ 'label.info_card_waiting_on'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_waiting_on'|trans({}, 'pilot') }}">
+                </form>
+            </span>
+            {% endif %}
+            <span data-controller="pilot-inline-edit">
+                <span class="badge pilot-inline-view {{ card.doc ? 'text-bg-light' : 'border text-body-secondary' }}" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}"><i class="fas fa-file-lines"></i> {{ card.doc ? 'label.card_doc_named'|trans({'%title%': card.doc.title}, 'pilot') : 'label.card_doc'|trans({}, 'pilot') }}</span>
+                <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'edit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
+                    <input type="hidden" name="_token" value="{{ token }}">
+                    <select name="doc" class="form-select form-select-sm w-auto" aria-label="{{ 'label.card_doc'|trans({}, 'pilot') }}">
+                        <option value="">{{ 'label.card_doc_none'|trans({}, 'pilot') }}</option>
+                        {% if card.doc and card.doc not in docs %}<option value="{{ card.doc.id }}" selected>{{ card.doc.title }}</option>{% endif %}
+                        {% for file in docs %}<option value="{{ file.id }}"{{ card.doc and card.doc.id == file.id ? ' selected' }}>{{ file.title }}</option>{% endfor %}
+                    </select>
+                    <input name="newDoc" maxlength="200" class="form-control form-control-sm w-auto" placeholder="{{ 'label.info_card_doc_new'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_doc_new'|trans({}, 'pilot') }}">
+                </form>
+            </span>
+            {# Its collection among the space's, edited in place #}
+            {% if card_sets is not empty %}
+            <span data-controller="pilot-inline-edit">
+                <span class="badge pilot-inline-view {{ card.cardSet ? 'text-bg-light' : 'border text-body-secondary' }}" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}"><i class="fas fa-layer-group"></i> {{ card.cardSet ? card.cardSet.name : 'label.card_collection'|trans({}, 'pilot') }}</span>
+                <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'edit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
+                    <input type="hidden" name="_token" value="{{ token }}">
+                    <select name="cardSet" class="form-select form-select-sm w-auto" data-pilot-autosubmit aria-label="{{ 'label.card_collection'|trans({}, 'pilot') }}">
+                        <option value="">{{ 'label.card_no_collection'|trans({}, 'pilot') }}</option>
+                        {% for set in card_sets %}<option value="{{ set.id }}"{{ card.cardSet and card.cardSet.id == set.id ? ' selected' }}>{{ set.name }}</option>{% endfor %}
+                    </select>
+                </form>
+            </span>
+            {% endif %}
+        </div>
+        {# Its source and its result as links, one a line, each edited in place by its pencil; a link opens in a new tab #}
+        {% if card.sourceUrl or card.resultUrl or can.edit %}
+        <div class="small mb-3 pilot-card-links">
+            {% for field, url in {sourceUrl: card.sourceUrl, resultUrl: card.resultUrl} %}
+                {% set label = (field == 'sourceUrl' ? 'label.card_source' : 'label.card_result')|trans({}, 'pilot') %}
+                {% if url or can.edit %}
+                <div data-controller="pilot-inline-edit" class="pilot-card-{{ field == 'sourceUrl' ? 'source' : 'result' }}">
+                    <span class="pilot-inline-view" data-pilot-inline-edit-target="view"{% if can.edit %} data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}"{% endif %}>
+                        <i class="fas {{ field == 'sourceUrl' ? 'fa-arrow-right-to-bracket' : 'fa-arrow-up-right-from-square' }} text-body-secondary me-1"></i>{{ label }} :
+                        {% if url %}<a href="{{ url }}" target="_blank" rel="noopener noreferrer" class="text-break">{% set shown = url|split('://')|last %}{{ shown|length > 70 ? shown|slice(0, 69) ~ '…' : shown }}</a>{% else %}<span class="text-body-secondary">{{ 'label.card_link_none'|trans({}, 'pilot') }}</span>{% endif %}
+                        {% if can.edit %}<i class="fas fa-pen text-body-secondary ms-1"></i>{% endif %}
+                    </span>
+                    {% if can.edit %}
+                        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'edit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <input type="url" name="{{ field }}" value="{{ url }}" maxlength="500" class="form-control form-control-sm" placeholder="https://" aria-label="{{ label }}">
+                        </form>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# The members the card is given to, a guest of the space seeing only those; given or taken back from here #}
+        {% if card.assignees is not empty or members is not empty %}
+            <div class="d-flex flex-wrap gap-1 align-items-center mb-3 small pilot-assignees">
+                <span class="text-body-secondary"><i class="fas fa-user me-1"></i>{{ 'label.assignees'|trans({}, 'pilot') }}</span>
+                {% for user in card.assignees %}
+                    {% set member = members|filter(item => item.user == user)|first %}
+                    <span class="badge text-bg-light">{{ user.userIdentifier }}
+                        {% if member %}
+                            <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'unassign'}) }}" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ token }}"><input type="hidden" name="member" value="{{ member.id }}">
+                                <button class="btn btn-link btn-sm p-0 ms-1 lh-1" title="{{ 'label.assignee_remove'|trans({}, 'pilot') }}" aria-label="{{ 'label.assignee_remove'|trans({}, 'pilot') }}"><i class="fas fa-xmark"></i></button>
+                            </form>
+                        {% endif %}
+                    </span>
+                {% endfor %}
+                {% set free = members|filter(item => item.user not in card.assignees) %}
+                {% if free is not empty %}
+                    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'assign'}) }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <select name="member" class="form-select form-select-sm w-auto" data-pilot-autosubmit aria-label="{{ 'label.assignee_add'|trans({}, 'pilot') }}">
+                            <option value="">{{ 'label.assignee_add'|trans({}, 'pilot') }}</option>
+                            {% for member in free %}<option value="{{ member.id }}">{{ member.user.userIdentifier }}</option>{% endfor %}
+                        </select>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if can.edit %}
+        <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+            <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'schedule'}) }}" class="d-flex gap-2 align-items-end">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <label class="form-label mb-0">{{ 'label.due'|trans({}, 'pilot') }}
+                    <input type="date" id="pilot-due" name="due" value="{{ card.due ? card.due|date('Y-m-d') : '' }}" class="form-control form-control-sm">
+                </label>
+                <button class="btn btn-sm btn-outline-primary pilot-schedule">{{ 'label.schedule'|trans({}, 'pilot') }}</button>
+            </form>
+            {% include '@c975LPilot/pilot/_done_toggle.html.twig' with {toggle_named: true} %}
+            <form method="post" action="{{ path('pilot_card_duplicate', {id: card.id}) }}">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <button class="btn btn-sm btn-outline-secondary pilot-duplicate" title="{{ 'label.card_duplicate'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_duplicate'|trans({}, 'pilot') }}"><i class="fas fa-clone"></i></button>
+            </form>
+            {# The read-only link and the editing one, the latter for who may hand the card to a machine since its holder may: a click copies it, made the first time and kept; the cross beside stops it #}
+            {% set links = [{gesture: 'share', stop: 'unshare', class: 'pilot-share', token: card.shareToken, icon: 'fa-eye', label: 'label.share'|trans({}, 'pilot'), stop_label: 'label.share_stop'|trans({}, 'pilot')}] %}
+            {% if can.run %}{% set links = links|merge([{gesture: 'lend', stop: 'unlend', class: 'pilot-lend', token: card.editToken, icon: 'fa-pen-to-square', label: 'label.share_edit'|trans({}, 'pilot'), stop_label: 'label.share_edit_stop'|trans({}, 'pilot')}]) %}{% endif %}
+            {% for link in links %}
+                <button type="button" class="btn btn-sm {{ link.token ? 'btn-secondary' : 'btn-outline-secondary' }} {{ link.class }}" data-controller="pilot-copy" data-action="pilot-copy#copy" data-pilot-copy-text-value="{{ link.token ? url('pilot_share', {token: link.token}) }}" data-pilot-copy-url-value="{{ path('pilot_card_gesture', {id: card.id, gesture: link.gesture}) }}" data-pilot-copy-token-value="{{ token }}" title="{{ link.label }}" aria-label="{{ link.label }}"><i class="fas {{ link.icon }}"></i></button>
+                {% if link.token %}
+                    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: link.stop}) }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <button class="btn btn-sm btn-link text-body-secondary px-1 pilot-{{ link.stop }}" title="{{ link.stop_label }}" aria-label="{{ link.stop_label }}"><i class="fas fa-xmark"></i></button>
+                    </form>
+                {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+
+        {# The card's markdown, the context a step handed to an AI is copied with #}
+        <textarea id="pilot-ai-context-{{ card.id }}" hidden>{{ markdown }}</textarea>
+        {# A sheet has no steps nor machine work, only its pitch, its picture and its feedback #}
+        {% if not card.sheet %}
+        {# The steps, ticked, their text edited in place (emptied to remove one) and added here, each group folding under its name, open from the start. Dragged by their handle into a new order within their group, carried to the card's checklist template and its other open cards #}
+        <div class="pilot-checklist" data-controller="pilot-step-sort" data-pilot-step-sort-url-value="{{ path('pilot_card_gesture', {id: card.id, gesture: 'steporder'}) }}" data-pilot-step-sort-token-value="{{ token }}" data-pilot-step-sort-failed-label-value="{{ 'label.order_failed'|trans({}, 'pilot') }}">
+            {% set step_runs = card.stepRuns %}
+            {# A card following a template keeps its ticked steps in place, the template's order showing how far it went; elsewhere they fold under the step field #}
+            {% set templated = card.template and card.template.checklist %}
+            {% for run in card.stepGroups %}
+            {% if run.group %}
+            <details open class="pilot-step-group mb-1">
+                <summary class="small fw-semibold text-body-secondary">{{ run.group }} <span class="fw-normal">{{ run.steps|filter(step => step.done ?? false)|length }}/{{ run.steps|length }}</span></summary>
+            {% endif %}
+            <ul class="list-unstyled mb-1">
+            {% for index, step in run.steps|filter(step => templated or not (step.done ?? false)) %}
+                {% include '@c975LPilot/pilot/_step.html.twig' %}
+            {% endfor %}
+            </ul>
+            {% if run.group %}</details>{% endif %}
+            {% endfor %}
+        </div>
+        {% if can.edit %}
+        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'stepadd'}) }}" class="mb-3 pilot-step-add">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <input name="text" maxlength="500" class="form-control form-control-sm" placeholder="{{ 'label.step_add'|trans({}, 'pilot') }}" aria-label="{{ 'label.step_add'|trans({}, 'pilot') }}" required>
+        </form>
+        {% endif %}
+        {# The ticked steps of a card of its own, folded together under the step field, closed, no longer moved #}
+        {% set ticked = templated ? [] : card.steps|filter(step => step.done ?? false) %}
+        {% if ticked is not empty %}
+        <details class="pilot-steps-done mb-3">
+            <summary class="small">{{ 'label.steps_ticked'|trans({'%count%': ticked|length}, 'pilot') }}</summary>
+            <ul class="list-unstyled mb-1 mt-1">
+            {% for index, step in ticked %}
+                {% include '@c975LPilot/pilot/_step.html.twig' %}
+            {% endfor %}
+            </ul>
+        </details>
+        {% endif %}
+
+        {% endif %}
+
+        {# The feedback on the card (a fix, an idea), ticked once dealt with, a question still to decide marked as such; a box to tick opens a done card again #}
+        <h2 class="h6 text-body-secondary text-uppercase mt-2 mb-2">{{ 'label.feedback'|trans({}, 'pilot') }}</h2>
+        <ul class="list-unstyled pilot-feedback">
+            {% for index, step in card.feedback %}
+                <li class="d-flex align-items-start gap-2 mb-1">
+                    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'step'}) }}" class="form-check mb-0 me-n1">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <input type="hidden" name="index" value="{{ index }}">
+                        <input type="checkbox" class="form-check-input" data-pilot-autosubmit aria-label="{{ step.t }}"{{ (step.done ?? false) ? ' checked' }}>
+                    </form>
+                    <span data-controller="pilot-inline-edit" class="pilot-step-body">
+                        <span class="pilot-inline-view pilot-step-text{{ (step.done ?? false) ? ' text-decoration-line-through text-body-secondary' }}" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.step_edit'|trans({}, 'pilot') }}">{{ step.t }}</span>
+                        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'stepedit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <input type="hidden" name="index" value="{{ index }}">
+                            <input name="text" value="{{ step.t }}" maxlength="500" class="form-control form-control-sm" aria-label="{{ 'label.step_edit'|trans({}, 'pilot') }}" placeholder="{{ 'label.info_step_edit'|trans({}, 'pilot') }}">
+                        </form>
+                    </span>
+                    {# Still to decide or decided, switched by a click #}
+                    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'stepask'}) }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <input type="hidden" name="index" value="{{ index }}">
+                        {% set ask = step.ask ?? false %}
+                        <button class="btn btn-sm py-0 {{ ask ? 'btn-warning' : 'btn-link text-body-secondary' }} pilot-feedback-ask" title="{{ ask ? 'label.feedback_decided'|trans({}, 'pilot') : 'label.feedback_ask'|trans({}, 'pilot') }}" aria-label="{{ ask ? 'label.feedback_decided'|trans({}, 'pilot') : 'label.feedback_ask'|trans({}, 'pilot') }}"><i class="fas fa-question"></i>{% if ask %} {{ 'label.feedback_to_decide'|trans({}, 'pilot') }}{% endif %}</button>
+                    </form>
+                    {% include '@c975LPilot/pilot/_ai_share.html.twig' %}
+                </li>
+            {% endfor %}
+        </ul>
+        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'feedbackadd'}) }}" class="mb-3 pilot-feedback-add">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <input name="text" maxlength="500" class="form-control form-control-sm" placeholder="{{ 'label.info_feedback_add'|trans({}, 'pilot') }}" aria-label="{{ 'label.feedback_add'|trans({}, 'pilot') }}" required>
+        </form>
+
+        {% if not card.sheet %}
+        {# The last run's output, a failed or withdrawn one not kept as a block, nor a step's run under way: both show on their step #}
+        {% if run and run.status.value not in ['failed', 'cancelled'] and not (run.step is not null and run.status.value in ['queued', 'claimed']) %}
+            <section class="mb-4 pilot-run">
+                <h2 class="h5">{{ 'label.machine'|trans({}, 'pilot') }} · {{ action_labels[run.action] ?? run.action }}</h2>
+                <p class="mb-1">
+                    <span class="badge text-bg-light">{{ run.status.label|trans }}</span>
+                    {% if run.machine %}<span class="text-body-secondary small">{{ run.machine.name }}</span>{% endif %}
+                    {% if run.message %}<span class="small">{{ run.message }}</span>{% endif %}
+                </p>
+                {% if run.status.value == 'claimed' %}
+                    <progress class="w-100 mb-2" max="100" value="{{ run.progress }}">{{ run.progress }} %</progress>
+                {% endif %}
+                {% if card.comment %}<p class="small"><strong>{{ 'label.comment'|trans({}, 'pilot') }}</strong> {{ card.comment }}</p>{% endif %}
+                {% for output in outputs %}
+                    <figure class="mb-3">
+                        <figcaption class="small text-body-secondary">{{ output.name }}</figcaption>
+                        {% set url = output.kind != 'elsewhere' ? path('pilot_run_output', {id: run.id, name: output.name}) : null %}
+                        {% if output.kind == 'text' %}<pre class="border rounded p-2 small">{{ output.text }}</pre>
+                        {% elseif output.kind == 'image' %}<img src="{{ url }}" alt="{{ output.name }}" class="img-fluid border rounded">
+                        {% elseif output.kind == 'video' %}<video src="{{ url }}" controls class="w-100"></video>
+                        {% elseif output.kind == 'file' %}<a href="{{ url }}">{{ output.name }}</a>
+                        {% else %}<span class="small">{{ 'label.output_elsewhere'|trans({}, 'pilot') }}</span>{% endif %}
+                    </figure>
+                {% endfor %}
+                {% if run.log %}<details class="small"><summary>{{ 'label.log'|trans({}, 'pilot') }}</summary><pre>{{ run.log }}</pre></details>{% endif %}
+            </section>
+        {% endif %}
+
+        {# A run of the card's own action waits for validation; a step's run done ticked its step and can still be sent back with a comment #}
+        {% set step_redo = run and run.step is not null and run.status.value == 'done' and card.status.value != 'done' %}
+        {% if can.run and (card.status.value == 'review' or step_redo) %}
+            <div class="d-flex flex-wrap gap-2 align-items-end mb-4">
+                {% if card.status.value == 'review' %}
+                    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'validate'}) }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <button class="btn btn-sm btn-success pilot-validate">{{ 'label.validate'|trans({}, 'pilot') }}</button>
+                    </form>
+                {% endif %}
+                <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'sendback'}) }}" class="d-flex gap-2 align-items-end flex-grow-1">
+                    <input type="hidden" name="_token" value="{{ token }}">
+                    <label class="form-label mb-0 flex-grow-1">{{ 'label.comment'|trans({}, 'pilot') }}
+                        <textarea name="comment" id="pilot-comment" rows="1" class="form-control form-control-sm" required></textarea>
+                    </label>
+                    <button class="btn btn-sm btn-outline-primary pilot-sendback">{{ 'label.send_back'|trans({}, 'pilot') }}</button>
+                </form>
+            </div>
+        {% elseif can.run and run and run.status.value == 'queued' and run.step is null %}
+        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'cancel'}) }}" class="mb-4">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <button class="btn btn-sm btn-outline-secondary pilot-cancel">{{ 'label.run_cancel'|trans({}, 'pilot') }}</button>
+        </form>
+    {% elseif can.run and card.runner and card.action and card.status.value in ['ready', 'failed'] and card.action not in card.checklist|map(step => step.action ?? null) %}
+            {# The card's own action launched here only when no step carries it, each step having its button #}
+            <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'launch'}) }}" class="mb-4">
+                <input type="hidden" name="_token" value="{{ token }}">
+                <button class="btn btn-sm btn-primary pilot-launch">{{ 'label.launch'|trans({}, 'pilot') }}</button>
+            </form>
+        {% endif %}
+
+        {% set direct = actions|filter(action => action.params is empty) %}
+        {% if card.status.value not in ['running', 'done'] and direct is not empty %}
+            {# The actions asking nothing leave in one click, as buttons #}
+            <div class="d-flex flex-wrap gap-2 mb-3 pilot-direct-actions">
+                {% for action in direct %}
+                    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'entrust'}) }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <input type="hidden" name="action" value="{{ action.key }}">
+                        <button class="btn btn-sm btn-outline-primary" title="{{ action.help ? action.help ~ ' · ' }}{{ action.machine }}">{{ action.label }}</button>
+                    </form>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% set asking = actions|filter(action => action.params is not empty) %}
+        {% if card.status.value not in ['running', 'done'] and asking is not empty %}
+            <details class="mb-4 pilot-entrust">
+                <summary class="h6">{{ 'label.entrust'|trans({}, 'pilot') }}</summary>
+                <p class="small text-body-secondary">{{ 'label.info_entrust'|trans({}, 'pilot') }}</p>
+                {% for action in asking %}
+                    {% set key = action.key %}
+                    <details class="mb-1">
+                        <summary>{{ action.label }} <span class="text-body-secondary small">{{ action.machine }}</span></summary>
+                        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'entrust'}) }}" class="d-flex flex-wrap gap-2 align-items-end mt-2">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <input type="hidden" name="action" value="{{ key }}">
+                            {% for name in action.params %}
+                                <label class="form-label mb-0">{{ name }}
+                                    <input name="params[{{ name }}]" value="{{ card.action == key ? (card.params[name] ?? '') : '' }}" class="form-control form-control-sm">
+                                </label>
+                            {% endfor %}
+                            <button class="btn btn-sm btn-outline-primary">{{ 'label.entrust_go'|trans({}, 'pilot') }}</button>
+                        </form>
+                    </details>
+                {% endfor %}
+            </details>
+        {% endif %}
+
+        {% endif %}
+
+        {% if card.doc %}
+            <h2 class="h6 text-body-secondary text-uppercase mt-4 mb-2"><i class="fas fa-file-lines me-1"></i>{{ 'label.card_doc'|trans({}, 'pilot') }}</h2>
+            {% set doc = card.doc %}{% include '@c975LPilot/pilot/_doc.html.twig' %}
+        {% endif %}
+
+        {% if can.delete %}
+        {# Deleted for good, with its runs and their files, once the browser's confirmation accepted #}
+        <form method="post" action="{{ path('pilot_card_delete', {id: card.id}) }}" class="mt-4 pilot-card-delete" data-pilot-confirm="{{ 'label.info_card_delete'|trans({}, 'pilot') }}">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash me-1"></i>{{ 'label.card_delete'|trans({}, 'pilot') }}</button>
+        </form>
+        {% endif %}
+    </div>
+{% endblock %}

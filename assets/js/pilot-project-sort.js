@@ -18,17 +18,7 @@ export default class extends PilotListSort {
         addSortGesture(item, { ...gesture, touch: false, ignore: "[data-pilot-project-sort-handle]" });
     }
 
-    save() {
-        const body = new URLSearchParams();
-        this.itemTargets.forEach((item) => { body.append("ids[]", item.dataset.projectId); });
-        fetch(this.urlValue, { method: "POST", headers: { "X-CSRF-Token": this.tokenValue }, body })
-            .then((response) => { if (!response.ok) this.failed(); })
-            .catch(() => this.failed());
-    }
-
-    // Reloaded so the column shows what was actually saved
-    failed() {
-        window.alert(this.failedLabelValue);
-        window.location.reload();
+    itemId(item) {
+        return item.dataset.projectId;
     }
 }

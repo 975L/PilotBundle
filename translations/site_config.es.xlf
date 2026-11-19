@@ -4,11 +4,11 @@
         <body>
             <trans-unit id="e70l2zx">
                 <source>description.pilot_horizon_days</source>
-                <target>Días que la Planificación muestra uno a uno, antes de agrupar por mes</target>
+                <target>Días que el panel muestra uno a uno, antes de agrupar por mes</target>
             </trans-unit>
             <trans-unit id="VdOkW5Q">
                 <source>label.pilot_horizon_days</source>
-                <target>Horizonte de la planificación (días)</target>
+                <target>Horizonte del panel (días)</target>
             </trans-unit>
         </body>
     </file>

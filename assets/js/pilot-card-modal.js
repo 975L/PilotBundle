@@ -9,7 +9,7 @@ import { Controller } from "@hotwired/stimulus";
 
 // Opens a card or a file over the page it was clicked on, its own page read and shown in a dialog; the address keeps it as #card-<id> or #doc-<slug>, so a link or the back button reopen it
 export default class extends Controller {
-    static targets = ["dialog", "body"];
+    static targets = ["dialog", "body", "confirm", "ask"];
     static values = { url: String };
 
     connect() {
@@ -18,6 +18,15 @@ export default class extends Controller {
         this.onChange = (event) => { if (event.target.matches("[data-pilot-autosubmit]")) event.target.form.requestSubmit(); };
         this.element.addEventListener("click", this.onClick);
         this.element.addEventListener("change", this.onChange);
+        // A form asking first (data-pilot-confirm) is stopped before anything sends it, in the dialog or on the page, then sent once confirmed
+        this.onConfirm = (event) => this.ask(event);
+        this.confirmTarget.addEventListener("close", () => this.answered());
+        this.element.addEventListener("submit", this.onConfirm, true);
+        // An open + or gear panel closes on a click beside it or on Escape, as a dialog would
+        this.onOutside = (event) => this.fold(event.target);
+        this.onEscape = (event) => { if ("Escape" === event.key && this.fold(null)) event.preventDefault(); };
+        document.addEventListener("click", this.onOutside);
+        document.addEventListener("keydown", this.onEscape);
         this.dialogTarget.addEventListener("submit", (event) => this.submit(event));
         window.addEventListener("popstate", this.onPopState);
         this.dialogTarget.addEventListener("close", () => this.closed());
@@ -30,7 +39,45 @@ export default class extends Controller {
     disconnect() {
         this.element.removeEventListener("click", this.onClick);
         this.element.removeEventListener("change", this.onChange);
+        this.element.removeEventListener("submit", this.onConfirm, true);
         window.removeEventListener("popstate", this.onPopState);
+        document.removeEventListener("click", this.onOutside);
+        document.removeEventListener("keydown", this.onEscape);
+    }
+
+    // The asking shown with the form's question, the form held until it is answered
+    ask(event) {
+        const form = event.target;
+        if (!form.dataset.pilotConfirm || form === this.confirmed) return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.asking = form;
+        this.askTarget.textContent = form.dataset.pilotConfirm;
+        this.confirmTarget.returnValue = "";
+        this.confirmTarget.showModal();
+    }
+
+    // Sent again on a yes, this time let through; left as it was otherwise
+    answered() {
+        const form = this.asking;
+        this.asking = null;
+        if (!form || "confirm" !== this.confirmTarget.returnValue) return;
+
+        this.confirmed = form;
+        form.requestSubmit();
+        this.confirmed = null;
+    }
+
+    // The open panels not holding the given element closed, focus back on the button of one that held it; true when one was closed
+    fold(inside) {
+        const open = [...document.querySelectorAll("details.pilot-card-new[open]")].filter((panel) => !panel.contains(inside));
+        open.forEach((panel) => {
+            if (panel.contains(document.activeElement)) panel.querySelector("summary")?.focus();
+            panel.open = false;
+        });
+
+        return 0 < open.length;
     }
 
     // A plain click on a card's title or a file's link (data-pilot-dialog naming it); a click asking for a new tab or window, or made during a guided project, keeps the browser's own behaviour
@@ -54,15 +101,18 @@ export default class extends Controller {
         event.preventDefault();
         this.changed = true;
         let next = null;
+        let gone = false;
         this.pending = fetch(form.action, { method: "POST", headers: { "X-Pilot-Dialog": "1" }, body: new FormData(form) })
             .then((response) => {
-                // A gesture that made another card (a copy) names it, the dialog then showing it
+                // A gesture that made another card (a copy) names it, the dialog then showing it; a card deleted closes the dialog
                 next = response.headers.get("X-Pilot-Location");
+                gone = response.ok && null !== response.headers.get("X-Pilot-Gone");
 
                 return response.ok ? null : response.text();
             })
             .then((refusal) => {
                 if (refusal) window.alert(refusal);
+                if (gone) return this.dialogTarget.close();
                 if (next) window.history.replaceState(null, "", "#card-" + next.split("/").pop());
                 if (this.dialogTarget.open) this.open(next || this.current);
             })

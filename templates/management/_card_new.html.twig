@@ -1,8 +1,0 @@
-{# A card added in one line to the given project, in its backlog, pointing to the given reference when there is one #}
-<form method="post" action="{{ path('management_pilot_card_new') }}" class="d-flex flex-wrap gap-2 mb-2 pilot-card-new">
-    <input type="hidden" name="_token" value="{{ csrf_token('management_pilot_card_new') }}">
-    <input type="hidden" name="project" value="{{ new_project.id }}">
-    {% if new_doc is defined %}<input type="hidden" name="doc" value="{{ new_doc.id }}">{% endif %}
-    <input name="title" class="form-control form-control-sm flex-grow-1 w-auto" placeholder="{{ 'label.card_new'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_new'|trans({}, 'pilot') }}" required>
-    <button class="btn btn-sm btn-outline-primary" title="{{ 'label.card_add'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_add'|trans({}, 'pilot') }}"><i class="fas fa-plus"></i></button>
-</form>

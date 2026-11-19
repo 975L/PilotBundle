@@ -10,6 +10,7 @@
 
 namespace c975L\PilotBundle\Entity;
 
+use c975L\ConfigBundle\Contract\UserInterface;
 use c975L\PilotBundle\Enum\CardKind;
 use c975L\PilotBundle\Enum\CardStatus;
 use c975L\PilotBundle\Enum\Executor;
@@ -26,6 +27,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(columns: ['due'])]
 class Card implements \Stringable
 {
+    // Where the pictures of the cards are kept, from the project's root
+    public const string IMAGE_DIRECTORY = 'private/pilot/cards';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -34,6 +38,11 @@ class Card implements \Stringable
     #[ORM\ManyToOne(inversedBy: 'cards')]
     #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?Plan $plan = null;
+
+    // The checklist template the card was laid from outside any plan, whose saved steps it keeps following
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?PlanTemplate $template = null;
 
     #[ORM\Column(options: ['default' => 0])]
     private int $position = 0;
@@ -70,8 +79,8 @@ class Card implements \Stringable
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
-    // Sub-steps ticked one by one: text, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), and the machine action a step leaves for once the one before is ticked
-    /** @var list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>}> */
+    // Sub-steps ticked one by one: text, the group gathering it with its neighbours, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), the machine action a step leaves for once the one before is ticked; the feedback (a fix, an idea, a question still to decide) after the steps
+    /** @var list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}> */
     #[ORM\Column(type: Types::JSON)]
     private array $checklist = [];
 
@@ -84,8 +93,27 @@ class Card implements \Stringable
     #[Assert\Length(max: 100)]
     private ?string $waitingOn = null;
 
+    // Where the card's work comes from (a reply, a page) and where its result lives once done, plain http(s) links only
+    #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Length(max: 500)]
+    private ?string $sourceUrl = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    #[Assert\Length(max: 500)]
+    private ?string $resultUrl = null;
+
+    // The collection of its space the card belongs to, none for a card of the space itself
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?CardSet $cardSet = null;
+
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $doneAt = null;
+
+    // File name of its picture (a sheet's portrait), kept under IMAGE_DIRECTORY
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
+    private ?string $image = null;
 
     // The secret of the read-only link sharing the card outside the back office, none while it is not shared
     #[ORM\Column(length: 32, unique: true, nullable: true)]
@@ -102,6 +130,14 @@ class Card implements \Stringable
     #[Assert\Length(max: 100)]
     private ?string $sourceId = null;
 
+    // The members the card is given to, the only cards a guest of its space sees
+    /** @var Collection<int, UserInterface> */
+    #[ORM\ManyToMany(targetEntity: UserInterface::class)]
+    #[ORM\JoinTable(name: 'pilot_card_assignee')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'user_id', onDelete: 'CASCADE')]
+    private Collection $assignees;
+
     /** @var Collection<int, Run> */
     #[ORM\OneToMany(targetEntity: Run::class, mappedBy: 'card', cascade: ['persist'])]
     #[ORM\OrderBy(['id' => \SortDirection::Ascending])]
@@ -116,6 +152,7 @@ class Card implements \Stringable
         private string $title,
     ) {
         $this->runs = new ArrayCollection();
+        $this->assignees = new ArrayCollection();
     }
 
     public function __toString(): string
@@ -126,6 +163,18 @@ class Card implements \Stringable
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    // Moves the card to another space, out of its collection, leaving behind a file of the space it leaves
+    public function moveTo(Project $project): static
+    {
+        $this->project = $project;
+        $this->cardSet = null;
+        if (null !== $this->doc?->getProject() && $this->doc->getProject() !== $project) {
+            $this->doc = null;
+        }
+
+        return $this;
     }
 
     public function getProject(): Project
@@ -149,6 +198,54 @@ class Card implements \Stringable
     public function getPlan(): ?Plan
     {
         return $this->plan;
+    }
+
+    /** @return Collection<int, UserInterface> */
+    public function getAssignees(): Collection
+    {
+        return $this->assignees;
+    }
+
+    // Gives the card to a member, once
+    public function addAssignee(UserInterface $user): static
+    {
+        if (!$this->assignees->contains($user)) {
+            $this->assignees->add($user);
+        }
+
+        return $this;
+    }
+
+    public function removeAssignee(UserInterface $user): static
+    {
+        $this->assignees->removeElement($user);
+
+        return $this;
+    }
+
+    public function isAssignedTo(UserInterface $user): bool
+    {
+        return $this->assignees->contains($user);
+    }
+
+    // Makes the card follow a checklist template outside any plan, or none
+    public function follow(?PlanTemplate $template): static
+    {
+        $this->template = $template;
+
+        return $this;
+    }
+
+    // The template the card comes from: its plan's, otherwise the checklist one it was laid from
+    public function getTemplate(): ?PlanTemplate
+    {
+        return $this->plan?->getTemplate() ?? $this->template;
+    }
+
+    // Whether the card is done
+    public function isDone(): bool
+    {
+        return CardStatus::Done === $this->status;
     }
 
     // Places the card in a plan, at a position from 1
@@ -287,7 +384,7 @@ class Card implements \Stringable
     }
 
     /**
-     * @return list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>}>
+     * @return list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}>
      */
     public function getChecklist(): array
     {
@@ -295,7 +392,7 @@ class Card implements \Stringable
     }
 
     /**
-     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>}> $checklist
+     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}> $checklist
      */
     public function setChecklist(array $checklist): static
     {
@@ -304,12 +401,95 @@ class Card implements \Stringable
         return $this;
     }
 
-    // Adds a step at the end of the checklist, an empty text adding nothing
+    // Adds a step after the last one, before the feedback, an empty text adding nothing; a done card opens again
     public function addStep(string $text): static
     {
         $text = mb_substr(trim($text), 0, 500);
-        if ('' !== $text) {
-            $this->checklist[] = ['t' => $text];
+        if ('' === $text) {
+            return $this;
+        }
+        $at = array_key_first($this->getFeedback()) ?? \count($this->checklist);
+        array_splice($this->checklist, $at, 0, [['t' => $text]]);
+        foreach ($this->runs as $run) {
+            if (null !== $run->getStep() && $run->getStep() >= $at) {
+                $run->moveToStep($run->getStep() + 1);
+            }
+        }
+
+        return $this->reopen();
+    }
+
+    // Adds a feedback at the end (a fix, an idea), still to decide when its text starts with « ? », an empty text adding nothing; a done card opens again
+    public function addFeedback(string $text): static
+    {
+        $text = trim($text);
+        $ask = str_starts_with($text, '?');
+        $text = mb_substr(ltrim($ask ? substr($text, 1) : $text), 0, 500);
+        if ('' === $text) {
+            return $this;
+        }
+        $this->checklist[] = ['t' => $text, 'feedback' => true] + ($ask ? ['ask' => true] : []);
+
+        return $this->reopen();
+    }
+
+    // A feedback marked still to decide, or decided; a step changes nothing
+    public function toggleAsk(int $index): static
+    {
+        if (!$this->isFeedback($index)) {
+            return $this;
+        }
+        if ($this->checklist[$index]['ask'] ?? false) {
+            unset($this->checklist[$index]['ask']);
+        } else {
+            $this->checklist[$index]['ask'] = true;
+        }
+
+        return $this;
+    }
+
+    public function isFeedback(int $index): bool
+    {
+        return $this->checklist[$index]['feedback'] ?? false;
+    }
+
+    // The steps of the checklist, the feedback left out, by their index in it
+    /** @return array<int, array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}> */
+    public function getSteps(): array
+    {
+        return array_filter($this->checklist, static fn (array $step): bool => !($step['feedback'] ?? false));
+    }
+
+    // The steps gathered as they follow each other: each run of steps of one group, a step out of any group in a run without a name
+    /** @return list<array{group: ?string, steps: array<int, array{t: string, done?: bool, g?: string}>}> */
+    public function getStepGroups(): array
+    {
+        $groups = [];
+        $last = false;
+        foreach ($this->getSteps() as $index => $step) {
+            $group = $step['g'] ?? null;
+            if ($group !== $last) {
+                $groups[] = ['group' => $group, 'steps' => []];
+                $last = $group;
+            }
+            $groups[\count($groups) - 1]['steps'][$index] = $step;
+        }
+
+        return $groups;
+    }
+
+    // The feedback of the checklist, by its index in it
+    /** @return array<int, array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}> */
+    public function getFeedback(): array
+    {
+        return array_filter($this->checklist, static fn (array $step): bool => $step['feedback'] ?? false);
+    }
+
+    // A done card opened again once one of its boxes is to tick
+    private function reopen(): static
+    {
+        if (CardStatus::Done === $this->status && [] !== array_filter($this->checklist, static fn (array $step): bool => !($step['done'] ?? false))) {
+            $this->markDone(null);
         }
 
         return $this;
@@ -342,15 +522,17 @@ class Card implements \Stringable
         return '' !== ($step['action'] ?? '') ? 'action:' . $step['action'] : 'text:' . $step['t'];
     }
 
-    // Indices of the steps a step waits for: those its "after" names by their key, or the step before when it names none
+    // Indices of the steps a step waits for: those its "after" names by their key, or the step before when it names none; a feedback waits for nothing
     /** @return list<int> */
     public function stepNeeds(int $index): array
     {
-        if (!isset($this->checklist[$index])) {
+        if (!isset($this->checklist[$index]) || $this->isFeedback($index)) {
             return [];
         }
         if (!isset($this->checklist[$index]['after'])) {
-            return $index > 0 ? [$index - 1] : [];
+            $before = array_filter(array_keys($this->getSteps()), static fn (int $step): bool => $step < $index);
+
+            return [] === $before ? [] : [max($before)];
         }
         $keys = array_map(self::stepKey(...), $this->checklist);
 
@@ -380,10 +562,11 @@ class Card implements \Stringable
         }
     }
 
-    // Puts the steps in a new order, given as their current indices; the runs follow the step they do; anything but a full reordering is ignored
+    // Puts the steps in a new order, given as their current indices, the feedback left out of it kept after; the runs follow the step they do; anything but a full reordering is ignored
     /** @param list<int> $order */
     public function reorderSteps(array $order): static
     {
+        $order = [...$order, ...array_values(array_diff(array_keys($this->getFeedback()), $order))];
         $indices = array_keys($this->checklist);
         $sorted = $order;
         sort($sorted);
@@ -401,10 +584,10 @@ class Card implements \Stringable
         return $this;
     }
 
-    // Lays new steps, each given with the index it had or null for a new one; the runs follow their step, one whose step left leaving it (withdrawn while under way), the card back to do once nothing runs
+    // Lays new steps, each given with the index it had or null for a new one; the runs follow their step, one whose step left leaving it (withdrawn while under way), the card back to do once nothing runs or once a done one gets a box to tick
     /**
-     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>}> $steps
-     * @param list<?int>                                                                                                                                                                           $from
+     * @param list<array{t: string, done?: bool, doneAt?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, ask?: bool, g?: string, due?: string}> $steps
+     * @param list<?int>                                                                                                                                                                                                                                  $from
      */
     public function restep(array $steps, array $from, \DateTimeImmutable $now): static
     {
@@ -422,7 +605,7 @@ class Card implements \Stringable
             $this->status = CardStatus::Ready;
         }
 
-        return $this;
+        return $this->reopen();
     }
 
     // Machine action a step hands the card to, none when empty; its parameters go with the action they were given for
@@ -445,7 +628,21 @@ class Card implements \Stringable
         return $this;
     }
 
-    // Ticks a step of the checklist on a day, or unticks it; an index out of the list changes nothing
+    // The day a step is planned for (a release, a publication), none when null; an index out of the list changes nothing
+    public function setStepDue(int $index, ?\DateTimeImmutable $due): static
+    {
+        if (!isset($this->checklist[$index])) {
+            return $this;
+        }
+        unset($this->checklist[$index]['due']);
+        if (null !== $due) {
+            $this->checklist[$index]['due'] = $due->format('Y-m-d');
+        }
+
+        return $this;
+    }
+
+    // Ticks a step of the checklist on a day, or unticks it, a done card opening again; an index out of the list changes nothing
     public function toggleStep(int $index, \DateTimeImmutable $day): static
     {
         if (!isset($this->checklist[$index])) {
@@ -460,7 +657,7 @@ class Card implements \Stringable
         }
         $this->checklist[$index] = $step;
 
-        return $this;
+        return $this->reopen();
     }
 
     public function getDoc(): ?Doc
@@ -489,7 +686,52 @@ class Card implements \Stringable
         return $this;
     }
 
-    // A new card copied from this one in the same project: title marked as a copy, note, date, reference, what does it and its steps all unticked; neither its plan, its links, its runs nor its wait
+    public function getSourceUrl(): ?string
+    {
+        return $this->sourceUrl;
+    }
+
+    public function setSourceUrl(?string $url): static
+    {
+        $this->sourceUrl = self::link($url);
+
+        return $this;
+    }
+
+    public function getResultUrl(): ?string
+    {
+        return $this->resultUrl;
+    }
+
+    public function setResultUrl(?string $url): static
+    {
+        $this->resultUrl = self::link($url);
+
+        return $this;
+    }
+
+    // A link kept only when it is a plain http(s) address, anything else (empty, javascript:, a path) dropping it
+    private static function link(?string $url): ?string
+    {
+        $url = trim((string) $url);
+
+        return 1 === preg_match('~^https?://[^\s<>"]+$~i', $url) ? mb_substr($url, 0, 500) : null;
+    }
+
+    public function getCardSet(): ?CardSet
+    {
+        return $this->cardSet;
+    }
+
+    // Puts the card in a collection of its own space, or out of any
+    public function setCardSet(?CardSet $cardSet): static
+    {
+        $this->cardSet = $cardSet?->getProject() === $this->project ? $cardSet : null;
+
+        return $this;
+    }
+
+    // A new card copied from this one in the same project and collection, following the same template: title marked as a copy, note, date, reference, source, what does it and its steps all unticked; neither its plan, its links, its runs nor its wait
     public function duplicate(string $suffix): self
     {
         $steps = array_map(static function (array $step): array {
@@ -502,8 +744,29 @@ class Card implements \Stringable
             ->setNote($this->note)
             ->setDue($this->due)
             ->setDoc($this->doc)
+            ->setSourceUrl($this->sourceUrl)
+            ->setCardSet($this->cardSet)
+            ->follow($this->template)
             ->assign($this->executor, $this->kind, $this->action, $this->params)
             ->setChecklist($steps);
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    // A card of a collection of sheets: a picture, a title and a pitch, no steps nor state
+    public function isSheet(): bool
+    {
+        return null !== $this->cardSet && $this->cardSet->isSheets();
     }
 
     public function getShareToken(): ?string

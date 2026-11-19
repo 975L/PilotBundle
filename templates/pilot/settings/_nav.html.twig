@@ -1,0 +1,6 @@
+{# The kinds of setting as tabs, the current one marked #}
+<ul class="nav nav-tabs mb-3 pilot-settings-tabs">
+    {% for name, item in pilot_setting_kinds() %}
+        <li class="nav-item"><a href="{{ path('pilot_settings_list', {kind: name}) }}" class="nav-link{{ name == kind ? ' active' }}"><i class="fas {{ item.icon }} me-1"></i>{{ item.title|trans({}, 'pilot') }}</a></li>
+    {% endfor %}
+</ul>

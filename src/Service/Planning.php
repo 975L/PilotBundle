@@ -13,6 +13,7 @@ namespace c975L\PilotBundle\Service;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Repository\CardRepository;
+use c975L\PilotBundle\Security\PilotScope;
 use Psr\Clock\ClockInterface;
 
 // The planning: open dated cards, late ones first, the coming days holding a card, one by one up to the horizon set in days (config "pilot-horizon-days"), then the later ones by month, never limited in number
@@ -29,11 +30,11 @@ class Planning
     ) {
     }
 
-    // Late cards, the coming ones by day, then the later ones by month
+    // Late cards, the coming ones by day, then the later ones by month, among those the account sees
     /**
      * @return array{today: \DateTimeImmutable, horizon: int, late: list<Card>, days: array<string, list<Card>>, later: array<string, list<Card>>, spend: array<string, array<string, int>>}
      */
-    public function build(): array
+    public function build(PilotScope $scope): array
     {
         $today = $this->clock->now()->setTime(0, 0);
         $horizon = $this->horizon();
@@ -41,10 +42,10 @@ class Planning
         $days = [];
         $later = [];
         $last = $today->modify('+' . $horizon . ' days');
-        foreach ($this->cardRepository->findDatedAfter($last) as $card) {
+        foreach ($this->cardRepository->findDatedAfter($last, $scope) as $card) {
             $later[$card->getDue()?->format('Y-m-01')][] = $card;
         }
-        foreach ($this->cardRepository->findDatedUntil($last) as $card) {
+        foreach ($this->cardRepository->findDatedUntil($last, $scope) as $card) {
             if ($card->getDue() < $today) {
                 $late[] = $card;
                 continue;

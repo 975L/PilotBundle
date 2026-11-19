@@ -10,6 +10,7 @@
 
 namespace c975L\PilotBundle\Service;
 
+use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Entity\Report;
 use c975L\PilotBundle\Repository\ProjectRepository;
@@ -34,8 +35,8 @@ class ReportIngester
     ) {
     }
 
-    // Reads a kept file of a run, the run's project standing in when the file names none; false when it is not a report
-    public function ingest(string $name, string $path, Project $fallback): bool
+    // Reads a kept file of a run, the run's project standing in when the file names none or names a space the machine does not serve; a report of such a space left as it was; false when it is not a report
+    public function ingest(string $name, string $path, Project $fallback, Machine $machine): bool
     {
         $key = str_ends_with($name, self::SUFFIX) ? substr($name, 0, -\strlen(self::SUFFIX)) : '';
         $data = json_decode((string) file_get_contents($path), true);
@@ -44,7 +45,11 @@ class ReportIngester
         }
         $slug = \is_string($data['project'] ?? null) ? $data['project'] : null;
         $project = (null === $slug ? null : $this->projectRepository->findOneBy(['slug' => $slug])) ?? $fallback;
+        $project = $machine->serves($project) ? $project : $fallback;
         $report = $this->reportRepository->findOneBy(['key' => $key]) ?? new Report($key, $project);
+        if (!$machine->serves($report->getProject())) {
+            return true;
+        }
         $report->refresh($this->table($data, $key, $project), $this->clock->now());
         $this->entityManager->persist($report);
         $this->entityManager->flush();

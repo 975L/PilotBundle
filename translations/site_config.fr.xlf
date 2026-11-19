@@ -4,11 +4,11 @@
         <body>
             <trans-unit id="e70l2zx">
                 <source>description.pilot_horizon_days</source>
-                <target>Jours que le Planning montre un par un, avant de regrouper par mois</target>
+                <target>Jours que le tableau de bord montre un par un, avant de regrouper par mois</target>
             </trans-unit>
             <trans-unit id="VdOkW5Q">
                 <source>label.pilot_horizon_days</source>
-                <target>Horizon du planning (jours)</target>
+                <target>Horizon du tableau de bord (jours)</target>
             </trans-unit>
         </body>
     </file>

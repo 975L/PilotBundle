@@ -1,0 +1,47 @@
+{% extends '@c975LPilot/pilot/_layout.html.twig' %}
+
+{# The rows of one kind of setting, each edited or deleted from its line, a new one added above #}
+{% block pilot %}
+    <div class="d-flex align-items-center gap-2 mb-2">
+        <h1 class="mb-0">{{ 'label.settings'|trans({}, 'pilot') }}</h1>
+        {% if settings.new %}<a href="{{ path('pilot_settings_new', {kind: kind}) }}" class="btn btn-sm btn-primary ms-auto pilot-settings-new"><i class="fas fa-plus me-1"></i>{{ settings.label|trans({}, 'pilot') }}</a>{% endif %}
+    </div>
+    {% include '@c975LPilot/pilot/settings/_nav.html.twig' %}
+    <p class="text-body-secondary">{{ settings.description|trans({}, 'pilot') }}</p>
+    {% if rows is empty %}
+        <p class="text-body-secondary">{{ 'label.settings_empty'|trans({}, 'pilot') }}</p>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead><tr>{% for column in settings.columns %}<th scope="col">{{ column.label|trans({}, 'pilot') }}</th>{% endfor %}<th></th></tr></thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            {% for column in settings.columns %}
+                                {% set value = attribute(row, column.property) %}
+                                <td>
+                                    {%- if value is same as(true) %}<i class="fas fa-check text-success"></i>
+                                    {%- elseif value is same as(false) or value is null %}
+                                    {%- elseif value is iterable %}{{ value|map(item => item ~ '')|join(', ') }}
+                                    {%- elseif value.timestamp is defined %}{{ value|format_datetime('short', 'short') }}
+                                    {%- else %}{{ value }}{% endif -%}
+                                </td>
+                            {% endfor %}
+                            <td class="text-end text-nowrap">
+                                {% if settings.edit %}<a href="{{ path('pilot_settings_edit', {kind: kind, id: row.id}) }}" class="btn btn-sm btn-link p-0 me-2" title="{{ 'label.settings_edit'|trans({}, 'pilot') }}" aria-label="{{ 'label.settings_edit'|trans({}, 'pilot') }}"><i class="fas fa-pen"></i></a>{% endif %}
+                                {# Deleted once the second button confirms it #}
+                                <details class="d-inline-block">
+                                    <summary class="btn btn-sm btn-link p-0 text-danger" title="{{ 'label.settings_delete'|trans({}, 'pilot') }}" aria-label="{{ 'label.settings_delete'|trans({}, 'pilot') }}"><i class="fas fa-trash"></i></summary>
+                                    <form method="post" action="{{ path('pilot_settings_delete', {kind: kind, id: row.id}) }}" class="mt-1">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('pilot_settings_delete' ~ kind ~ row.id) }}">
+                                        <button class="btn btn-sm btn-danger">{{ 'label.settings_delete_confirm'|trans({}, 'pilot') }}</button>
+                                    </form>
+                                </details>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -12,7 +12,7 @@ namespace c975L\PilotBundle\Management;
 
 use c975L\ConfigBundle\Management\ImportmapProviderInterface;
 
-// The importmap.php entry of the piloting pages' script, added by c975l:config:check-importmap
+// The importmap.php entry of the piloting pages' script, loaded by their own shell (_layout.html.twig), added by c975l:config:check-importmap
 class ImportmapProvider implements ImportmapProviderInterface
 {
     public function getAdminImportmapEntries(): array

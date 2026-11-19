@@ -25,7 +25,7 @@ class ArtifactReader
             throw new \InvalidArgumentException(sprintf('No export folder at "%s".', $dir));
         }
 
-        $docs = array_merge($this->docs($dir), $this->characters($dir));
+        $docs = $this->docs($dir);
         $cards = [...$this->cards($dir), ...$this->deadlines($dir)];
         $projects = $this->projects($dir, array_merge(array_column($docs, 'project'), array_column($cards, 'project')));
 
@@ -68,26 +68,6 @@ class ArtifactReader
         foreach ($this->files($dir . '/docs') as $slug => $doc) {
             [$summary, $detail] = $this->split((string) ($doc['markdown'] ?? ''));
             $rows[] = ['slug' => $slug, 'title' => $doc['title'] ?? $slug, 'project' => $doc['project'] ?? null, 'kind' => 'charte' === ($doc['kind'] ?? null) ? 'charter' : 'file', 'summary' => $summary, 'detail' => $detail];
-        }
-
-        return $rows;
-    }
-
-    // Character sheets, turned into a document whose detail lists their fields
-    /**
-     * @return list<array{slug: string, title: string, project: ?string, kind: string, summary: ?string, detail: ?string}>
-     */
-    private function characters(string $dir): array
-    {
-        $rows = [];
-        foreach ($this->files($dir . '/characters') as $id => $character) {
-            $lines = [];
-            foreach ([['Description', $character['desc'] ?? null], ...array_map(static fn (array $info): array => [$info[0], $info[1]], $character['info'] ?? []), ['Running gags', $character['gags'] ?? null], ['Punchlines', $character['punchlines'] ?? null], ['Prompt Leonardo', $character['prompt'] ?? null]] as [$label, $value]) {
-                if (null !== $value && '' !== $value) {
-                    $lines[] = '**' . $label . '** : ' . $value;
-                }
-            }
-            $rows[] = ['slug' => 'character-' . $id, 'title' => $character['name'] ?? $id, 'project' => $character['project'] ?? null, 'kind' => 'character', 'summary' => $character['role'] ?? null, 'detail' => implode("\n\n", $lines)];
         }
 
         return $rows;

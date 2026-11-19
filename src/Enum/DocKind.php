@@ -10,11 +10,9 @@
 
 namespace c975L\PilotBundle\Enum;
 
-// What a document is: a project file, a graphic charter, a character sheet or the project's objectives
+// What a document is: a project file or a graphic charter
 enum DocKind: string
 {
     case File = 'file';
     case Charter = 'charter';
-    case Character = 'character';
-    case Objectives = 'objectives';
 }

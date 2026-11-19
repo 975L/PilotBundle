@@ -22,7 +22,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-// One step of a plan template: its title, who does it, for a machine the action and its parameters, {variables} asked when the plan is created, and the steps it waits for
+// One step of a plan template: its title, the group it belongs to on a card, who does it, for a machine the action and its parameters, {variables} asked when the plan is created, and the steps it waits for
 class PlanStepType extends AbstractType
 {
     public function __construct(
@@ -38,6 +38,7 @@ class PlanStepType extends AbstractType
         }
         $builder
             ->add('title', TextType::class, ['label' => 'label.step_title', 'constraints' => [new NotBlank(), new Length(max: 500)]])
+            ->add('group', TextType::class, ['label' => 'label.step_group', 'help' => 'label.info_step_group', 'required' => false, 'empty_data' => '', 'constraints' => [new Length(max: 50)]])
             ->add('executor', ChoiceType::class, ['label' => 'label.step_executor', 'choices' => ['label.executor_human' => Executor::Human->value, 'label.executor_runner' => Executor::Runner->value]])
             ->add('action', ChoiceType::class, ['label' => 'label.step_action', 'choices' => $actions, 'required' => false, 'placeholder' => '', 'choice_translation_domain' => false])
             ->add('params', TextareaType::class, ['label' => 'label.step_params', 'help' => 'label.info_step_params', 'required' => false])

@@ -35,4 +35,12 @@ class PlanStepTest extends TestCase
         $this->assertSame('-', PlanStep::fromArray(['title' => 'Publish', 'after' => []])->after);
         $this->assertSame('', PlanStep::fromArray(['title' => 'Publish'])->after);
     }
+
+    // A step's group is kept through the form, trimmed, an empty one dropped
+    public function testGroup(): void
+    {
+        $this->assertSame('Book', new PlanStep('Write', group: ' Book ')->toArray()['group']);
+        $this->assertArrayNotHasKey('group', new PlanStep('Write', group: ' ')->toArray());
+        $this->assertSame('Book', PlanStep::fromArray(['title' => 'Write', 'group' => 'Book'])->group);
+    }
 }

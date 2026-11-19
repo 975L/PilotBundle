@@ -33,7 +33,7 @@ class ImportCommand extends Command
 
     protected function configure(): void
     {
-        $this->addArgument('dir', InputArgument::REQUIRED, 'Export folder, one sub-folder per collection (settings, tasks, docs, characters)');
+        $this->addArgument('dir', InputArgument::REQUIRED, 'Export folder, one sub-folder per collection (settings, tasks, docs)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

@@ -50,4 +50,19 @@ export default class extends Controller {
         item.classList.remove("opacity-50");
         this.listTarget.insertBefore(item, this.origin);
     }
+
+    // The ids in their new order, each child naming its items' (itemId), the token travelling as a header
+    save() {
+        const body = new URLSearchParams();
+        this.itemTargets.forEach((item) => { body.append("ids[]", this.itemId(item)); });
+        fetch(this.urlValue, { method: "POST", headers: { "X-CSRF-Token": this.tokenValue }, body })
+            .then((response) => { if (!response.ok) this.failed(); })
+            .catch(() => this.failed());
+    }
+
+    // Reloaded so the list shows what was actually saved
+    failed() {
+        window.alert(this.failedLabelValue);
+        window.location.reload();
+    }
 }

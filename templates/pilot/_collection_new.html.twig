@@ -1,0 +1,12 @@
+{# A + at the end of the tabs adding a collection by its name, opened in its tab once made; a card dropped on it opens it and goes into the new collection #}
+<details class="pilot-card-new pilot-collection-new">
+    <summary data-pilot-card-drag-target="set" data-collection="new" class="btn btn-sm btn-outline-secondary py-0 px-2" title="{{ 'label.collection_new'|trans({}, 'pilot') }}" aria-label="{{ 'label.collection_new'|trans({}, 'pilot') }}"><i class="fas fa-plus"></i> <i class="fas fa-layer-group"></i></summary>
+    <div class="pilot-card-new-panel card card-body p-2 shadow">
+        <form method="post" action="{{ path('pilot_collection_new', {slug: project.slug}) }}" class="d-flex gap-2">
+            <input type="hidden" name="_token" value="{{ csrf_token('pilot_collection_new' ~ project.id) }}">
+            <input type="hidden" name="card" value="">
+            <input name="name" maxlength="100" required class="form-control form-control-sm" placeholder="{{ 'label.collection_new'|trans({}, 'pilot') }}" aria-label="{{ 'label.collection_new'|trans({}, 'pilot') }}">
+            <button class="btn btn-sm btn-primary text-nowrap">{{ 'label.collection_add'|trans({}, 'pilot') }}</button>
+        </form>
+    </div>
+</details>

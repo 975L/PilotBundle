@@ -8,24 +8,30 @@
 import { startStimulusApp } from "@symfony/stimulus-bundle";
 import PilotCardDragController from "./js/pilot-card-drag.js";
 import PilotCardModalController from "./js/pilot-card-modal.js";
+import PilotCollectionController from "./js/pilot-collection.js";
 import PilotCopyController from "./js/pilot-copy.js";
+import PilotDoneController from "./js/pilot-done.js";
 import PilotFoldController from "./js/pilot-fold.js";
 import PilotInlineEditController from "./js/pilot-inline-edit.js";
 import PilotProjectSortController from "./js/pilot-project-sort.js";
 import PilotRunWatchController from "./js/pilot-run-watch.js";
 import PilotStepSortController from "./js/pilot-step-sort.js";
-import PilotTasksController from "./js/pilot-tasks.js";
+import PilotTabSortController from "./js/pilot-tab-sort.js";
+import PilotTabsController from "./js/pilot-tabs.js";
 
-// Back-office controllers of the piloting pages, joining the one Stimulus application every c975L barrel shares
+// Controllers of the piloting pages, joining the one Stimulus application every c975L barrel shares
 globalThis.c975lStimulusApp ??= startStimulusApp();
 const app = globalThis.c975lStimulusApp;
 
 app.register("pilot-card-drag", PilotCardDragController);
 app.register("pilot-card-modal", PilotCardModalController);
+app.register("pilot-collection", PilotCollectionController);
 app.register("pilot-copy", PilotCopyController);
+app.register("pilot-done", PilotDoneController);
 app.register("pilot-fold", PilotFoldController);
 app.register("pilot-inline-edit", PilotInlineEditController);
 app.register("pilot-project-sort", PilotProjectSortController);
 app.register("pilot-run-watch", PilotRunWatchController);
 app.register("pilot-step-sort", PilotStepSortController);
-app.register("pilot-tasks", PilotTasksController);
+app.register("pilot-tab-sort", PilotTabSortController);
+app.register("pilot-tabs", PilotTabsController);

@@ -91,8 +91,8 @@ class ShareController extends AbstractController
         return $form ? $this->redirectToRoute(self::ROUTE, ['token' => $token], Response::HTTP_SEE_OTHER) : $this->unlisted(new Response(null, Response::HTTP_NO_CONTENT));
     }
 
-    // A gesture through the editing link: a step ticked or moved up (carried to its template), the machine action a step names queued or withdrawn, or the card handed to an action offered on its project asking nothing; the page's form back to the page, any other call answered 204, a refusal 422
-    #[Route('/pilot/share/{token}/{gesture}', name: 'pilot_share_gesture', requirements: ['token' => self::TOKEN, 'gesture' => 'step|stepup|runstep|cancel|entrust'], methods: ['POST'])]
+    // A gesture through the editing link: a step ticked or moved up (carried to its template), a feedback added (« ? » first for one still to decide), the machine action a step names queued or withdrawn, or the card handed to an action offered on its project asking nothing; the page's form back to the page, any other call answered 204, a refusal 422
+    #[Route('/pilot/share/{token}/{gesture}', name: 'pilot_share_gesture', requirements: ['token' => self::TOKEN, 'gesture' => 'step|stepup|feedback|runstep|cancel|entrust'], methods: ['POST'])]
     public function gesture(string $token, string $gesture, Request $request): Response
     {
         [$card, $editable] = $this->find($token);
@@ -121,10 +121,17 @@ class ShareController extends AbstractController
     {
         $index = $request->request->getInt('index', -1);
         if ('step' === $gesture) {
-            return $this->cardFlow->tick($card, $index);
+            $this->cardFlow->tick($card, $index);
+
+            return null;
         }
         if ('stepup' === $gesture) {
             $this->stepOrder->up($card, $index);
+
+            return null;
+        }
+        if ('feedback' === $gesture) {
+            $card->addFeedback($request->request->getString('text'));
 
             return null;
         }

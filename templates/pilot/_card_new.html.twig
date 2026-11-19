@@ -1,0 +1,23 @@
+{# A + button opening the adding, into the given collection when there is one: a card in one line, Enter sending it, laid with the space's template and pointing to the given reference when there is one; several from a pasted list when asked, a title already there left aside #}
+<details class="pilot-card-new">
+    <summary class="btn btn-sm btn-outline-primary py-0 px-2" title="{{ 'label.card_new'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_new'|trans({}, 'pilot') }}"><i class="fas fa-plus"></i></summary>
+    <div class="pilot-card-new-panel card card-body p-2 shadow">
+        <form method="post" action="{{ path('pilot_card_new') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('pilot_card_new') }}">
+            <input type="hidden" name="project" value="{{ new_project.id }}">
+            {% if new_doc is defined %}<input type="hidden" name="doc" value="{{ new_doc.id }}">{% endif %}
+            {% if new_set ?? null %}<input type="hidden" name="collection" value="{{ new_set.id }}">{% endif %}
+            <input name="title" maxlength="500" class="form-control form-control-sm" placeholder="{{ 'label.info_card_new'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_new'|trans({}, 'pilot') }}" required>
+        </form>
+        {% if new_paste ?? false %}
+            {% set paste_label = 'label.cards_add'|trans({'%item%': (new_set ?? null) and new_set.item ? new_set.item : 'label.card'|trans({}, 'pilot')|lower}, 'pilot') %}
+            <form method="post" action="{{ path('pilot_project_cards', {slug: new_project.slug}) }}" class="mt-2 pilot-cards-paste">
+                <input type="hidden" name="_token" value="{{ csrf_token('pilot_project_cards' ~ new_project.id) }}">
+                {% if new_set ?? null %}<input type="hidden" name="collection" value="{{ new_set.id }}">{% endif %}
+                <label class="small text-body-secondary mb-1" for="pilot-cards-paste-{{ new_project.id }}">{{ paste_label }}</label>
+                <textarea id="pilot-cards-paste-{{ new_project.id }}" name="titles" rows="4" class="form-control form-control-sm" required placeholder="{{ 'label.info_cards_add'|trans({'%max%': max_lines}, 'pilot') }}"></textarea>
+                <button class="btn btn-sm btn-outline-primary mt-2">{{ 'label.card_add'|trans({}, 'pilot') }}</button>
+            </form>
+        {% endif %}
+    </div>
+</details>

@@ -31,15 +31,16 @@ class CardFlow
     }
 
     // Opens the first card of a new plan
-    public function start(Plan $plan): ?Run
+    public function start(Plan $plan): void
     {
         $first = $plan->getCards()->first();
-
-        return false === $first ? null : $this->open($first);
+        if (false !== $first) {
+            $first->setStatus(CardStatus::Ready);
+        }
     }
 
     // Closes a card by hand
-    public function complete(Card $card): ?Run
+    public function complete(Card $card): Card
     {
         if (CardStatus::Running === $card->getStatus()) {
             throw new FlowException(t('flow.not_now', [], 'pilot'));
@@ -71,8 +72,8 @@ class CardFlow
         return new Run($card);
     }
 
-    // Accepts what the machine produced: a run started by a checklist step ticks that step and goes on to the next, any other closes the card
-    public function validate(Card $card): ?Run
+    // Accepts what the machine produced: a run started by a checklist step ticks that step, any other closes the card
+    public function validate(Card $card): Card
     {
         $this->expectReview($card);
         $card->setComment(null);
@@ -80,9 +81,8 @@ class CardFlow
         if (null === $index) {
             return $this->close($card);
         }
-        $card->assign(Executor::Human)->setStatus(CardStatus::Ready);
 
-        return $this->tick($card, $index);
+        return $this->tick($card->assign(Executor::Human)->setStatus(CardStatus::Ready), $index);
     }
 
     // Sends the output back to the machine with a comment, given to the action as its "comment" parameter: the card's own run waiting for validation, or the last step's run done, that step unticked and queued again
@@ -115,17 +115,10 @@ class CardFlow
         return $this->launch($card);
     }
 
-    // Ticks or unticks a step; ticking one whose next step names a machine action queues that action at once
-    public function tick(Card $card, int $index): ?Run
+    // Ticks or unticks a step, a machine action only ever leaving by its own button
+    public function tick(Card $card, int $index): Card
     {
-        $card->toggleStep($index, $this->clock->now());
-        $steps = $card->getChecklist();
-        $next = $steps[$index + 1] ?? null;
-        if (!($steps[$index]['done'] ?? false) || !$this->stepQueueable($card, $index + 1)) {
-            return null;
-        }
-
-        return $this->queue($card, $next['action'] ?? '', $next['params'] ?? [], $index + 1);
+        return $card->toggleStep($index, $this->clock->now());
     }
 
     // Queues the action a step names, after the ones already queued on the card, when that step is still to do and not already under way
@@ -154,12 +147,12 @@ class CardFlow
         return $run;
     }
 
-    // Applies the result of a finished run to its card, unless the card was closed meanwhile: a step's run done ticks the step like a hand would, the next step's action queued; any failure stops what is still queued
-    public function runFinished(Run $run): ?Run
+    // Applies the result of a finished run to its card, unless the card was closed meanwhile: a step's run done ticks the step, the next one left to a hand so nothing runs on unchecked; any failure stops what is still queued
+    public function runFinished(Run $run): void
     {
         $card = $run->getCard();
         if (CardStatus::Running !== $card->getStatus()) {
-            return null;
+            return;
         }
         $done = RunStatus::Done === $run->getStatus();
         if (!$done) {
@@ -173,17 +166,17 @@ class CardFlow
         if (null === $step) {
             $card->setStatus($done ? CardStatus::Review : CardStatus::Failed);
 
-            return null;
+            return;
         }
         $named = $card->getChecklist()[$step] ?? [];
-        $next = $done && ($named['action'] ?? null) === $run->getAction() && !($named['done'] ?? false) ? $this->tick($card, $step) : null;
+        if ($done && ($named['action'] ?? null) === $run->getAction() && !($named['done'] ?? false)) {
+            $card->toggleStep($step, $this->clock->now());
+        }
         $card->setStatus(match (true) {
             [] !== $card->activeRuns() => CardStatus::Running,
             $done => CardStatus::Ready,
             default => CardStatus::Failed,
         });
-
-        return $next;
     }
 
     // Whether a step names an action, is still to do, no longer waits for the steps it needs, is not already under way, and the card is open with no output waiting for validation
@@ -205,21 +198,13 @@ class CardFlow
         return new Run($card, $action, $params, $step);
     }
 
-    // Marks a card done on the day and opens the next one of its plan
-    private function close(Card $card): ?Run
+    // Marks a card done on the day and opens the next one of its plan, a machine card waiting for its button like any action
+    private function close(Card $card): Card
     {
         $card->markDone($this->clock->now()->setTime(0, 0));
-        $next = $card->getPlan()?->cardAfter($card);
+        $card->getPlan()?->cardAfter($card)?->setStatus(CardStatus::Ready);
 
-        return null === $next ? null : $this->open($next);
-    }
-
-    // Makes a card to do, a machine card with its action leaving at once
-    private function open(Card $card): ?Run
-    {
-        $card->setStatus(CardStatus::Ready);
-
-        return $card->isRunner() && null !== $card->getAction() ? $this->launch($card) : null;
+        return $card;
     }
 
     // Index of the first step still to do that names the card's action, null when the action came from elsewhere

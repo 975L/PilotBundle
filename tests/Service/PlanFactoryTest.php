@@ -84,19 +84,30 @@ class PlanFactoryTest extends TestCase
         $this->assertSame([0, 1], $card->stepNeeds(2));
     }
 
-    // Closing a card opens the next one, a machine card leaving at once, and its validation opens the one after
+    // Closing a card opens the next one, a machine card waiting for its button, and its validation opens the one after
     public function testCardsFollowEachOther(): void
     {
         $cards = $this->factory->create($this->template, new Project('catalog', 'Catalog'), 'Item 1', ['item' => 'item-1'])->getCards()->getValues();
 
-        $run = $this->flow->complete($cards[0]);
+        $this->flow->complete($cards[0]);
         $this->assertSame(CardStatus::Done, $cards[0]->getStatus());
-        $this->assertSame(CardStatus::Running, $cards[1]->getStatus());
-        $this->assertNotNull($run);
+        $this->assertSame(CardStatus::Ready, $cards[1]->getStatus());
+        $this->assertSame([], $cards[1]->activeRuns());
+
+        $run = $this->flow->launch($cards[1]);
 
         $run->claim(new Machine('machine-1', ''), new \DateTimeImmutable())->finish(RunStatus::Done, null, [], null, new \DateTimeImmutable());
         $this->flow->runFinished($run);
         $this->flow->validate($cards[1]);
         $this->assertSame(CardStatus::Ready, $cards[2]->getStatus());
+    }
+
+    // A template step's group reaches the card's step, a step naming none staying out of any
+    public function testChecklistGroups(): void
+    {
+        $template = new PlanTemplate('catalog', [['title' => 'Write', 'executor' => 'human', 'group' => 'Book'], ['title' => 'Publish', 'executor' => 'human']])->setChecklist(true);
+        $card = $this->factory->create($template, new Project('catalog', 'Catalog'), 'Item 1', [])->getCards()->first();
+
+        $this->assertSame([['t' => 'Write', 'g' => 'Book'], ['t' => 'Publish']], $card->getChecklist());
     }
 }

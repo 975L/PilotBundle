@@ -10,7 +10,7 @@
 
 namespace c975L\PilotBundle\Tests\Management;
 
-use c975L\PilotBundle\Controller\Management\PilotController;
+use c975L\PilotBundle\Controller\PilotController;
 use c975L\PilotBundle\Management\MenuProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -21,23 +21,19 @@ class MenuProviderTest extends TestCase
         return new MenuProvider();
     }
 
-    // The planning first, then the settings, each carrying what the onboarding tour reads
-    public function testMenusAreThePlanningThenTheSettings(): void
+    // No back-office screen: the settings live on the piloting pages
+    public function testNoMenu(): void
     {
-        $menus = $this->provider()->getMenus();
-
-        $this->assertSame(['pilot_week', 'pilot_projects', 'pilot_templates', 'pilot_actions', 'pilot_machines', 'pilot_credits'], array_keys($menus));
-        $this->assertSame(PilotController::class, $menus['pilot_week']['controller']);
-        $this->assertSame('week', $menus['pilot_week']['action']);
-        $this->assertTrue($menus['pilot_week']['first'] ?? false);
-        foreach ($menus as $slug => $entry) {
-            $this->assertStringStartsWith('label.info_', $entry['description'], $slug);
-        }
+        $this->assertSame([], $this->provider()->getMenus());
     }
 
-    // The projects stay out of the sidebar, listed inside the piloting pages instead
-    public function testNoLinkInTheSidebar(): void
+    // The piloting pages, outside the back office, opened by a link of its section
+    public function testThePlanningIsALink(): void
     {
-        $this->assertSame([], $this->provider()->getLinks());
+        $links = $this->provider()->getLinks();
+
+        $this->assertSame(['pilot_dashboard'], array_keys($links));
+        $this->assertSame(PilotController::DASHBOARD_ROUTE, $links['pilot_dashboard']['name']);
+        $this->assertArrayNotHasKey('target', $links['pilot_dashboard']);
     }
 }

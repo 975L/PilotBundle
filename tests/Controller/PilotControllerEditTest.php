@@ -10,21 +10,32 @@
 
 namespace c975L\PilotBundle\Tests\Controller;
 
-use c975L\ConfigBundle\Service\ConfigServiceInterface;
-use c975L\PilotBundle\Controller\Management\PilotController;
+use c975L\PilotBundle\Controller\PilotController;
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Doc;
+use c975L\PilotBundle\Entity\Plan;
+use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
+use c975L\PilotBundle\Entity\Report;
+use c975L\PilotBundle\Entity\Run;
+use c975L\PilotBundle\Exception\FlowException;
 use c975L\PilotBundle\Repository\ActionRepository;
 use c975L\PilotBundle\Repository\CardRepository;
+use c975L\PilotBundle\Repository\CardSetRepository;
 use c975L\PilotBundle\Repository\DocRepository;
+use c975L\PilotBundle\Repository\MemberRepository;
 use c975L\PilotBundle\Repository\ProjectRepository;
 use c975L\PilotBundle\Repository\ReportRepository;
+use c975L\PilotBundle\Security\PilotAccess;
+use c975L\PilotBundle\Service\CardFiller;
 use c975L\PilotBundle\Service\CardFlow;
+use c975L\PilotBundle\Service\CardImages;
+use c975L\PilotBundle\Service\RunOutputs;
 use c975L\PilotBundle\Service\StepOrder;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -56,6 +67,20 @@ class PilotControllerEditTest extends TestCase
         $this->assertNotNull($card->getDoc());
     }
 
+    // A link posted alone is kept when it is an http(s) one, cleared when emptied, refused otherwise
+    public function testLinks(): void
+    {
+        $card = $this->card();
+
+        $this->edit($card, ['sourceUrl' => ' https://example.com/item-1 ', 'resultUrl' => 'javascript:alert(1)']);
+        $this->assertSame('https://example.com/item-1', $card->getSourceUrl());
+        $this->assertNull($card->getResultUrl());
+        $this->assertSame('note-1', $card->getNote());
+
+        $this->edit($card, ['sourceUrl' => '']);
+        $this->assertNull($card->getSourceUrl());
+    }
+
     // The file posted empty leaves the card without one
     public function testFileCleared(): void
     {
@@ -72,23 +97,133 @@ class PilotControllerEditTest extends TestCase
         return new Card(new Project('catalog', 'Catalog'), 'item-1')->setNote('note-1')->setWaitingOn('someone')->setDoc(new Doc('catalog-file', 'File'));
     }
 
+    // A card moves to a space the account may write to, never to one it may not, and a card of a plan stays with it
+    public function testMove(): void
+    {
+        $card = $this->card();
+        $other = new Project('other', 'Other');
+        $projects = $this->createStub(ProjectRepository::class);
+        $projects->method('find')->willReturn($other);
+        $access = $this->createStub(PilotAccess::class);
+        $access->method('can')->willReturnOnConsecutiveCalls(true, false, true);
+        $controller = $this->controller($projects, $access);
+        $move = new \ReflectionMethod($controller, 'move');
+
+        $move->invoke($controller, $card, 2);
+        $this->assertSame($other, $card->getProject());
+
+        $refused = 0;
+        foreach ([$this->card(), $this->card()->placeIn(new Plan(new PlanTemplate('catalog', []), $other, 'item-1'), 1)] as $kept) {
+            try {
+                $move->invoke($controller, $kept, 2);
+            } catch (FlowException) {
+                ++$refused;
+                $this->assertSame('catalog', $kept->getProject()->getSlug());
+            }
+        }
+        $this->assertSame(2, $refused);
+    }
+
+    // The editing link lets its holder hand the card to a machine, so lending it asks as much; the read-only link asks writing the card
+    public function testLendAsksRun(): void
+    {
+        $levels = new \ReflectionClassConstant(PilotController::class, 'GESTURE_LEVELS')->getValue();
+
+        $this->assertSame(PilotAccess::RUN, $levels['lend']);
+        $this->assertSame(PilotAccess::RUN, $levels['unlend']);
+        $this->assertArrayNotHasKey('share', $levels);
+    }
+
+    // A report's card goes to the page's space only when the report shows there the row, or for the whole table any row
+    public function testReportProject(): void
+    {
+        $own = new Project('catalog', 'Catalog');
+        $page = new Project('other', 'Other')->setSites(['site-1']);
+        $projects = $this->createStub(ProjectRepository::class);
+        $projects->method('find')->willReturn($page);
+        $controller = $this->controller($projects);
+        $method = new \ReflectionMethod($controller, 'reportProject');
+        $request = new Request(request: ['project' => '2']);
+
+        $this->assertSame($page, $method->invoke($controller, $this->report($own, ['site-2', 'site-1']), $request, 1));
+        $this->assertSame($own, $method->invoke($controller, $this->report($own, ['site-2', 'site-1']), $request, 0));
+        $this->assertSame($page, $method->invoke($controller, $this->report($own, ['site-2', 'site-1']), $request, null));
+        $this->assertSame($own, $method->invoke($controller, $this->report($own, ['site-2']), $request, null));
+    }
+
+    // A card's run files and picture are deleted once its removal is written, kept when the flush fails
+    public function testFilesDeletedAfterTheFlush(): void
+    {
+        $root = sys_get_temp_dir() . '/pilot-erase-' . bin2hex(random_bytes(4));
+        $outputs = new RunOutputs($root);
+        $images = new CardImages($root);
+        $card = $this->card()->setImage('card-7-a.png');
+        $run = new Run($card);
+        new \ReflectionProperty(Run::class, 'id')->setValue($run, 7);
+        $output = $outputs->folder($run) . '/item-1.txt';
+        $image = $root . '/' . Card::IMAGE_DIRECTORY . '/card-7-a.png';
+        new Filesystem()->dumpFile($output, 'catalog');
+        new Filesystem()->dumpFile($image, 'catalog');
+        $failing = $this->createStub(EntityManagerInterface::class);
+        $failing->method('flush')->willThrowException(new \RuntimeException());
+
+        $refused = false;
+        try {
+            $this->erase($this->controller(entityManager: $failing), $card, $outputs, $images);
+        } catch (\RuntimeException) {
+            $refused = true;
+        }
+        $this->assertTrue($refused);
+        $this->assertFileExists($output);
+        $this->assertFileExists($image);
+
+        $this->erase($this->controller(), $card, $outputs, $images);
+        $this->assertDirectoryDoesNotExist(\dirname($output));
+        $this->assertFileDoesNotExist($image);
+        new Filesystem()->remove($root);
+    }
+
+    // The private removal run on a card
+    private function erase(PilotController $controller, Card $card, RunOutputs $outputs, CardImages $images): void
+    {
+        new \ReflectionMethod($controller, 'erase')->invoke($controller, $card, $outputs, $images);
+    }
+
+    // A report of the given space whose rows match these sites
+    /** @param list<string> $sites */
+    private function report(Project $project, array $sites): Report
+    {
+        $rows = array_map(static fn (string $site): array => ['site' => $site], $sites);
+
+        return new Report('report-1', $project)->refresh(['label' => 'Report', 'project' => $project, 'match' => 'site', 'home' => false, 'columns' => [], 'rows' => $rows, 'actions' => [], 'globals' => []], new \DateTimeImmutable());
+    }
+
     // The private gesture run on the posted fields
     /** @param array<string, string> $fields */
     private function edit(Card $card, array $fields): void
     {
-        $controller = new PilotController(
-            $this->createStub(ConfigServiceInterface::class),
-            $this->createStub(EntityManagerInterface::class),
+        $controller = $this->controller();
+        new \ReflectionMethod($controller, 'edit')->invoke($controller, $card, new Request(request: $fields));
+    }
+
+    // The controller on stubs, the spaces, the access and the entity manager given when a test needs them
+    private function controller(?ProjectRepository $projects = null, ?PilotAccess $access = null, ?EntityManagerInterface $entityManager = null): PilotController
+    {
+        return new PilotController(
+            $entityManager ?? $this->createStub(EntityManagerInterface::class),
             $this->createStub(CardRepository::class),
             $this->createStub(ReportRepository::class),
             $this->createStub(DocRepository::class),
-            $this->createStub(ProjectRepository::class),
+            $projects ?? $this->createStub(ProjectRepository::class),
             new MockClock(),
             new CardFlow(new MockClock()),
             $this->createStub(TranslatorInterface::class),
             $this->createStub(ActionRepository::class),
             new StepOrder($this->createStub(CardRepository::class), new MockClock()),
+            $this->createStub(CardFiller::class),
+            $access ?? $this->createStub(PilotAccess::class),
+            $this->createStub(MemberRepository::class),
+            $this->createStub(CardSetRepository::class),
         );
-        new \ReflectionMethod($controller, 'edit')->invoke($controller, $card, new Request(request: $fields));
     }
 }

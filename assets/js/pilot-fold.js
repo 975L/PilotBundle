@@ -21,10 +21,10 @@ export default class extends Controller {
         this.element.removeEventListener("click", this.onClick);
     }
 
-    // A click on a heading, not on a button, link or field it holds
+    // A click on a heading, not on a button, link, field or folding box it holds
     toggle(event) {
         const head = event.target.closest(".pilot-fold-head");
-        if (!head || event.target.closest("a, button, input, select, textarea, form")) return;
+        if (!head || event.target.closest("a, button, input, select, textarea, form, details")) return;
 
         const section = head.closest("[data-pilot-fold]");
         if (!section) return;

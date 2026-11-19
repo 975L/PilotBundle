@@ -5,7 +5,7 @@
 # This source file is subject to the MIT license that is bundled
 # with this source code in the file LICENSE.
 
-# Reference runner of c975l/pilot-bundle, claiming the runs queued for this machine and running them from the allowlist of $PILOT_RUNNER_CONFIG (default ~/.config/pilot-runner): polling loop, --once, --install (systemd user service) or --demo-hello <file> <text> [comment]; the site sends only an action key and values checked against their pattern, never a command, and a "PROGRESS n message" line the command prints shows on the card
+# Reference runner of c975l/pilot-bundle, claiming the runs queued for this machine and running them from the allowlist of $PILOT_RUNNER_CONFIG (default ~/.config/pilot-runner): polling loop, --once, --install (systemd user service) or --demo-hello <file> <text> [comment]; the site sends only an action key and values checked against their pattern, never a command, a "PROGRESS n message" line the command prints shows on the card and a "TITLE text" line renames it
 
 import glob
 import json
@@ -30,6 +30,7 @@ CREDITS_EVERY = 3600
 HEARTBEAT = 20
 PLACEHOLDER = re.compile(r'\{(\w+)\}')
 PROGRESS = re.compile(r'^PROGRESS (\d{1,3})(?: (.*))?$')
+TITLE = re.compile(r'^TITLE (.+)$')
 
 # Sites already reported unreachable, so a site switched off does not fill the log every few seconds
 UNREACHABLE = set()
@@ -114,14 +115,14 @@ def stop_group(process):
         pass
 
 
-# Runs a claimed run and returns (status, message, outputs, log)
+# Runs a claimed run and returns (status, message, outputs, log, title), the title a "TITLE text" line renamed the card to
 def execute(site, actions, run):
     action = actions.get(run['action'])
     if action is None:
-        return 'blocked', f'Unknown action on this machine: {run["action"]}', [], ''
+        return 'blocked', f'Unknown action on this machine: {run["action"]}', [], '', None
     params, error = check_params(action, run.get('params') or {})
     if error:
-        return 'blocked', error, [], ''
+        return 'blocked', error, [], '', None
     workdir = Path(site['workdir']) / f'card-{run["card"]}'
     workdir.mkdir(parents=True, exist_ok=True)
 
@@ -140,9 +141,13 @@ def execute(site, actions, run):
     stop = threading.Event()
     threading.Thread(target=heartbeat, args=(site, run['id'], process, stop), daemon=True).start()
     log = deque(maxlen=200)
+    title = None
     for line in process.stdout:
         line = line.rstrip('\n')
         log.append(line)
+        renamed = TITLE.match(line)
+        if renamed:
+            title = renamed.group(1).strip()
         match = PROGRESS.match(line)
         if match:
             api(site, f'/runs/{run["id"]}/progress', {'progress': int(match.group(1)), 'message': match.group(2) or ''})
@@ -151,13 +156,13 @@ def execute(site, actions, run):
     journal = '\n'.join(log)
     if code != 0:
         # The last line the command printed is its reason, shown on the card
-        reason = next((line for line in reversed(log) if line.strip() and not PROGRESS.match(line)), f'Exit code {code}')
-        return 'failed', reason[:255], [], journal
+        reason = next((line for line in reversed(log) if line.strip() and not PROGRESS.match(line) and not TITLE.match(line)), f'Exit code {code}')
+        return 'failed', reason[:255], [], journal, title
     found, missing = collect(outputs, workdir, run['id'], start)
     if missing:
-        return 'failed', 'Missing output: ' + ', '.join(missing), [], journal
+        return 'failed', 'Missing output: ' + ', '.join(missing), [], journal, title
     upload(site, run, found)
-    return 'done', f'Done in {round(time.time() - start)} s', found, journal
+    return 'done', f'Done in {round(time.time() - start)} s', found, journal, title
 
 
 # Sends the site each output under the size it accepts, to show it on the card; a heavier one stays on the machine, the card showing its path
@@ -232,9 +237,9 @@ def claim(site, actions):
         return False
     run = response.json()
     print(f'Run {run["id"]} ({site["url"]}): {run["action"]} ({run["title"]})', flush=True)
-    status, message, outputs, journal = execute(site, actions, run)
+    status, message, outputs, journal, title = execute(site, actions, run)
     print(f'Run {run["id"]}: {status}, {message}', flush=True)
-    finish(site, run['id'], {'status': status, 'message': message, 'outputs': outputs, 'log': journal})
+    finish(site, run['id'], {'status': status, 'message': message, 'outputs': outputs, 'log': journal, 'title': title})
     return True
 
 
