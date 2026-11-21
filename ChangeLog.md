@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.2
+
+Comment added by Enter sent once
+
+- A comment added by Enter in a card's dialog sent once, no longer a second time as the card is read again (21/11/2026)
+
 ## v1.2.1
 
 File opening links on by default, runner kept alive on a broken claim

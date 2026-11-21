@@ -138,7 +138,8 @@ export default class extends Controller {
                 if (refusal) window.alert(refusal);
                 if (gone) return this.dialogTarget.close();
                 if (next) window.history.replaceState(null, "", "#card-" + next.split("/").pop());
-                if (this.dialogTarget.open) this.open(next || this.current);
+                // The form counted as sending until the card is read again, its filled field removed then sending it no second time
+                if (this.dialogTarget.open) return this.open(next || this.current);
             })
             .catch(() => form.submit())
             .finally(() => { if (this.sending === form) this.sending = null; });
@@ -169,7 +170,8 @@ export default class extends Controller {
     // The page fetched, its dialog part alone kept; a failure falls back to the page itself
     open(url) {
         this.current = url;
-        fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+
+        return fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
             .then((response) => (response.ok ? response.text() : Promise.reject(new Error(response.statusText))))
             .then((html) => {
                 const content = new DOMParser().parseFromString(html, "text/html").querySelector(".pilot-dialog-page");

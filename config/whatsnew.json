@@ -3,6 +3,11 @@
         "date": "2026-11-21",
         "description": [
             {
+                "en": "Piloting: a comment added with Enter in a card's window is now sent once, no longer twice.",
+                "fr": "Pilotage : un commentaire ajouté avec Entrée dans la fenêtre d'une carte n'est plus envoyé qu'une fois, et non deux.",
+                "es": "Pilotaje: un comentario añadido con Intro en la ventana de una tarjeta ya solo se envía una vez, y no dos."
+            },
+            {
                 "en": "Piloting: the files a machine names under a step open on the computer from the start, the opening link being on by default.",
                 "fr": "Pilotage : les fichiers qu'une machine nomme sous une étape s'ouvrent sur l'ordinateur d'emblée, le lien d'ouverture étant actif par défaut.",
                 "es": "Pilotaje: los archivos que una máquina nombra bajo un paso se abren en el ordenador desde el principio, el enlace de apertura activo por defecto."
