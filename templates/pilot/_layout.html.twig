@@ -18,7 +18,8 @@
     {% set pilot_entries = ['@c975l/pilot-bundle/controllers-admin.js', '@c975l/config-bundle/controllers-admin.js'] %}
     {% guard function csp_nonce %}{{ importmap(pilot_entries, {'nonce': csp_nonce('script')}) }}{% else %}{{ importmap(pilot_entries) }}{% endguard %}
 </head>
-<body>
+{# Turbo Drive left out: each page carries its own nonced <style>, which it fails to merge, leaving a card's own page unshown #}
+<body data-turbo="false">
     <div class="pilot-shell" data-controller="pilot-card-modal pilot-card-drag pilot-fold" data-pilot-card-drag-order-url-value="{{ path('pilot_cards_order') }}" data-pilot-card-drag-order-token-value="{{ csrf_token('pilot_cards_order') }}" data-pilot-card-drag-failed-label-value="{{ 'label.drag_failed'|trans({}, 'pilot') }}" data-pilot-card-modal-url-value="{{ path('pilot_card', {id: 0}) }}">
         <nav class="pilot-projects" aria-label="{{ 'label.projects'|trans({}, 'pilot') }}" data-controller="pilot-menu">
             <div class="pilot-row pilot-nav-pad pilot-mb-xs">

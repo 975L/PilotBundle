@@ -53,22 +53,28 @@ class MemberController extends AbstractController
         return $this->page('@c975LPilot/pilot/members.html.twig', ['project' => $project, 'members' => $this->memberRepository->findOfProject($project), 'roles' => MemberRole::cases()]);
     }
 
-    // An account of the site made a member by its email, its role changed when it already is one; an unknown email refused
+    // An account of the site made a member by its email, its role changed when it already is one; the same message whether the email has an account or not, so that the form tells no one which addresses do
     #[Route('/pilot/space/{slug}/members', name: 'pilot_members_add', methods: ['POST'])]
     public function add(#[MapEntity(mapping: ['slug' => 'slug'])] Project $project, Request $request): RedirectResponse
     {
         $this->guard($project, PilotAccess::MANAGE);
         $role = MemberRole::tryFrom($request->request->getString('role'));
         $email = trim($request->request->getString('email'));
-        if (null === $role || !$this->isCsrfTokenValid(self::ROUTE . $project->getId(), $request->request->getString('_token'))) {
+        if (null === $role || '' === $email || !$this->isCsrfTokenValid(self::ROUTE . $project->getId(), $request->request->getString('_token'))) {
             return $this->redirectToRoute(self::ROUTE, ['slug' => $project->getSlug()]);
         }
-        $user = '' === $email ? null : $this->entityManager->getRepository(UserInterface::class)->findOneBy(['email' => $email]);
-        if (!$user instanceof UserInterface) {
-            $this->addFlash('danger', $this->translator->trans('label.member_unknown', ['%email%' => $email], 'pilot'));
+        $user = $this->entityManager->getRepository(UserInterface::class)->findOneBy(['email' => $email]);
+        if ($user instanceof UserInterface) {
+            $this->enrol($project, $user, $role);
+        }
+        $this->addFlash('success', $this->translator->trans('label.member_maybe_added', ['%email%' => $email], 'pilot'));
 
-            return $this->redirectToRoute(self::ROUTE, ['slug' => $project->getSlug()]);
-        }
+        return $this->redirectToRoute(self::ROUTE, ['slug' => $project->getSlug()]);
+    }
+
+    // The account made a member of the space with the role, or given that role when it already is one
+    private function enrol(Project $project, UserInterface $user, MemberRole $role): void
+    {
         $member = $this->memberRepository->findOneBy(['project' => $project, 'user' => $user]);
         if (null === $member) {
             $this->entityManager->persist(new Member($project, $user, $role));
@@ -76,8 +82,6 @@ class MemberController extends AbstractController
             $member->setRole($role);
         }
         $this->entityManager->flush();
-
-        return $this->redirectToRoute(self::ROUTE, ['slug' => $project->getSlug()]);
     }
 
     // A member's role changed, or the member taken out with « remove »

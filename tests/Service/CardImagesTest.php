@@ -91,6 +91,24 @@ class CardImagesTest extends TestCase
         $this->assertNull($images->feedbackPath($name));
     }
 
+    // A link taken back gives the screenshots fresh names, a missing one dropped, the old files left for the caller to forget once the card is written
+    public function testRenewFeedbackGivesFreshNames(): void
+    {
+        $images = new CardImages($this->root);
+        $old = (string) $images->storeFeedback($this->upload('image.png'));
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->addFeedback('feedback-1')->addFeedback('feedback-2')->setFeedbackImage(0, $old)->setFeedbackImage(1, str_repeat('c', 32) . '.png');
+
+        $images->renewFeedback($card);
+        $renewed = $card->getFeedbackImages();
+        $images->forget(array_values(array_diff([$old], $renewed)));
+
+        $this->assertCount(1, $renewed);
+        $this->assertNotSame($old, $renewed[0]);
+        $this->assertNotNull($images->feedbackPath($renewed[0]));
+        $this->assertNull($images->feedbackPath($old));
+        $this->assertArrayNotHasKey('img', $card->getChecklist()[1]);
+    }
+
     // A one-pixel PNG sent under the given name
     private function upload(string $name): UploadedFile
     {

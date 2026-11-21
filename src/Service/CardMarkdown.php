@@ -127,7 +127,7 @@ class CardMarkdown
         }
     }
 
-    // The task lists replacing the checklist, the steps then the feedback, a list left out keeping what the card had; a step the card does not have refused on a card following a checklist template, which takes its steps from the template alone
+    // The task lists replacing the checklist, the steps then the feedback, a list left out keeping what the card had; a step the card does not have refused on a card following a checklist template, which takes its steps from the template alone, and more lines than a card holds refused
     private function readChecklist(Card $card, ?string $steps, ?string $feedback, \DateTimeImmutable $day): void
     {
         $laid = [];
@@ -140,6 +140,7 @@ class CardMarkdown
             $laid = [...$laid, ...$items];
             $from = [...$from, ...$indices];
         }
+        Card::expectRoom(\count($laid));
         $card->restep($laid, $from, $day);
     }
 
@@ -219,13 +220,14 @@ class CardMarkdown
         return $step;
     }
 
-    // The reference rewritten, created in the card's project when it had none, an empty part leaving it as it was
+    // The reference rewritten, created in the card's project when it had none, an empty part or a file other cards cite leaving it as it was, so the card's markdown never rewrites a reference of the whole space
     private function readReference(Card $card, string $text): void
     {
-        if ('' === trim($text)) {
+        $doc = $card->getDoc();
+        if ('' === trim($text) || (null !== $doc && $this->docRepository->isCitedByAnotherCard($doc, $card))) {
             return;
         }
-        $doc = $card->getDoc() ?? $this->docRepository->newFile($card->getProject(), $card->getTitle());
+        $doc ??= $this->docRepository->newFile($card->getProject(), $card->getTitle());
         $card->setDoc($doc->fromMarkdown($text));
     }
 

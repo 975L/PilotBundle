@@ -22,9 +22,11 @@ use c975L\PilotBundle\Service\StepOrder;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -36,6 +38,12 @@ class ShareController extends AbstractController
     public const string ROUTE = 'pilot_share';
 
     public const string MARKDOWN_ROUTE = 'pilot_share_markdown';
+
+    // The limiter counting the writes of each editing link, by its secret
+    public const string WRITE_LIMITER = 'c975l_pilot_share_write';
+
+    // What a shared page may load: its own inline style and the site's images, nothing that tells another site where it was read from
+    public const string POLICY = "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'";
 
     private const string TOKEN = '[0-9a-f]{32}';
 
@@ -49,6 +57,8 @@ class ShareController extends AbstractController
         private readonly StepOrder $stepOrder,
         private readonly CardImages $cardImages,
         private readonly TranslatorInterface $translator,
+        #[Autowire(service: 'limiter.' . self::WRITE_LIMITER)]
+        private readonly RateLimiterFactoryInterface $writeLimiter,
     ) {
     }
 
@@ -94,6 +104,10 @@ class ShareController extends AbstractController
         if (!$editable) {
             throw new NotFoundHttpException();
         }
+        $throttled = $this->throttled($card, $token, $form);
+        if (null !== $throttled) {
+            return $throttled;
+        }
         $before = $card->getChecklist();
         $images = $card->getFeedbackImages();
         $markdown = $form ? $request->request->getString('markdown') : $request->getContent();
@@ -110,7 +124,7 @@ class ShareController extends AbstractController
         $this->entityManager->flush();
         $this->cardImages->forget(array_values(array_diff($images, $card->getFeedbackImages())));
 
-        return $form ? $this->redirectToRoute(self::ROUTE, ['token' => $token], Response::HTTP_SEE_OTHER) : $this->unlisted(new Response(null, Response::HTTP_NO_CONTENT));
+        return $this->unlisted($form ? $this->redirectToRoute(self::ROUTE, ['token' => $token], Response::HTTP_SEE_OTHER) : new Response(null, Response::HTTP_NO_CONTENT));
     }
 
     // A gesture through the editing link: a step ticked or moved up (carried to its template), a feedback added, the machine action a step names queued or withdrawn, or the card handed to an action offered on its project asking nothing; the page's form back to the page, any other call answered 204, a refusal 422
@@ -120,6 +134,10 @@ class ShareController extends AbstractController
         [$card, $editable] = $this->find($token);
         if (!$editable) {
             throw new NotFoundHttpException();
+        }
+        $throttled = $this->throttled($card, $token, $request->request->has('page'));
+        if (null !== $throttled) {
+            return $throttled;
         }
         $refusal = null;
         try {
@@ -132,7 +150,7 @@ class ShareController extends AbstractController
             $refusal = Response::HTTP_UNPROCESSABLE_ENTITY;
         }
         if ($request->request->has('page')) {
-            return $this->redirectToRoute(self::ROUTE, ['token' => $token], Response::HTTP_SEE_OTHER);
+            return $this->unlisted($this->redirectToRoute(self::ROUTE, ['token' => $token], Response::HTTP_SEE_OTHER));
         }
 
         return $this->unlisted(new Response(null, $refusal ?? Response::HTTP_NO_CONTENT));
@@ -183,11 +201,27 @@ class ShareController extends AbstractController
         return [$this->cardRepository->findOneBy(['shareToken' => $token]) ?? throw new NotFoundHttpException(), false];
     }
 
-    // Never indexed nor kept in a cache
+    // A 429 once the editing link is past its ceiling of writes, the page saying why for its own form, null while it may still write; counted only for a link that edits, so random secrets fill nothing
+    private function throttled(Card $card, string $token, bool $form): ?Response
+    {
+        $limit = $this->writeLimiter->create($token)->consume();
+        if ($limit->isAccepted()) {
+            return null;
+        }
+        $response = $form ? $this->page($card, true, $token, new FlowException(t('flow.share_throttled', [], 'pilot'))) : $this->unlisted(new Response());
+        $response->setStatusCode(Response::HTTP_TOO_MANY_REQUESTS);
+        $response->headers->set('Retry-After', (string) max(1, $limit->getRetryAfter()->getTimestamp() - time()));
+
+        return $response;
+    }
+
+    // Never indexed nor kept in a cache, its secret never sent on as a referrer, no image from another site loaded
     private function unlisted(Response $response): Response
     {
         $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
         $response->headers->set('Cache-Control', 'no-store, private');
+        $response->headers->set('Referrer-Policy', 'no-referrer');
+        $response->headers->set('Content-Security-Policy', self::POLICY);
 
         return $response;
     }

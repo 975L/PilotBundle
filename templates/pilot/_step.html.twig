@@ -53,6 +53,10 @@
                 </span>
             {% endfor %}
         {% endif %}
+        {# The links its last run left, a draft to approve for instance, each opened in a new tab #}
+        {% if step_run and step_run.status.value == 'done' and step_run.links is not empty %}<span class="pilot-step-files{{ stale ? ' pilot-faded' }}">
+            {% for link in step_run.links %}<a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="pilot-file-other" title="{{ link.url }}">{{ pilot_icon('arrow-up-right-from-square', 'pilot-icon-before') }}{{ link.label }}</a>{% endfor %}
+        </span>{% endif %}
         {# The files the step's last run produced: those sent opened from the site, those left on the machine by the opening link, which opens only the folders the machine allows, shown as text without it #}
         {% set files = step_files[index] ?? null %}
         {% if files %}<span class="pilot-step-files">

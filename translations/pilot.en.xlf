@@ -200,7 +200,7 @@
             </trans-unit>
             <trans-unit id="0QvzaYX">
                 <source>description.guided_step_pilot_steps_fold</source>
-                <target>When the steps form several groups, one click folds or unfolds them all at once.</target>
+                <target>When the steps form several groups, one click folds those entirely ticked, leaving open those still to do, and another unfolds them all.</target>
             </trans-unit>
             <trans-unit id="kXHyi5f">
                 <source>description.guided_step_pilot_steps_open</source>
@@ -246,6 +246,10 @@
                 <source>flash.machine_created</source>
                 <target>Machine added. Its token, shown this once only: %token%</target>
             </trans-unit>
+            <trans-unit id="r90BtJm">
+                <source>flow.checklist_full</source>
+                <target>A card holds %max% steps and comments at most.</target>
+            </trans-unit>
             <trans-unit id="fTDLbj6">
                 <source>flow.feedback_none</source>
                 <target>No open comment to hand to the machine.</target>
@@ -261,6 +265,10 @@
             <trans-unit id="xUcdrDB">
                 <source>flow.not_now</source>
                 <target>This gesture does not apply to this card now.</target>
+            </trans-unit>
+            <trans-unit id="S4JO7Lw">
+                <source>flow.share_throttled</source>
+                <target>Too many changes through this link: try again in a while.</target>
             </trans-unit>
             <trans-unit id="twd7VSI">
                 <source>flow.template_steps</source>
@@ -1273,6 +1281,10 @@
                 <source>label.member_email</source>
                 <target>Email of the account</target>
             </trans-unit>
+            <trans-unit id="jLV9DMI">
+                <source>label.member_maybe_added</source>
+                <target>If an account of the site has the email %email%, it is now a member of the space.</target>
+            </trans-unit>
             <trans-unit id="WLmLAdA">
                 <source>label.member_remove</source>
                 <target>Take out of the space</target>
@@ -1280,10 +1292,6 @@
             <trans-unit id="RV5.mZw">
                 <source>label.member_role</source>
                 <target>Role</target>
-            </trans-unit>
-            <trans-unit id="J5NSp8D">
-                <source>label.member_unknown</source>
-                <target>No account of the site has the email %email%: create it first.</target>
             </trans-unit>
             <trans-unit id="Txlcxk0">
                 <source>label.members</source>

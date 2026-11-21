@@ -22,6 +22,7 @@ use c975L\PilotBundle\Enum\CardKind;
 use c975L\PilotBundle\Enum\CardStatus;
 use c975L\PilotBundle\Enum\Executor;
 use c975L\PilotBundle\Enum\RunStatus;
+use c975L\PilotBundle\Exception\FlowException;
 use PHPUnit\Framework\TestCase;
 
 class CardTest extends TestCase
@@ -411,14 +412,15 @@ class CardTest extends TestCase
         $this->assertSame([3], array_keys($groups[2]['steps']));
     }
 
-    // Ticked steps kept in their order: a lone one left among the open ones, several in a row folded in place
+    // Ticked steps kept in their order: those the list starts with folded, a lone one or several further down left among the open ones
     public function testStepParts(): void
     {
-        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1', 'done' => true], ['t' => 'step-2'], ['t' => 'step-3', 'done' => true], ['t' => 'step-4', 'done' => true], ['t' => 'step-5'], ['t' => 'step-6', 'done' => true]]);
+        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1', 'done' => true], ['t' => 'step-2', 'done' => true], ['t' => 'step-3'], ['t' => 'step-4', 'done' => true], ['t' => 'step-5', 'done' => true], ['t' => 'step-6'], ['t' => 'step-7', 'done' => true]]);
         $parts = $card->getStepGroups()[0]['parts'];
 
-        $this->assertSame([false, true, false], array_column($parts, 'folded'));
-        $this->assertSame([[0, 1], [2, 3], [4, 5]], array_map(static fn (array $part): array => array_keys($part['steps']), $parts));
+        $this->assertSame([true, false], array_column($parts, 'folded'));
+        $this->assertSame([[0, 1], [2, 3, 4, 5, 6]], array_map(static fn (array $part): array => array_keys($part['steps']), $parts));
+        $this->assertSame([false], array_column(new Card($this->project, 'item-3')->setChecklist([['t' => 'step-1', 'done' => true], ['t' => 'step-2'], ['t' => 'step-3', 'done' => true], ['t' => 'step-4', 'done' => true]])->getStepGroups()[0]['parts'], 'folded'));
         $this->assertSame([], new Card($this->project, 'item-2')->getStepGroups());
     }
 
@@ -477,5 +479,22 @@ class CardTest extends TestCase
 
         $shared = new Doc('shared-file', 'Shared');
         $this->assertSame($shared, $card->setDoc($shared)->moveTo($this->project)->getDoc());
+    }
+
+    // A full checklist takes no more step nor feedback, an empty text still adding nothing
+    public function testChecklistCeiling(): void
+    {
+        $card = new Card($this->project, 'item-1')->setChecklist(array_fill(0, Card::MAX_CHECKLIST, ['t' => 'step-1']));
+
+        $this->assertSame($card, $card->addStep(' '));
+        foreach (['addStep', 'addFeedback'] as $method) {
+            try {
+                $card->{$method}('item-2');
+                $this->fail($method . ' went past the ceiling.');
+            } catch (FlowException $exception) {
+                $this->assertSame('flow.checklist_full', $exception->getMessage());
+            }
+        }
+        $this->assertCount(Card::MAX_CHECKLIST, $card->getChecklist());
     }
 }

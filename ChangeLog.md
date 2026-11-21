@@ -1,5 +1,27 @@
 # Changelog
 
+## v1.2.0
+
+Machine actions kept to their spaces, dashboard refreshed as runs end
+
+- A machine action queued only on a space it is offered to, whoever names it: a step, an editing link, an agent or a report (21/11/2026)
+- A card's markdown rewriting its reference only when no other card cites it, an editing link no longer changing a file of the whole space (21/11/2026)
+- The machine's own data a run writes (a `.json`, a `.log`) no longer shown under its step (21/11/2026)
+- The dashboard and a space's page refreshed once a run ends, the progress of the runs under way moving in place (21/11/2026)
+- A `LINK <url> [words]` line of a runner's command leaving a link under its step once done, a draft post to approve for instance (`Run::getLinks()`) (21/11/2026) **Needs db update**
+- « Fold all » folding only the step groups entirely ticked, those still to do left open (21/11/2026)
+- Only the ticked steps a checklist starts with folded, those further down staying in place among the open ones (21/11/2026)
+- Turbo Drive left out of the piloting pages again, a guided project reaching a card's own page (21/11/2026)
+- A click on a guided project's panel no longer closes the + panel its next step points into (21/11/2026)
+- Feedback screenshots renamed when a card's share or editing link is taken back, the addresses its former holder had answering nothing (21/11/2026)
+- Shared pages sent with `Referrer-Policy: no-referrer` and a Content-Security-Policy loading only the site's images (21/11/2026)
+- [BC-Break] Writes through an editing link limited to 300 per link and per hour (`c975l_pilot_share_write`), then answered 429, the page's own form shown again with the reason (21/11/2026)
+- A card's checklist kept to 300 lines (`Card::MAX_CHECKLIST`), a step, a feedback or a markdown past it refused with the reason (21/11/2026)
+- [BC-Break] An action worded only by the machine that declared it first, the next one taking over once it is deleted (`ActionRepository::declare()` takes the machine) (21/11/2026) **Needs db update**
+- The same message whether an email added to a space's members has an account or not (21/11/2026)
+- A run's files limited to 200 and 500 MB together (`RunOutputs::MAX_FILES`, `MAX_RUN_BYTES`), a file beyond answered 413 (21/11/2026)
+- A report's action its space is not offered refused with the reason, no card made (21/11/2026)
+
 ## v1.1.1
 
 Guided project handing a step to an AI agent

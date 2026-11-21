@@ -25,6 +25,10 @@ class RunOutputs
     // Largest file the machine sends, a bigger one being only named on the card
     public const int MAX_BYTES = 100 * 1024 * 1024;
 
+    // Most files and bytes a run keeps on the site, all its files together
+    public const int MAX_FILES = 200;
+    public const int MAX_RUN_BYTES = 500 * 1024 * 1024;
+
     private const array TEXT = ['txt', 'md', 'log', 'json', 'csv'];
 
     // Images and videos shown on the card, with the type they are served under
@@ -43,6 +47,16 @@ class RunOutputs
         $file->move($this->folder($run), $name);
 
         return $name;
+    }
+
+    // Whether the run's folder takes the file within its ceilings of files and bytes, a file of the same name it replaces left out of the count
+    public function fits(Run $run, UploadedFile $file): bool
+    {
+        $replaced = $this->path($run, $file->getClientOriginalName());
+        $kept = array_values(array_filter(glob($this->folder($run) . '/*') ?: [], static fn (string $path): bool => is_file($path) && $path !== $replaced));
+        $bytes = array_sum(array_map(static fn (string $path): int => (int) filesize($path), $kept));
+
+        return \count($kept) < self::MAX_FILES && $bytes + (int) $file->getSize() <= self::MAX_RUN_BYTES;
     }
 
     // Real path of a kept file of a run, null when missing

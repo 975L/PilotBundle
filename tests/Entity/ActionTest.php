@@ -11,6 +11,7 @@
 namespace c975L\PilotBundle\Tests\Entity;
 
 use c975L\PilotBundle\Entity\Action;
+use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\Project;
 use PHPUnit\Framework\TestCase;
 
@@ -39,5 +40,21 @@ class ActionTest extends TestCase
         $action->declare('Study', [], true, 'Writes the file', 3);
         $this->assertSame('Writes the file', $action->getHelp());
         $this->assertSame(3, $action->getPosition());
+    }
+
+    // The first machine declaring an action owns its wording, another one never, the next one taking over once it is gone
+    public function testDeclaredByItsFirstMachine(): void
+    {
+        $first = new Machine('machine-1', str_repeat('a', 64));
+        $second = new Machine('machine-2', str_repeat('b', 64));
+        $action = new Action('build');
+
+        $this->assertTrue($action->declaredBy($first));
+        $this->assertFalse($action->declaredBy($second));
+        $this->assertSame($first, $action->getMachine());
+
+        new \ReflectionProperty(Action::class, 'machine')->setValue($action, null);
+        $this->assertTrue($action->declaredBy($second));
+        $this->assertFalse($action->declaredBy($first));
     }
 }

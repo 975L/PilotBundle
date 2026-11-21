@@ -10,6 +10,7 @@
 
 namespace c975L\PilotBundle\Service;
 
+use c975L\PilotBundle\Entity\Action;
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Plan;
 use c975L\PilotBundle\Entity\Run;
@@ -18,6 +19,7 @@ use c975L\PilotBundle\Enum\CardStatus;
 use c975L\PilotBundle\Enum\Executor;
 use c975L\PilotBundle\Enum\RunStatus;
 use c975L\PilotBundle\Exception\FlowException;
+use c975L\PilotBundle\Repository\ActionRepository;
 use Psr\Clock\ClockInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 
@@ -29,6 +31,7 @@ class CardFlow
     public function __construct(
         private readonly ClockInterface $clock,
         private readonly ?Security $security = null,
+        private readonly ?ActionRepository $actionRepository = null,
     ) {
     }
 
@@ -69,6 +72,7 @@ class CardFlow
         if (!$card->isRunner() || null === $card->getAction() || !\in_array($card->getStatus(), [CardStatus::Ready, CardStatus::Failed], true)) {
             throw new FlowException(t('flow.not_now', [], 'pilot'));
         }
+        $this->expectOffered($card, (string) $card->getAction());
         $card->setStatus(CardStatus::Running);
 
         return new Run($card);
@@ -232,9 +236,22 @@ class CardFlow
     /** @param array<string, string> $params */
     private function queue(Card $card, string $action, array $params, int $step): Run
     {
+        $this->expectOffered($card, $action);
         $card->setStatus(CardStatus::Running);
 
         return new Run($card, $action, $params, $step);
+    }
+
+    // Refuses an action the card's space is not offered, whoever names it (a step written by hand, a link, an agent, a report), so no machine runs what the admin kept for other spaces
+    private function expectOffered(Card $card, string $action): void
+    {
+        if (null === $this->actionRepository) {
+            return;
+        }
+        $offered = $this->actionRepository->findOneBy(['key' => $action]);
+        if (!$offered instanceof Action || !$offered->isOfferedTo($card->getProject())) {
+            throw new FlowException(t('flow.not_now', [], 'pilot'));
+        }
     }
 
     // Marks a card done on the day and opens the next one of its plan, a machine card waiting for its button like any action

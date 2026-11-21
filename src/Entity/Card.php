@@ -15,12 +15,15 @@ use c975L\PilotBundle\Enum\CardKind;
 use c975L\PilotBundle\Enum\CardStatus;
 use c975L\PilotBundle\Enum\Executor;
 use c975L\PilotBundle\Enum\RunStatus;
+use c975L\PilotBundle\Exception\FlowException;
 use c975L\PilotBundle\Repository\CardRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+
+use function Symfony\Component\Translation\t;
 
 // A card of a project: in the backlog without a date, on the planning with one, a step when it belongs to a plan
 #[ORM\Entity(repositoryClass: CardRepository::class)]
@@ -36,6 +39,9 @@ class Card implements \Stringable
 
     // What a runner takes at most as one parameter, the open feedback handed in one pass
     public const int FEEDBACK_PASS_LENGTH = 2000;
+
+    // Most lines a checklist holds, steps and feedback together, so that no link fills a card without end
+    public const int MAX_CHECKLIST = 300;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -414,13 +420,14 @@ class Card implements \Stringable
         return $this;
     }
 
-    // Adds a step after the last one, before the feedback, an empty text adding nothing; a done card opens again
+    // Adds a step after the last one, before the feedback, an empty text adding nothing, a full checklist refusing it; a done card opens again
     public function addStep(string $text): static
     {
         $text = mb_substr(trim($text), 0, 500);
         if ('' === $text) {
             return $this;
         }
+        self::expectRoom(\count($this->checklist) + 1);
         $at = array_key_first($this->getFeedback()) ?? \count($this->checklist);
         array_splice($this->checklist, $at, 0, [['t' => $text]]);
         foreach ($this->runs as $run) {
@@ -432,16 +439,25 @@ class Card implements \Stringable
         return $this->reopen();
     }
 
-    // Adds a feedback at the end (a fix, an idea), an empty text adding nothing; a done card opens again
+    // Adds a feedback at the end (a fix, an idea), an empty text adding nothing, a full checklist refusing it; a done card opens again
     public function addFeedback(string $text): static
     {
         $text = mb_substr(trim($text), 0, 500);
         if ('' === $text) {
             return $this;
         }
+        self::expectRoom(\count($this->checklist) + 1);
         $this->checklist[] = ['t' => $text, 'feedback' => true];
 
         return $this->reopen();
+    }
+
+    // Refuses a checklist of more lines than MAX_CHECKLIST, with the reason to show
+    public static function expectRoom(int $lines): void
+    {
+        if ($lines > self::MAX_CHECKLIST) {
+            throw new FlowException(t('flow.checklist_full', ['%max%' => self::MAX_CHECKLIST], 'pilot'));
+        }
     }
 
     public function isFeedback(int $index): bool
@@ -476,7 +492,7 @@ class Card implements \Stringable
         return array_map(static fn (array $group): array => $group + ['parts' => self::stepParts($group['steps'], $fold)], $groups);
     }
 
-    // Steps in their order, cut where they change between ticked and open: a run of several ticked folded in place when folding is asked, a single ticked one left among the others
+    // Steps in their order, cut where they change between ticked and open: the run of several ticked opening the steps folded when folding is asked, any other ticked one left in its place among the others
     /**
      * @param array<int, array{t: string, done?: bool, g?: string}> $steps
      *
@@ -495,10 +511,10 @@ class Card implements \Stringable
             $parts[\count($parts) - 1]['steps'][$index] = $step;
         }
 
-        // A lone ticked step stays in its place, joined to its open neighbours
+        // Only the ticked steps the list starts with are folded, a lone one or one further down staying in its place, joined to its open neighbours
         $merged = [];
         foreach ($parts as $part) {
-            $part['folded'] = $fold && $part['folded'] && \count($part['steps']) > 1;
+            $part['folded'] = $fold && $part['folded'] && [] === $merged && \count($part['steps']) > 1;
             $previous = \count($merged) - 1;
             if (!$part['folded'] && $previous >= 0 && !$merged[$previous]['folded']) {
                 $merged[$previous]['steps'] += $part['steps'];

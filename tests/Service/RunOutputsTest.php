@@ -99,6 +99,33 @@ class RunOutputsTest extends TestCase
         $this->assertNull($outputs->mediaType('/x/item-1.html'));
     }
 
+    // A run's folder takes files up to its ceilings of count and bytes, a file sent again under its name replacing its own bytes
+    public function testFitsWithinTheRunsCeilings(): void
+    {
+        $run = $this->newRun();
+        $outputs = new RunOutputs($this->dir);
+        $source = $this->dir . '/source.txt';
+        new Filesystem()->dumpFile($source, 'catalog');
+        $file = static fn (string $name): UploadedFile => new UploadedFile($source, $name, null, null, true);
+        $this->assertTrue($outputs->fits($run, $file('item-1.txt')));
+
+        // A file as heavy as the whole ceiling, sparse so that it takes no room
+        new Filesystem()->mkdir($outputs->folder($run));
+        $handle = fopen($outputs->folder($run) . '/item-1.bin', 'w');
+        ftruncate($handle, RunOutputs::MAX_RUN_BYTES);
+        fclose($handle);
+        $this->assertFalse($outputs->fits($run, $file('item-2.txt')));
+        $this->assertTrue($outputs->fits($run, $file('item-1.bin')));
+
+        // As many files as the ceiling, light ones
+        unlink($outputs->folder($run) . '/item-1.bin');
+        for ($i = 0; $i < RunOutputs::MAX_FILES; ++$i) {
+            touch($outputs->folder($run) . '/item-' . $i . '.txt');
+        }
+        $this->assertFalse($outputs->fits($run, $file('item-new.txt')));
+        $this->assertTrue($outputs->fits($run, $file('item-0.txt')));
+    }
+
     // A run with an id, as the database gives it
     private function newRun(): Run
     {

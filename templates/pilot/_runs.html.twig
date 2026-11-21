@@ -2,6 +2,8 @@
 {% if runs is not empty %}
     <section class="pilot-mb-lg pilot-runs" data-pilot-fold="runs">
         <h2 class="pilot-title pilot-fold-head">{{ 'label.runs_active'|trans({}, 'pilot') }}</h2>
+        {# Read again every few seconds, the progress moving in place and the page reloaded once a run ends or starts (pilot-run-watch) #}
+        <div hidden data-controller="pilot-run-watch" data-pilot-run-watch-url-value="{{ app.request.requestUri }}" data-pilot-run-watch-every-value="10000" data-pilot-run-watch-runs-value="{{ runs|map(run => run.id)|join('|') }}" data-pilot-run-watch-state-value="{{ runs|map(run => run.id ~ ':' ~ run.status.value ~ ':' ~ pilot_run_progress(run).value ~ ':' ~ run.message)|join('|') }}"></div>
         <ul class="pilot-list">
             {% for run in runs %}
                 {% set card = run.card %}

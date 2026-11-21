@@ -3,6 +3,26 @@
         "date": "2026-11-21",
         "description": [
             {
+                "en": "Piloting: a step done by a machine can show links under it, the post to approve in the social calendar for instance, opened in a new tab.",
+                "fr": "Pilotage : une étape faite par une machine peut afficher des liens sous elle, le post à valider dans le calendrier des réseaux par exemple, ouverts dans un nouvel onglet.",
+                "es": "Pilotaje: un paso hecho por una máquina puede mostrar enlaces debajo, la publicación por validar en el calendario de redes por ejemplo, abiertos en una pestaña nueva."
+            },
+            {
+                "en": "Piloting: on a card, « Fold all » now folds only the groups of steps entirely ticked, those still to do staying open.",
+                "fr": "Pilotage : sur une carte, « Tout plier » ne plie plus que les groupes d'étapes entièrement cochés, ceux qui restent à faire restant ouverts.",
+                "es": "Pilotaje: en una tarjeta, « Plegar todo » solo pliega ya los grupos de pasos completamente marcados, los que quedan por hacer siguen abiertos."
+            },
+            {
+                "en": "Piloting: taking back a card's link also renames its screenshots, so its former holder reads them no more, and a shared page no longer tells other sites its address.",
+                "fr": "Pilotage : reprendre le lien d'une carte renomme aussi ses captures, que son ancien détenteur ne lit plus, et une page partagée ne donne plus son adresse aux autres sites.",
+                "es": "Pilotaje: retirar el enlace de una tarjeta también renombra sus capturas, que su antiguo poseedor ya no lee, y una página compartida ya no da su dirección a otros sitios."
+            },
+            {
+                "en": "Piloting: the dashboard and a space's page refresh by themselves once a machine finishes a step, and only the useful files a step made (images, PDFs, sources) are listed under it.",
+                "fr": "Pilotage : le tableau de bord et la page d'un espace se rafraîchissent d'eux-mêmes quand une machine finit une étape, et seuls les fichiers utiles qu'une étape a produits (images, PDF, sources) sont listés sous elle.",
+                "es": "Pilotaje: el panel y la página de un espacio se actualizan solos cuando una máquina termina un paso, y solo los archivos útiles que un paso produjo (imágenes, PDF, fuentes) se listan bajo él."
+            },
+            {
                 "en": "Piloting: a guided project shows how to hand a step to an AI agent, which works on the card, ticks what it finishes and asks on the card what it misses.",
                 "fr": "Pilotage : un projet guidé montre comment confier une étape à un agent IA, qui travaille sur la carte, coche ce qu'il termine et demande sur la carte ce qui lui manque.",
                 "es": "Pilotaje: un proyecto guiado muestra cómo confiar un paso a un agente de IA, que trabaja en la tarjeta, marca lo que termina y pregunta en la tarjeta lo que le falta."

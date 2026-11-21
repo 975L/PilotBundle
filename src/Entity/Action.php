@@ -50,6 +50,11 @@ class Action implements \Stringable
     #[ORM\Column]
     private bool $cardOnly = false;
 
+    // The machine that first declared the action, the only one whose later calls change how it is worded; none once it is removed, the next machine declaring it taking over
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?Machine $machine = null;
+
     /** @var Collection<int, Project> */
     #[ORM\ManyToMany(targetEntity: Project::class)]
     #[ORM\JoinTable(name: 'pilot_action_project')]
@@ -103,6 +108,19 @@ class Action implements \Stringable
     public function isCardOnly(): bool
     {
         return $this->cardOnly;
+    }
+
+    public function getMachine(): ?Machine
+    {
+        return $this->machine;
+    }
+
+    // Whether the machine may word the action: the one that declared it, or any while it has none, which then becomes its own
+    public function declaredBy(Machine $machine): bool
+    {
+        $this->machine ??= $machine;
+
+        return $this->machine === $machine;
     }
 
     // What the machine says of the action at each call: its label, the parameters a card fills, whether it only makes sense on a card, what it does and its rank

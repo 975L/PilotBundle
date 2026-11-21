@@ -25,11 +25,15 @@ use c975L\PilotBundle\Tests\Fixtures\PilotTestStubs;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
 
 class ShareControllerTest extends TestCase
 {
@@ -62,7 +66,58 @@ class ShareControllerTest extends TestCase
             $this->assertStringStartsWith('# item-1', (string) $response->getContent());
             $this->assertSame('noindex, nofollow', $response->headers->get('X-Robots-Tag'));
             $this->assertStringContainsString('no-store', (string) $response->headers->get('Cache-Control'));
+            $this->assertSame('no-referrer', $response->headers->get('Referrer-Policy'));
+            $this->assertStringContainsString("img-src 'self' data:", (string) $response->headers->get('Content-Security-Policy'));
         }
+    }
+
+    // The page never hands its secret on as a referrer, even where the headers are dropped
+    public function testPageSendsNoReferrer(): void
+    {
+        $this->assertStringContainsString('<meta name="referrer" content="no-referrer">', (string) file_get_contents(\dirname(__DIR__, 2) . '/templates/share/card.html.twig'));
+    }
+
+    // An editing link past its ceiling of writes is answered 429, the card left as it was
+    public function testEditLinkWritesAreLimited(): void
+    {
+        $controller = $this->controller(1);
+        $token = (string) $this->card->getEditToken();
+
+        $this->assertSame(Response::HTTP_NO_CONTENT, $controller->gesture($token, 'feedback', new Request(request: ['text' => 'feedback-1']))->getStatusCode());
+        $this->assertSame(Response::HTTP_TOO_MANY_REQUESTS, $controller->save($token, new Request(content: "# item-2\n"))->getStatusCode());
+        $this->assertSame(Response::HTTP_TOO_MANY_REQUESTS, $controller->gesture($token, 'feedback', new Request(request: ['text' => 'feedback-2']))->getStatusCode());
+        $this->assertSame('item-1', $this->card->getTitle());
+        $this->assertCount(1, $this->card->getFeedback());
+    }
+
+    // The page's own form past the ceiling shows the page again with the reason, answered 429
+    public function testThrottledFormShowsThePage(): void
+    {
+        $controller = $this->controller(1);
+        $controller->gesture((string) $this->card->getEditToken(), 'feedback', new Request(request: ['text' => 'feedback-1']));
+        $twig = $this->createStub(Environment::class);
+        $twig->method('render')->willReturnCallback(static fn (string $template, array $context): string => (string) $context['refusal']?->getMessage());
+        $container = new Container();
+        $container->set('twig', $twig);
+        $controller->setContainer($container);
+
+        $response = $controller->save((string) $this->card->getEditToken(), new Request(request: ['markdown' => "# item-2\n"]));
+
+        $this->assertSame(Response::HTTP_TOO_MANY_REQUESTS, $response->getStatusCode());
+        $this->assertSame('flow.share_throttled', $response->getContent());
+        $this->assertSame('no-referrer', $response->headers->get('Referrer-Policy'));
+        $this->assertSame('item-1', $this->card->getTitle());
+    }
+
+    // A card whose checklist is full takes no more feedback through its link
+    public function testEditLinkRefusesAFullChecklist(): void
+    {
+        $this->card->setChecklist(array_fill(0, Card::MAX_CHECKLIST, ['t' => 'step-1']));
+
+        $response = $this->controller()->gesture((string) $this->card->getEditToken(), 'feedback', new Request(request: ['text' => 'feedback-1']));
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+        $this->assertCount(Card::MAX_CHECKLIST, $this->card->getChecklist());
     }
 
     // The editing link rewrites the card from a markdown body, answered 204
@@ -154,7 +209,7 @@ class ShareControllerTest extends TestCase
         $this->assertSame(['card' => '/pilot/share/{token} GET', 'markdown' => '/pilot/share/{token}.md GET', 'save' => '/pilot/share/{token} POST', 'gesture' => '/pilot/share/{token}/{gesture} POST'], $paths);
     }
 
-    private function controller(): ShareController
+    private function controller(int $writes = 300): ShareController
     {
         $cards = $this->createStub(CardRepository::class);
         $cards->method('findOneBy')->willReturnCallback(fn (array $criteria): ?Card => match (true) {
@@ -163,7 +218,7 @@ class ShareControllerTest extends TestCase
             default => null,
         });
 
-        return new ShareController($cards, new CardMarkdown($this->createStub(DocRepository::class), $this->urls()), $this->createStub(EntityManagerInterface::class), new MockClock(), new CardFlow(new MockClock()), $this->offer, new StepOrder($cards, new MockClock()), new CardImages(sys_get_temp_dir()), $this->translator());
+        return new ShareController($cards, new CardMarkdown($this->createStub(DocRepository::class), $this->urls()), $this->createStub(EntityManagerInterface::class), new MockClock(), new CardFlow(new MockClock()), $this->offer, new StepOrder($cards, new MockClock()), new CardImages(sys_get_temp_dir()), $this->translator(), new RateLimiterFactory(['id' => ShareController::WRITE_LIMITER, 'policy' => 'fixed_window', 'limit' => $writes, 'interval' => '1 hour'], new InMemoryStorage()));
     }
 
     // A translator handing back the key it was given

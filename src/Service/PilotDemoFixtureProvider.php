@@ -105,7 +105,9 @@ class PilotDemoFixtureProvider implements DemoFixtureProviderInterface
         yield $this->machine;
 
         foreach (array_keys($capabilities) as $position => $key) {
-            yield new Action($key)
+            $action = new Action($key);
+            $action->declaredBy($this->machine);
+            yield $action
                 ->declare($capabilities[$key]['label'], [], false, null, $position)
                 ->addProject($space);
         }

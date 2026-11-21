@@ -1,5 +1,17 @@
 # UPGRADE
 
+## v1.2.0
+
+Shared links and machines held to what they were given.
+
+- An action now records the machine that declared it first, the only one whose later calls change its label, help, parameters and rank: run `doctrine:migrations:diff` then `migrate`, which adds `pilot_action.machine_id` (a foreign key to `pilot_machine`, `ON DELETE SET NULL`). The existing actions have none, so the first machine to claim after the update becomes their declarer. `ActionRepository::declare()` takes the `Machine` first.
+- The writes through an editing link are counted per link: past 300 in an hour, the link gets 429 until the hour ends; redefine `c975l_pilot_share_write` under `framework.rate_limiter` to change it.
+- The shared pages send their own `Content-Security-Policy` (`ShareController::POLICY`: the site's images, their inline style), which NelmioSecurityBundle then leaves as it is: an image of a note from another site no longer shows there.
+- A checklist holds 300 lines at most (`Card::MAX_CHECKLIST`): `Card::addStep()` and `addFeedback()` throw a `FlowException` beyond, so a caller outside the bundle catches it.
+- `runs/{id}/output` answers 413 once the run keeps 200 files or 500 MB (`RunOutputs::MAX_FILES`, `MAX_RUN_BYTES`); a custom runner treats it as a file left on the machine.
+- A run keeps the links its command left: run `doctrine:migrations:diff` then `migrate`, which adds `pilot_run.links` (JSON, `[]` by default). A custom runner may forward `LINK <url> [words]` lines as `links: [{"url": "…", "label": "…"}]` in `runs/{id}/finish`, `RunQueue::finish()`'s last argument.
+- The `label.member_unknown` key is replaced by `label.member_maybe_added`, shown whether the email has an account or not.
+
 ## v1.0.0
 
 A card's output goes back to the machine through its open feedback instead of a free comment.

@@ -58,7 +58,7 @@ class RunQueue
         $this->releaseExpired();
         $now = $this->clock->now();
         $machine->seen($capabilities, $now);
-        $this->actionRepository->declare($capabilities);
+        $this->actionRepository->declare($machine, $capabilities);
         $this->entityManager->flush();
         $actions = array_map(strval(...), array_keys($capabilities));
         if (null !== $only) {
@@ -93,19 +93,20 @@ class RunQueue
 
     // Closes a run the machine holds, settles the feedback it was handed (by number, the reason the machine left one open) and moves its card on
     /**
-     * @param list<string>       $outputs
-     * @param array<int, string> $left
-     * @param array<string, int> $spent
-     * @param list<string>       $files
+     * @param list<string>                            $outputs
+     * @param array<int, string>                      $left
+     * @param array<string, int>                      $spent
+     * @param list<string>                            $files
+     * @param list<array{url?: mixed, label?: mixed}> $links
      */
-    public function finish(Run $run, Machine $machine, RunStatus $status, ?string $message, array $outputs, ?string $title = null, array $left = [], ?string $result = null, array $spent = [], array $files = []): void
+    public function finish(Run $run, Machine $machine, RunStatus $status, ?string $message, array $outputs, ?string $title = null, array $left = [], ?string $result = null, array $spent = [], array $files = [], array $links = []): void
     {
         $this->expectHeld($run, $machine);
         if (!$status->isFinished()) {
             throw new FlowException(t('flow.unknown_status', [], 'pilot'));
         }
         $now = $this->clock->now();
-        $run->finish($status, $message, $outputs, $now)->setFiles($files);
+        $run->finish($status, $message, $outputs, $now)->setFiles($files)->setLinks($links);
 
         // The title the action gave its card, a number it took for instance
         if ('' !== trim((string) $title)) {

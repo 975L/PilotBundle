@@ -266,7 +266,7 @@ class PilotController extends AbstractController
         return $this->redirectToRoute(self::CARD_ROUTE, ['id' => $card->getId()]);
     }
 
-    // An action of a report, on one of its rows or on the whole table: a card dated today on the page's project when the row is shown there, the report's project otherwise, handed to the machine at once
+    // An action of a report, on one of its rows or on the whole table: a card dated today on the page's project when the row is shown there, the report's project otherwise, handed to the machine at once, an action the space is not offered refused
     #[Route('/pilot/report/{id}/run', name: 'pilot_report_run', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function reportRun(Report $report, Request $request): RedirectResponse
     {
@@ -276,14 +276,28 @@ class PilotController extends AbstractController
         if (null !== $action) {
             $project = $this->reportProject($report, $request, $row);
             $this->guard($project, PilotAccess::RUN);
-            $title = null === $row ? $action['label'] : $action['label'] . ' · ' . (string) array_values($report->getRows()[$row])[0];
-            $card = new Card($project, mb_substr($title, 0, 500))->setDue($this->clock->now()->setTime(0, 0));
-            $this->entityManager->persist($card);
-            $this->entityManager->persist($this->cardFlow->entrust($card, $action['action'], $report->params($action, $row, $this->params($request))));
-            $this->entityManager->flush();
+            $this->reportCard($report, $project, $action, $row, $request);
         }
 
         return $this->redirect($this->back($request, $this->generateUrl(self::DASHBOARD_ROUTE)));
+    }
+
+    // The card a report's action makes, written only once its run is queued, an action the space is not offered refused with its reason
+    /** @param array{action: string, label: string, params: array<string, string>, ask: list<string>, if: ?string} $action */
+    private function reportCard(Report $report, Project $project, array $action, ?int $row, Request $request): void
+    {
+        $title = null === $row ? $action['label'] : $action['label'] . ' · ' . (string) array_values($report->getRows()[$row])[0];
+        $card = new Card($project, mb_substr($title, 0, 500))->setDue($this->clock->now()->setTime(0, 0));
+        try {
+            $run = $this->cardFlow->entrust($card, $action['action'], $report->params($action, $row, $this->params($request)));
+        } catch (FlowException $exception) {
+            $this->addFlash('danger', $exception->reason->trans($this->translator));
+
+            return;
+        }
+        $this->entityManager->persist($card);
+        $this->entityManager->persist($run);
+        $this->entityManager->flush();
     }
 
     // The space a report's card goes to: the page's when the report shows the row, or the table, there; the report's own otherwise
@@ -670,9 +684,9 @@ class PilotController extends AbstractController
             'stepedit' => $this->stepEdit($card, $request),
             'steporder' => $this->stepOrder->reorder($card, array_values(array_map(intval(...), array_filter($request->request->all('order'), is_numeric(...))))),
             'share' => $card->share(),
-            'unshare' => $card->unshare(),
+            'unshare' => $this->cardImages->renewFeedback($card->unshare()),
             'lend' => $card->lend(),
-            'unlend' => $card->unlend(),
+            'unlend' => $this->cardImages->renewFeedback($card->unlend()),
             'step' => $this->cardFlow->tick($card, $request->request->getInt('index', -1)),
             'runstep' => $this->cardFlow->runStep($card, $request->request->getInt('index', -1)),
             'entrust' => $this->cardFlow->entrust($card, $request->request->getString('action'), $this->params($request)),
@@ -721,12 +735,16 @@ class PilotController extends AbstractController
         return $card->moveTo($project);
     }
 
-    // A feedback added, with the screenshot sent or pasted along, a picture refused adding nothing
+    // A feedback added, with the screenshot sent or pasted along, a picture refused adding nothing, a full checklist refused before any file is kept
     private function feedbackAdd(Card $card, Request $request): Card
     {
         $text = $request->request->getString('text');
         $file = $request->files->get('image');
-        $image = $file instanceof UploadedFile && '' !== trim($text) ? $this->screenshot($file) : null;
+        $image = null;
+        if ($file instanceof UploadedFile && '' !== trim($text)) {
+            Card::expectRoom(\count($card->getChecklist()) + 1);
+            $image = $this->screenshot($file);
+        }
         $before = array_key_last($card->getChecklist());
         $card->addFeedback($text);
         $added = array_key_last($card->getChecklist());

@@ -168,7 +168,7 @@ class PilotTools
         if ('' === trim($text)) {
             throw new ToolCallException('The comment is empty.');
         }
-        $found->addFeedback($text);
+        $this->flow(static fn (): Card => $found->addFeedback($text));
         $this->entityManager->flush();
 
         return ['index' => (int) array_key_last($found->getChecklist())];
@@ -225,9 +225,11 @@ class PilotTools
         if (!$found->takesStepsByHand()) {
             throw new ToolCallException('The card follows a checklist template: add the steps to its template.');
         }
-        foreach ($steps as $step) {
-            $found->addStep((string) $step);
-        }
+        $this->flow(static function () use ($found, $steps): void {
+            foreach ($steps as $step) {
+                $found->addStep((string) $step);
+            }
+        });
         $this->entityManager->flush();
 
         return ['steps' => $this->indexed($found->getSteps())];

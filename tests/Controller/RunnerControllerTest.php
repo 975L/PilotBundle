@@ -24,7 +24,9 @@ use c975L\PilotBundle\Service\RunQueue;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 
@@ -83,6 +85,31 @@ class RunnerControllerTest extends TestCase
 
         $this->assertSame([401, 401, 429], array_map(static fn (string $token): int => $controller->claim($claim($token))->getStatusCode(), ['guess-1', 'guess-2', 'guess-3']));
         $this->assertSame(429, $controller->claim($claim('token-1'))->getStatusCode());
+    }
+
+    // A file past the run's ceilings of files or bytes is answered 413, never kept
+    public function testOutputPastTheRunsCeilingRefused(): void
+    {
+        $machines = $this->createStub(MachineRepository::class);
+        $machines->method('findOneByBearer')->willReturn(new Machine('machine-1', ''));
+        $outputs = $this->createMock(RunOutputs::class);
+        $outputs->method('fits')->willReturn(false);
+        $outputs->expects($this->never())->method('store');
+        $controller = new RunnerController($machines, $this->createStub(RunQueue::class), $outputs, $this->createStub(ReportIngester::class), $this->createStub(DocIngester::class), $this->limiter());
+        $controller->setContainer(new Container());
+        $path = (string) tempnam(sys_get_temp_dir(), 'pilot');
+        file_put_contents($path, 'item-1');
+        $run = new CardFlow(new MockClock('2026-11-20 10:00'))->entrust(new Card(new Project('catalog', 'Catalog'), 'item-1'), 'hello', []);
+        $request = Request::create('/api/pilot/runner/runs/1/output', 'POST', server: ['HTTP_AUTHORIZATION' => 'Bearer token-1'], files: ['file' => new UploadedFile($path, 'item-1.txt', null, null, true)]);
+
+        try {
+            $controller->output($run, $request);
+            $this->fail('A file past the ceiling was kept.');
+        } catch (HttpException $exception) {
+            $this->assertSame(413, $exception->getStatusCode());
+        } finally {
+            @unlink($path);
+        }
     }
 
     // The limiter of the unknown tokens, in memory

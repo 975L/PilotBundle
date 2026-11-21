@@ -28,6 +28,12 @@ class Run
     // Most file paths a run keeps
     public const int MAX_FILES = 50;
 
+    // Extensions of the machine's own data written beside its work (a list of posts, settings, a log), kept on the run but not shown under its step
+    public const array HIDDEN_FILES = ['json', 'yaml', 'yml', 'xml', 'log', 'md'];
+
+    // Links a run may leave under its step, a post to approve for instance
+    public const int MAX_LINKS = 10;
+
     // Step of a run whose step left the checklist, never an index of it
     public const int LEFT_STEP = -1;
 
@@ -61,6 +67,11 @@ class Run
     /** @var list<string> */
     #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
     private array $files = [];
+
+    // Addresses the action points to, a draft to approve for instance, each with the words shown for it
+    /** @var list<array{url: string, label: string}> */
+    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
+    private array $links = [];
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
@@ -199,13 +210,40 @@ class Run
         return $this;
     }
 
-    // The files by folder, each folder named once with the names it holds, for the step that shows them
+    // Links left under the step
+    /** @return list<array{url: string, label: string}> */
+    public function getLinks(): array
+    {
+        return $this->links;
+    }
+
+    // Http(s) addresses only, each once, at most MAX_LINKS, a link without words named by its host
+    /** @param list<array{url?: mixed, label?: mixed}> $links */
+    public function setLinks(array $links): static
+    {
+        $kept = [];
+        foreach ($links as $link) {
+            $url = \is_string($link['url'] ?? null) ? trim($link['url']) : '';
+            if (1 !== preg_match('~^https?://[^\s/]+\S*$~i', $url) || mb_strlen($url) > 500 || isset($kept[$url])) {
+                continue;
+            }
+            $label = \is_string($link['label'] ?? null) ? mb_substr(trim($link['label']), 0, 100) : '';
+            $kept[$url] = ['url' => $url, 'label' => '' !== $label ? $label : (string) parse_url($url, \PHP_URL_HOST)];
+        }
+        $this->links = \array_slice(array_values($kept), 0, self::MAX_LINKS);
+
+        return $this;
+    }
+
+    // The files by folder, each folder named once with the names it holds, for the step that shows them, the machine's own data left out with a folder holding nothing else
     /** @return array<string, list<string>> */
     public function getFilesByFolder(): array
     {
         $folders = [];
         foreach ($this->files as $path) {
-            $folders[\dirname($path)][] = basename($path);
+            if (!\in_array(strtolower(pathinfo($path, \PATHINFO_EXTENSION)), self::HIDDEN_FILES, true)) {
+                $folders[\dirname($path)][] = basename($path);
+            }
         }
 
         return $folders;

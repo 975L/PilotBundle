@@ -10,17 +10,21 @@
 
 namespace c975L\PilotBundle\Tests\Repository;
 
+use c975L\PilotBundle\Entity\Action;
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\CardSet;
 use c975L\PilotBundle\Entity\Credit;
+use c975L\PilotBundle\Entity\Doc;
 use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\Plan;
 use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Entity\Run;
 use c975L\PilotBundle\Enum\RunStatus;
+use c975L\PilotBundle\Repository\ActionRepository;
 use c975L\PilotBundle\Repository\CardRepository;
 use c975L\PilotBundle\Repository\CreditRepository;
+use c975L\PilotBundle\Repository\DocRepository;
 use c975L\PilotBundle\Repository\RunRepository;
 use c975L\PilotBundle\Security\PilotScope;
 use c975L\PilotBundle\Tests\Fixtures\TestEntityManager;
@@ -45,6 +49,24 @@ class QueryTest extends TestCase
         $this->registry->method('getManagerForClass')->willReturn($this->entityManager);
         $this->project = new Project('catalog', 'Catalog');
         $this->entityManager->persist($this->project);
+    }
+
+    // A file one card alone cites is its own, one a second card cites too is the space's
+    public function testDocCitedByAnotherCard(): void
+    {
+        $doc = new Doc('catalog-file-1', 'file-1')->setProject($this->project);
+        $first = new Card($this->project, 'item-1')->setDoc($doc);
+        foreach ([$doc, $first] as $entity) {
+            $this->entityManager->persist($entity);
+        }
+        $this->entityManager->flush();
+        $repository = new DocRepository($this->registry);
+        $this->assertFalse($repository->isCitedByAnotherCard($doc, $first));
+
+        $second = new Card($this->project, 'item-2')->setDoc($doc);
+        $this->entityManager->persist($second);
+        $this->entityManager->flush();
+        $this->assertTrue($repository->isCitedByAnotherCard($doc, $first));
     }
 
     // What runs spent comes off a balance typed in by hand in the database, never below zero, a blank balance, a service's one and an unknown key left alone, two debits in a row both counting
@@ -210,6 +232,27 @@ class QueryTest extends TestCase
 
         $this->assertSame([$own->getId()], $repository->queuedIds(['build'], [(int) $this->project->getId()]));
         $this->assertSame([$own->getId(), $away->getId()], $repository->queuedIds(['build']));
+    }
+
+    // A machine declaring an action first words it, another machine declaring the same key changing nothing of it
+    public function testActionWordedByItsFirstMachine(): void
+    {
+        $first = new Machine('machine-1', str_repeat('c', 64));
+        $second = new Machine('machine-2', str_repeat('d', 64));
+        $this->entityManager->persist($first);
+        $this->entityManager->persist($second);
+        $repository = new ActionRepository($this->registry);
+
+        $repository->declare($first, ['build' => ['label' => 'Build', 'params' => ['item'], 'help' => 'help-1']]);
+        $this->entityManager->flush();
+        $repository->declare($second, ['other' => ['label' => 'Other', 'params' => []], 'build' => ['label' => 'Relabelled', 'params' => [], 'card' => true, 'help' => 'help-2']]);
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        $build = $repository->findOneBy(['key' => 'build']);
+        $this->assertInstanceOf(Action::class, $build);
+        $this->assertSame(['Build', ['item'], 'help-1', false, 1, 'machine-1'], [$build->getLabel(), $build->getParams(), $build->getHelp(), $build->isCardOnly(), $build->getPosition(), $build->getMachine()?->getName()]);
+        $this->assertSame('machine-2', $repository->findOneBy(['key' => 'other'])?->getMachine()?->getName());
     }
 
     // A card of the project, persisted

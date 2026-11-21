@@ -133,6 +133,21 @@ class CardMarkdownTest extends TestCase
         $this->read($card, "## Steps\n\n- [x] step-2\n- [ ] step-9\n");
     }
 
+    // A markdown laying more lines than a card holds is refused, the card left as it was
+    public function testReadRefusesAChecklistTooLong(): void
+    {
+        $card = $this->card();
+        $before = $card->getChecklist();
+
+        try {
+            $this->read($card, "## Steps\n\n" . str_repeat("- [ ] step-1\n", Card::MAX_CHECKLIST + 1));
+            $this->fail('A checklist past its ceiling was read.');
+        } catch (FlowException $exception) {
+            $this->assertSame('flow.checklist_full', $exception->getMessage());
+        }
+        $this->assertSame($before, $card->getChecklist());
+    }
+
     // A reference written on a card without one is created in its project
     public function testReadCreatesReference(): void
     {
@@ -143,6 +158,18 @@ class CardMarkdownTest extends TestCase
         new CardMarkdown($docs, $this->urls())->read($card, "## Reference\n\n# File\n\ndetail-1", new \DateTimeImmutable('2026-11-21'));
 
         $this->assertSame('detail-1', $card->getDoc()?->getDetail());
+    }
+
+    // A reference other cards cite is left as it was, the card's markdown rewriting only a file of its own
+    public function testReadLeavesASharedReference(): void
+    {
+        $card = $this->card();
+        $docs = $this->createStub(DocRepository::class);
+        $docs->method('isCitedByAnotherCard')->willReturn(true);
+
+        new CardMarkdown($docs, $this->urls())->read($card, "## Reference\n\n# File 2\n\ndetail-2", new \DateTimeImmutable('2026-11-21'));
+
+        $this->assertSame(['File', 'detail-1'], [$card->getDoc()?->getTitle(), $card->getDoc()?->getDetail()]);
     }
 
     // A note carrying a heading and a field line reads back as the note, the title and the date left as they were

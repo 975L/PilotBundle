@@ -34,4 +34,12 @@ class PilotGuidedProjectExtensionTest extends TestCase
         $this->assertStringContainsString("'@c975l/config-bundle/controllers-admin.js'", $layout);
         $this->assertStringContainsString('.guided-project-panel {', (string) file_get_contents(\dirname(__DIR__, 2) . '/sass/_pages.scss'));
     }
+
+    // Turbo Drive stays out of the piloting pages: it fails to merge their nonced <style>, a card's own page then never showing, which a guided project walks to
+    public function testTheLayoutLeavesTurboOut(): void
+    {
+        $layout = (string) file_get_contents(\dirname(__DIR__, 2) . '/templates/pilot/_layout.html.twig');
+
+        $this->assertStringContainsString('<body data-turbo="false">', $layout);
+    }
 }

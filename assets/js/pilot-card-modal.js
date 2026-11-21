@@ -73,8 +73,10 @@ export default class extends Controller {
         this.confirmed = null;
     }
 
-    // The open panels not holding the given element closed, focus back on the button of one that held it; true when one was closed
+    // The open panels not holding the given element closed, focus back on the button of one that held it; true when one was closed. A click on a guided project's panel leaves them open, its next step pointing into the one it just had opened
     fold(inside) {
+        if (inside?.closest?.(".guided-project-panel")) return false;
+
         const open = [...document.querySelectorAll("details.pilot-card-new[open]")].filter((panel) => !panel.contains(inside));
         open.forEach((panel) => {
             if (panel.contains(document.activeElement)) panel.querySelector("summary")?.focus();

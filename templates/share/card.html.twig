@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
     <title>{{ card.title }}</title>
     {# The site's content security policy may carry a nonce, which an inline style needs to be applied #}
     <style{% guard function csp_nonce %} nonce="{{ csp_nonce('style') }}"{% endguard %}>

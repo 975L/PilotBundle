@@ -11,6 +11,7 @@
 namespace c975L\PilotBundle;
 
 use c975L\PilotBundle\Controller\RunnerController;
+use c975L\PilotBundle\Controller\ShareController;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
@@ -22,7 +23,7 @@ class c975LPilotBundle extends AbstractBundle
         $containerConfigurator->import('../config/services.yaml');
     }
 
-    // The bundle's scripts resolved under "@c975l/pilot-bundle" by AssetMapper, and the ceiling on the tokens the runner API refuses
+    // The bundle's scripts resolved under "@c975l/pilot-bundle" by AssetMapper, the ceiling on the tokens the runner API refuses and on the writes of an editing link
     public function prependExtension(ContainerConfigurator $containerConfigurator, ContainerBuilder $containerBuilder): void
     {
         $containerBuilder->prependExtensionConfig('framework', [
@@ -36,6 +37,12 @@ class c975LPilotBundle extends AbstractBundle
                 RunnerController::DENIED_LIMITER => [
                     'policy' => 'fixed_window',
                     'limit' => 20,
+                    'interval' => '1 hour',
+                ],
+                // 300 writes per editing link and per hour, after which the link answers 429 until the window ends
+                ShareController::WRITE_LIMITER => [
+                    'policy' => 'fixed_window',
+                    'limit' => 300,
                     'interval' => '1 hour',
                 ],
             ],

@@ -201,9 +201,9 @@
         <div class="pilot-checklist" data-controller="pilot-step-sort pilot-fold-all" data-pilot-step-sort-url-value="{{ path('pilot_card_gesture', {id: card.id, gesture: 'steporder'}) }}" data-pilot-step-sort-token-value="{{ token }}" data-pilot-step-sort-failed-label-value="{{ 'label.order_failed'|trans({}, 'pilot') }}">
             {% set step_runs = card.stepRuns %}
             {% set stale_steps = card.staleSteps %}
-            {# The ticked steps stay in their place, struck through, several ticked in a row gathered there under a heading that folds them, open from the start #}
+            {# The ticked steps stay in their place, struck through, those the list starts with, when several, gathered under a heading that folds them, open from the start #}
             {% if step_groups|filter(group => group.group)|length > 1 %}
-                <div class="pilot-row pilot-row-end pilot-steps-fold-all">
+                <div class="pilot-row pilot-row-end pilot-steps-fold-all" data-pilot-fold-all-target="bar">
                     <button type="button" class="pilot-btn pilot-btn-ghost pilot-small" data-action="pilot-fold-all#toggle">
                         <span data-pilot-fold-all-target="fold">{{ pilot_icon('angles-up', 'pilot-icon-before') }}{{ 'label.steps_fold_all'|trans({}, 'pilot') }}</span>
                         <span data-pilot-fold-all-target="unfold" hidden>{{ pilot_icon('angles-down', 'pilot-icon-before') }}{{ 'label.steps_unfold_all'|trans({}, 'pilot') }}</span>
@@ -212,8 +212,9 @@
             {% endif %}
             {% for run in step_groups %}
             {% if run.group %}
-            <details open class="pilot-step-group pilot-mb-xs">
-                <summary class="pilot-step-group-head">{{ run.group }} <span class="pilot-step-group-count">{{ run.steps|filter(step => step.done ?? false)|length }}/{{ run.steps|length }}</span></summary>
+            {% set group_done = run.steps|filter(step => step.done ?? false)|length %}
+            <details open class="pilot-step-group pilot-mb-xs"{% if group_done == run.steps|length %} data-pilot-fold-all-finished{% endif %}>
+                <summary class="pilot-step-group-head">{{ run.group }} <span class="pilot-step-group-count">{{ group_done }}/{{ run.steps|length }}</span></summary>
             {% endif %}
             <ul class="pilot-bare-list pilot-mb-xs">
             {% for part in run.parts %}

@@ -10,6 +10,7 @@
 
 namespace c975L\PilotBundle\Tests\Service;
 
+use c975L\PilotBundle\Entity\Action;
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\Project;
@@ -17,6 +18,7 @@ use c975L\PilotBundle\Entity\Run;
 use c975L\PilotBundle\Enum\CardStatus;
 use c975L\PilotBundle\Enum\RunStatus;
 use c975L\PilotBundle\Exception\FlowException;
+use c975L\PilotBundle\Repository\ActionRepository;
 use c975L\PilotBundle\Service\CardFlow;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
@@ -53,6 +55,29 @@ class CardFlowTest extends TestCase
         $this->assertSame(CardStatus::Running, $this->card->getStatus());
         $this->assertSame(RunStatus::Queued, $run->getStatus());
         $this->assertSame($run, $this->card->lastRun());
+    }
+
+    // An action the card's space is not offered is refused, handed to the card or named by a step, the one it is offered queued
+    public function testActionNotOfferedRefused(): void
+    {
+        $offered = new Action('action-1')->addProject($this->card->getProject());
+        $actions = $this->createStub(ActionRepository::class);
+        $actions->method('findOneBy')->willReturnCallback(static fn (array $criteria): ?Action => 'action-1' === $criteria['key'] ? $offered : new Action($criteria['key']));
+        $flow = new CardFlow(new MockClock('2026-11-17 10:00'), null, $actions);
+
+        $this->assertSame(RunStatus::Queued, $flow->entrust($this->card, 'action-1', [])->getStatus());
+
+        $other = new Card($this->card->getProject(), 'item-2')->addStep('step-1')->setStepAction(0, 'action-2');
+        $refused = 0;
+        foreach ([fn (): Run => $flow->entrust(new Card($this->card->getProject(), 'item-3'), 'action-2', []), fn (): Run => $flow->runStep($other, 0)] as $gesture) {
+            try {
+                $gesture();
+            } catch (FlowException) {
+                ++$refused;
+            }
+        }
+        $this->assertSame(2, $refused);
+        $this->assertNotSame(CardStatus::Running, $other->getStatus());
     }
 
     // A card already running cannot be handed over a second time

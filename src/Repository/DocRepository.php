@@ -74,6 +74,21 @@ class DocRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    // Whether another card than the one given cites the file, a reference of the space rather than of that card alone
+    public function isCitedByAnotherCard(Doc $doc, Card $card): bool
+    {
+        return null !== $this->getEntityManager()->createQueryBuilder()
+            ->select('c.id')
+            ->from(Card::class, 'c')
+            ->where('c.doc = :doc')
+            ->andWhere('c <> :card')
+            ->setParameter('doc', $doc)
+            ->setParameter('card', $card)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     // A new file of a project, its slug made from the project and the title and kept unique by a number
     public function newFile(Project $project, string $title): Doc
     {

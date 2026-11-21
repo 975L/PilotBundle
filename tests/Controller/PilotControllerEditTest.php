@@ -39,6 +39,9 @@ use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
@@ -195,6 +198,60 @@ class PilotControllerEditTest extends TestCase
         new Filesystem()->remove($root);
     }
 
+    // A full checklist refuses a feedback sent with its screenshot before the file is kept
+    public function testFullChecklistKeepsNoScreenshot(): void
+    {
+        $root = sys_get_temp_dir() . '/pilot-shot-' . bin2hex(random_bytes(4));
+        $controller = $this->controller(images: new CardImages($root));
+        $card = $this->card()->setChecklist(array_fill(0, Card::MAX_CHECKLIST, ['t' => 'step-1']));
+
+        try {
+            $this->gesture($controller, 'feedbackAdd', $card, ['text' => 'feedback-1'], $this->png());
+            $this->fail('A full checklist took a feedback.');
+        } catch (FlowException $exception) {
+            $this->assertSame('flow.checklist_full', $exception->getMessage());
+        }
+        $this->assertSame([], glob($root . '/' . Card::FEEDBACK_IMAGE_DIRECTORY . '/*') ?: []);
+        new Filesystem()->remove($root);
+    }
+
+    // Taking a link back renames the screenshots its holder could read, the gesture forgetting the old files once the card is written
+    public function testUnshareRenewsTheScreenshots(): void
+    {
+        $root = sys_get_temp_dir() . '/pilot-shot-' . bin2hex(random_bytes(4));
+        $images = new CardImages($root);
+        $controller = $this->controller(images: $images);
+        foreach (['unshare', 'unlend'] as $gesture) {
+            $card = $this->card()->share()->lend();
+            $this->gesture($controller, 'feedbackAdd', $card, ['text' => 'feedback-1'], $this->png());
+            $old = $card->getFeedbackImages();
+
+            new \ReflectionMethod($controller, 'apply')->invoke($controller, $card, $gesture, new Request());
+
+            $this->assertCount(1, $card->getFeedbackImages());
+            $this->assertNotSame($old, $card->getFeedbackImages());
+            $this->assertNotNull($images->feedbackPath($card->getFeedbackImages()[0]));
+        }
+        new Filesystem()->remove($root);
+    }
+
+    // A report's action the space is not offered makes no card, the page saying why
+    public function testReportActionNotOfferedMakesNoCard(): void
+    {
+        $project = new Project('catalog', 'Catalog');
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects($this->never())->method('persist');
+        $entityManager->expects($this->never())->method('flush');
+        $session = new Session(new MockArraySessionStorage());
+        $request = new Request();
+        $request->setSession($session);
+        $controller = $this->routed($this->controller(entityManager: $entityManager, cardFlow: new CardFlow(new MockClock(), null, $this->createStub(ActionRepository::class))), true, new RequestStack([$request]));
+
+        new \ReflectionMethod($controller, 'reportCard')->invoke($controller, $this->report($project, ['site-1']), $project, ['action' => 'build', 'label' => 'Build', 'params' => [], 'ask' => [], 'if' => null], null, $request);
+
+        $this->assertCount(1, $session->getFlashBag()->peek('danger'));
+    }
+
     // A feedback's screenshot replaced by the one sent, removed by « remove », a step taking none
     public function testFeedbackImageSetAndRemoved(): void
     {
@@ -304,8 +361,8 @@ class PilotControllerEditTest extends TestCase
         return $request;
     }
 
-    // The controller given a signed-in account, a router and a token checker answering as told
-    private function routed(PilotController $controller, bool $validToken): PilotController
+    // The controller given a signed-in account, a router, a token checker answering as told and the requests when a test needs their session
+    private function routed(PilotController $controller, bool $validToken, ?RequestStack $requestStack = null): PilotController
     {
         $checker = $this->createStub(AuthorizationCheckerInterface::class);
         $checker->method('isGranted')->willReturn(true);
@@ -315,6 +372,7 @@ class PilotControllerEditTest extends TestCase
         $container->set('router', $this->createStub(UrlGeneratorInterface::class));
         $container->set('security.authorization_checker', $checker);
         $container->set('security.csrf.token_manager', $csrf);
+        $container->set('request_stack', $requestStack ?? new RequestStack());
         $controller->setContainer($container);
 
         return $controller;
@@ -327,8 +385,8 @@ class PilotControllerEditTest extends TestCase
         new \ReflectionMethod($controller, 'edit')->invoke($controller, $card, new Request(request: $fields));
     }
 
-    // The controller on stubs, the spaces, the access, the entity manager and the cards given when a test needs them
-    private function controller(?ProjectRepository $projects = null, ?PilotAccess $access = null, ?EntityManagerInterface $entityManager = null, ?CardImages $images = null, ?CardRepository $cards = null): PilotController
+    // The controller on stubs, the spaces, the access, the entity manager, the cards and the flow given when a test needs them
+    private function controller(?ProjectRepository $projects = null, ?PilotAccess $access = null, ?EntityManagerInterface $entityManager = null, ?CardImages $images = null, ?CardRepository $cards = null, ?CardFlow $cardFlow = null): PilotController
     {
         return new PilotController(
             $entityManager ?? $this->createStub(EntityManagerInterface::class),
@@ -337,7 +395,7 @@ class PilotControllerEditTest extends TestCase
             $this->createStub(DocRepository::class),
             $projects ?? $this->createStub(ProjectRepository::class),
             new MockClock(),
-            new CardFlow(new MockClock()),
+            $cardFlow ?? new CardFlow(new MockClock()),
             $this->createStub(TranslatorInterface::class),
             $this->createStub(ActionRepository::class),
             new StepOrder($this->createStub(CardRepository::class), new MockClock()),

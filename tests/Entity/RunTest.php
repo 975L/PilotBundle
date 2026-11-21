@@ -50,7 +50,6 @@ class RunTest extends TestCase
         $this->assertNull($run->getStep());
     }
 
-    // A run follows its step moved
     // The files a run wrote keep their absolute paths only, once each, grouped by folder for the step
     public function testFilesKeptByFolder(): void
     {
@@ -61,6 +60,33 @@ class RunTest extends TestCase
         $this->assertCount(Run::MAX_FILES, $run->setFiles(array_map(static fn (int $index): string => '/catalog/item-' . $index, range(1, 60)))->getFiles());
     }
 
+    // The machine's own data stays on the run but not under the step, a folder holding nothing else left out
+    public function testFilesByFolderLeaveMachineDataOut(): void
+    {
+        $run = new Run($this->card, 'copy', [], 0)->setFiles(['/catalog/posts/list.json', '/catalog/item-1/01.JPG', '/catalog/item-1/notes.MD', '/catalog/item-1/item-1.sla']);
+
+        $this->assertCount(4, $run->getFiles());
+        $this->assertSame(['/catalog/item-1' => ['01.JPG', 'item-1.sla']], $run->getFilesByFolder());
+        $this->assertSame([], $run->setFiles(['/catalog/posts/list.json'])->getFilesByFolder());
+    }
+
+    // The links a run leaves keep http(s) addresses only, once each, named by their host without words, at most MAX_LINKS
+    public function testLinksKept(): void
+    {
+        $run = new Run($this->card, 'copy', [], 0)->setLinks([
+            ['url' => ' https://example.com/post/1 ', 'label' => ' Post to approve '],
+            ['url' => 'https://example.com/post/1', 'label' => 'Again'],
+            ['url' => 'http://example.org/item-1'],
+            ['url' => 'javascript:alert(1)', 'label' => 'Bad'],
+            ['url' => 'file:///catalog/item-1.pdf'],
+            ['label' => 'No address'],
+        ]);
+
+        $this->assertSame([['url' => 'https://example.com/post/1', 'label' => 'Post to approve'], ['url' => 'http://example.org/item-1', 'label' => 'example.org']], $run->getLinks());
+        $this->assertCount(Run::MAX_LINKS, $run->setLinks(array_map(static fn (int $index): array => ['url' => 'https://example.com/item-' . $index], range(1, 15)))->getLinks());
+    }
+
+    // A run follows its step moved
     public function testMoveToStep(): void
     {
         $run = new Run($this->card, 'copy', [], 0);

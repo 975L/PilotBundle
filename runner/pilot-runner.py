@@ -5,7 +5,7 @@
 # This source file is subject to the MIT license that is bundled
 # with this source code in the file LICENSE.
 
-# Reference runner of c975l/pilot-bundle, claiming the runs queued for this machine and running them from the allowlist of $PILOT_RUNNER_CONFIG (default ~/.config/pilot-runner): polling loop, --once, --install (systemd user service) or --demo-hello <file> <text> [comment]; the site sends only an action key and values checked against their pattern, never a command, a "PROGRESS n message" line the command prints shows on the card a "TITLE text" line renames it, a "RESULT url" line sets its result address, a "FEEDBACK n reason" line leaves the feedback numbered n open a "SPENT credit amount" line tells what the run spent on that credit and a "FILE /path" line names a file it wrote, shown on its step
+# Reference runner of c975l/pilot-bundle, claiming the runs queued for this machine and running them from the allowlist of $PILOT_RUNNER_CONFIG (default ~/.config/pilot-runner): polling loop, --once, --install (systemd user service) or --demo-hello <file> <text> [comment]; the site sends only an action key and values checked against their pattern, never a command, a "PROGRESS n message" line the command prints shows on the card a "TITLE text" line renames it, a "RESULT url" line sets its result address, a "FEEDBACK n reason" line leaves the feedback numbered n open a "SPENT credit amount" line tells what the run spent on that credit and a "FILE /path" line names a file it wrote, shown on its step, and a "LINK url [words]" line leaves a link under its step
 
 import glob
 import json
@@ -35,6 +35,7 @@ RESULT = re.compile(r'^RESULT (https?://\S+)$')
 FEEDBACK = re.compile(r'^FEEDBACK (\d+) (.+)$')
 SPENT = re.compile(r'^SPENT ([a-z0-9-]{1,50}) (\d{1,9})$')
 FILE = re.compile(r'^FILE (/.+)$')
+LINK = re.compile(r'^LINK (https?://\S+)(?: (.+))?$')
 
 # Sites already reported unreachable, so a site switched off does not fill the log every few seconds
 UNREACHABLE = set()
@@ -154,7 +155,7 @@ def execute(site, actions, run):
     stop = threading.Event()
     threading.Thread(target=heartbeat, args=(site, run['id'], process, stop), daemon=True).start()
     log = deque(maxlen=200)
-    said = {'title': None, 'result': None, 'feedback': {}, 'spent': {}, 'files': []}
+    said = {'title': None, 'result': None, 'feedback': {}, 'spent': {}, 'files': [], 'links': []}
     for line in process.stdout:
         line = line.rstrip('\n')
         log.append(line)
@@ -166,7 +167,7 @@ def execute(site, actions, run):
     stop.set()
     if code != 0:
         # The last line the command printed is its reason, shown on the card
-        reason = next((line for line in reversed(log) if line.strip() and not any(pattern.match(line) for pattern in (PROGRESS, TITLE, RESULT, FEEDBACK, SPENT, FILE))), f'Exit code {code}')
+        reason = next((line for line in reversed(log) if line.strip() and not any(pattern.match(line) for pattern in (PROGRESS, TITLE, RESULT, FEEDBACK, SPENT, FILE, LINK))), f'Exit code {code}')
         return 'failed', reason[:255], [], said
     found, missing = collect(outputs, workdir, run['id'], start)
     if missing:
@@ -175,7 +176,7 @@ def execute(site, actions, run):
     return 'done', f'Done in {round(time.time() - start)} s', found, said
 
 
-# What a line of the command tells the site beyond its log: the card's new title, a feedback it leaves open with the reason, an amount spent on a credit, a file it wrote (FILE <absolute path>, only named on its step)
+# What a line of the command tells the site beyond its log: the card's new title, a feedback it leaves open with the reason, an amount spent on a credit, a file it wrote (FILE <absolute path>, only named on its step), a link left under its step (LINK <url> [words])
 def heard(line, said):
     renamed = TITLE.match(line)
     if renamed:
@@ -192,6 +193,9 @@ def heard(line, said):
     written = FILE.match(line.strip())
     if written and written.group(1) not in said['files']:
         said['files'].append(written.group(1))
+    linked = LINK.match(line.strip())
+    if linked:
+        said['links'].append({'url': linked.group(1), 'label': (linked.group(2) or '').strip()})
 
 
 # Sends the site each output under the size it accepts, to show it on the card; a heavier one stays on the machine, the card showing its path

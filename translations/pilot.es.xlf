@@ -200,7 +200,7 @@
             </trans-unit>
             <trans-unit id="0QvzaYX">
                 <source>description.guided_step_pilot_steps_fold</source>
-                <target>Cuando los pasos forman varios grupos, un clic los pliega o despliega todos a la vez.</target>
+                <target>Cuando los pasos forman varios grupos, un clic pliega los que están completamente marcados, dejando abiertos los que quedan por hacer, y otro los despliega todos.</target>
             </trans-unit>
             <trans-unit id="kXHyi5f">
                 <source>description.guided_step_pilot_steps_open</source>
@@ -246,6 +246,10 @@
                 <source>flash.machine_created</source>
                 <target>Máquina añadida. Su token, mostrado solo esta vez: %token%</target>
             </trans-unit>
+            <trans-unit id="r90BtJm">
+                <source>flow.checklist_full</source>
+                <target>Una tarjeta tiene como máximo %max% pasos y comentarios.</target>
+            </trans-unit>
             <trans-unit id="fTDLbj6">
                 <source>flow.feedback_none</source>
                 <target>Ningún comentario abierto que confiar a la máquina.</target>
@@ -261,6 +265,10 @@
             <trans-unit id="xUcdrDB">
                 <source>flow.not_now</source>
                 <target>Este gesto no vale para esta tarjeta ahora.</target>
+            </trans-unit>
+            <trans-unit id="S4JO7Lw">
+                <source>flow.share_throttled</source>
+                <target>Demasiados cambios a través de este enlace: inténtelo de nuevo en un momento.</target>
             </trans-unit>
             <trans-unit id="twd7VSI">
                 <source>flow.template_steps</source>
@@ -1273,6 +1281,10 @@
                 <source>label.member_email</source>
                 <target>Correo de la cuenta</target>
             </trans-unit>
+            <trans-unit id="jLV9DMI">
+                <source>label.member_maybe_added</source>
+                <target>Si una cuenta del sitio tiene el correo %email%, ahora es miembro del espacio.</target>
+            </trans-unit>
             <trans-unit id="WLmLAdA">
                 <source>label.member_remove</source>
                 <target>Quitar del espacio</target>
@@ -1280,10 +1292,6 @@
             <trans-unit id="RV5.mZw">
                 <source>label.member_role</source>
                 <target>Rol</target>
-            </trans-unit>
-            <trans-unit id="J5NSp8D">
-                <source>label.member_unknown</source>
-                <target>Ninguna cuenta del sitio tiene el correo %email%: créela primero.</target>
             </trans-unit>
             <trans-unit id="Txlcxk0">
                 <source>label.members</source>

@@ -200,7 +200,7 @@
             </trans-unit>
             <trans-unit id="0QvzaYX">
                 <source>description.guided_step_pilot_steps_fold</source>
-                <target>Quand les étapes forment plusieurs groupes, un clic les plie ou les déplie tous à la fois.</target>
+                <target>Quand les étapes forment plusieurs groupes, un clic plie ceux qui sont entièrement cochés, en laissant ouverts ceux qui restent à faire, et un autre les déplie tous.</target>
             </trans-unit>
             <trans-unit id="kXHyi5f">
                 <source>description.guided_step_pilot_steps_open</source>
@@ -246,6 +246,10 @@
                 <source>flash.machine_created</source>
                 <target>Machine ajoutée. Son jeton, affiché cette seule fois : %token%</target>
             </trans-unit>
+            <trans-unit id="r90BtJm">
+                <source>flow.checklist_full</source>
+                <target>Une carte compte au plus %max% étapes et commentaires.</target>
+            </trans-unit>
             <trans-unit id="fTDLbj6">
                 <source>flow.feedback_none</source>
                 <target>Aucun commentaire ouvert à confier à la machine.</target>
@@ -261,6 +265,10 @@
             <trans-unit id="xUcdrDB">
                 <source>flow.not_now</source>
                 <target>Ce geste ne vaut pas pour cette carte maintenant.</target>
+            </trans-unit>
+            <trans-unit id="S4JO7Lw">
+                <source>flow.share_throttled</source>
+                <target>Trop de modifications par ce lien : réessayez dans un moment.</target>
             </trans-unit>
             <trans-unit id="twd7VSI">
                 <source>flow.template_steps</source>
@@ -1273,6 +1281,10 @@
                 <source>label.member_email</source>
                 <target>Adresse e-mail du compte</target>
             </trans-unit>
+            <trans-unit id="jLV9DMI">
+                <source>label.member_maybe_added</source>
+                <target>Si un compte du site a l'adresse %email%, il est désormais membre de l'espace.</target>
+            </trans-unit>
             <trans-unit id="WLmLAdA">
                 <source>label.member_remove</source>
                 <target>Retirer de l'espace</target>
@@ -1280,10 +1292,6 @@
             <trans-unit id="RV5.mZw">
                 <source>label.member_role</source>
                 <target>Rôle</target>
-            </trans-unit>
-            <trans-unit id="J5NSp8D">
-                <source>label.member_unknown</source>
-                <target>Aucun compte du site n'a l'adresse %email% : créez-le d'abord.</target>
             </trans-unit>
             <trans-unit id="Txlcxk0">
                 <source>label.members</source>

@@ -25,6 +25,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -91,7 +92,7 @@ class RunnerController extends AbstractController
         return $this->guard($request, fn (Machine $machine) => $this->runQueue->report($run, $machine, $payload->has('progress') ? (int) $payload->get('progress') : null, $this->text($payload->get('message'))));
     }
 
-    // One file a held run produced, sent as the "file" field of a multipart request; a <key>.report.json file also refreshes that report, a <slug>.doc.md file writes that file and attaches it to the card
+    // One file a held run produced, sent as the "file" field of a multipart request, answered 413 once the run holds as many files or bytes as it may; a <key>.report.json file also refreshes that report, a <slug>.doc.md file writes that file and attaches it to the card
     #[Route('/runs/{id}/output', name: 'output', requirements: ['id' => '\d+'])]
     public function output(Run $run, Request $request): JsonResponse
     {
@@ -102,6 +103,9 @@ class RunnerController extends AbstractController
             if (!$file instanceof UploadedFile || !$file->isValid() || $file->getSize() > RunOutputs::MAX_BYTES) {
                 throw new FlowException(t('flow.file_refused', [], 'pilot'));
             }
+            if (!$this->runOutputs->fits($run, $file)) {
+                throw new HttpException(Response::HTTP_REQUEST_ENTITY_TOO_LARGE, 'The run keeps no more files.');
+            }
             $name = $this->runOutputs->store($run, $file);
             $path = $this->runOutputs->path($run, $name);
             if (null !== $path && !$this->reportIngester->ingest($name, $path, $run->getCard()->getProject(), $machine)) {
@@ -110,7 +114,7 @@ class RunnerController extends AbstractController
         });
     }
 
-    // End of a held run with its status, message, produced files, the title it gave its card, the feedback it left open and what it spent ({"spent": {"credit-key": 120}})
+    // End of a held run with its status, message, produced files, the title it gave its card, the feedback it left open, what it spent ({"spent": {"credit-key": 120}}) and the links it leaves under its step ({"links": [{"url": "https://…", "label": "…"}]})
     #[Route('/runs/{id}/finish', name: 'finish', requirements: ['id' => '\d+'])]
     public function finish(Run $run, Request $request): JsonResponse
     {
@@ -121,7 +125,7 @@ class RunnerController extends AbstractController
         }
         $outputs = array_values(array_filter((array) ($payload['outputs'] ?? []), is_string(...)));
 
-        return $this->guard($request, fn (Machine $machine) => $this->runQueue->finish($run, $machine, $status, $this->text($payload['message'] ?? null), $outputs, $this->text($payload['title'] ?? null), $this->left($payload['feedback'] ?? null), $this->text($payload['result'] ?? null), $this->spent($payload['spent'] ?? null), array_values(array_filter((array) ($payload['files'] ?? []), is_string(...)))));
+        return $this->guard($request, fn (Machine $machine) => $this->runQueue->finish($run, $machine, $status, $this->text($payload['message'] ?? null), $outputs, $this->text($payload['title'] ?? null), $this->left($payload['feedback'] ?? null), $this->text($payload['result'] ?? null), $this->spent($payload['spent'] ?? null), array_values(array_filter((array) ($payload['files'] ?? []), is_string(...))), array_values(array_filter((array) ($payload['links'] ?? []), is_array(...)))));
     }
 
     // The feedback the run left open, by its number in the comment it was handed, with the reason: {"2": "reason"}

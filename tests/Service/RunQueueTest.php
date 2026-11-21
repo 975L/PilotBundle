@@ -181,6 +181,15 @@ class RunQueueTest extends TestCase
         $this->assertSame(['/catalog/item-1.pdf'], $this->run->getFiles());
     }
 
+    // The links the action left are kept on its run, for its step
+    public function testFinishKeepsTheLinksLeft(): void
+    {
+        $this->run->claim($this->machine, $this->clock->now());
+        $this->queue($this->createStub(RunRepository::class))->finish($this->run, $this->machine, RunStatus::Done, 'ok', [], links: [['url' => 'https://example.com/post/1', 'label' => 'Post']]);
+
+        $this->assertSame([['url' => 'https://example.com/post/1', 'label' => 'Post']], $this->run->getLinks());
+    }
+
     // A title the action gave renames its card, an empty one leaving it as it was
     public function testFinishRenamesTheCard(): void
     {

@@ -11,6 +11,7 @@
 namespace c975L\PilotBundle\Repository;
 
 use c975L\PilotBundle\Entity\Action;
+use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\Project;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -25,9 +26,9 @@ class ActionRepository extends ServiceEntityRepository
         parent::__construct($registry, Action::class);
     }
 
-    // Records what a machine declares, a new action being offered nowhere until its projects are chosen
+    // Records what a machine declares, a new action being offered nowhere until its projects are chosen; an action another machine declared first keeps its wording, so no machine relabels what the site offers in another's name
     /** @param array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> $capabilities */
-    public function declare(array $capabilities): void
+    public function declare(Machine $machine, array $capabilities): void
     {
         $known = [];
         foreach ($this->findBy(['key' => array_keys($capabilities)]) as $action) {
@@ -36,8 +37,11 @@ class ActionRepository extends ServiceEntityRepository
         $position = 0;
         foreach ($capabilities as $key => $capability) {
             $action = $known[$key] ?? new Action((string) $key);
-            $action->declare($capability['label'], $capability['params'], $capability['card'] ?? false, $capability['help'] ?? null, ++$position);
-            $this->getEntityManager()->persist($action);
+            ++$position;
+            if ($action->declaredBy($machine)) {
+                $action->declare($capability['label'], $capability['params'], $capability['card'] ?? false, $capability['help'] ?? null, $position);
+                $this->getEntityManager()->persist($action);
+            }
         }
     }
 
