@@ -4,43 +4,45 @@
     {% if can_manage %}
     {# The name edited in place by a click on it (pilot-inline-edit), the address of the page kept #}
     <div data-controller="pilot-inline-edit">
-        <div class="d-flex align-items-center gap-2 mb-2">
+        <div class="pilot-row pilot-mb-sm">
             {# The colour chosen here, saved as soon as it is picked #}
             <form method="post" action="{{ path('pilot_project_color', {slug: project.slug}) }}" class="pilot-project-color">
                 <input type="hidden" name="_token" value="{{ csrf_token('pilot_project_color' ~ project.id) }}">
-                <input type="color" name="color" value="{{ project.color }}" class="form-control form-control-color" data-pilot-autosubmit title="{{ 'label.project_color'|trans({}, 'pilot') }}" aria-label="{{ 'label.project_color'|trans({}, 'pilot') }}">
+                <input type="color" name="color" value="{{ project.color }}" data-pilot-autosubmit title="{{ 'label.project_color'|trans({}, 'pilot') }}" aria-label="{{ 'label.project_color'|trans({}, 'pilot') }}">
             </form>
-            <h1 class="pilot-inline-view mb-0" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}">{{ project.name }}</h1>
-            <a href="{{ path('pilot_members', {slug: project.slug}) }}" class="btn btn-sm btn-outline-secondary ms-auto pilot-members-open"><i class="fas fa-users me-1"></i>{{ 'label.members'|trans({}, 'pilot') }}</a>
+            <h1 class="pilot-inline-view pilot-m0" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}">{{ project.name }}</h1>
+            <a href="{{ path('pilot_members', {slug: project.slug}) }}" class="pilot-btn pilot-push pilot-members-open">{{ pilot_icon('users') }}{{ 'label.members'|trans({}, 'pilot') }}</a>
+            {# Its address, sites and order, or its deletion, the admin's #}
+            {% if pilot_admin %}<a href="{{ path('pilot_settings_edit', {kind: 'space', id: project.id}) }}" class="pilot-btn pilot-btn-icon pilot-project-settings" title="{{ 'label.project_settings'|trans({}, 'pilot') }}" aria-label="{{ 'label.project_settings'|trans({}, 'pilot') }}">{{ pilot_icon('gear') }}</a>{% endif %}
         </div>
-        <form method="post" action="{{ path('pilot_project_rename', {slug: project.slug}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="mb-2">
+        <form method="post" action="{{ path('pilot_project_rename', {slug: project.slug}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-mb-sm">
             <input type="hidden" name="_token" value="{{ csrf_token('pilot_project_rename' ~ project.id) }}">
-            <input name="name" value="{{ project.name }}" maxlength="100" class="form-control form-control-lg" required aria-label="{{ 'label.project'|trans({}, 'pilot') }}">
+            <input name="name" value="{{ project.name }}" maxlength="100" class="pilot-input-lg" required aria-label="{{ 'label.project'|trans({}, 'pilot') }}">
         </form>
     </div>
     {% else %}
-        <h1><span class="rounded-circle d-inline-block me-2 pilot-dot pilot-color-{{ project.slug }}"></span>{{ project.name }}</h1>
+        <h1 class="pilot-row"><span class="pilot-dot pilot-color-{{ project.slug }}"></span>{{ project.name }}</h1>
     {% endif %}
-    <p class="text-body-secondary">{{ 'label.info_project'|trans({}, 'pilot') }}</p>
+    <p class="pilot-muted">{{ 'label.info_project'|trans({}, 'pilot') }}</p>
 
     {# The machine work under way on the project first #}
     {% include '@c975LPilot/pilot/_runs.html.twig' %}
     {% for site in project.sites %}
-        <a href="https://{{ site }}" target="_blank" rel="noopener" class="me-2">{{ site }}</a>
+        <a href="https://{{ site }}" target="_blank" rel="noopener" class="pilot-site">{{ site }}</a>
     {% endfor %}
 
 
     {% set recurring = actions|filter(action => not action.card) %}
     {% if recurring is not empty %}
-        <div class="d-flex flex-wrap gap-2 mt-3 pilot-project-actions">
+        <div class="pilot-row pilot-mt pilot-project-actions">
             {% for action in recurring %}
-                <form method="post" action="{{ path('pilot_project_run', {slug: project.slug}) }}" class="d-flex gap-1 align-items-end">
+                <form method="post" action="{{ path('pilot_project_run', {slug: project.slug}) }}" class="pilot-row pilot-row-tight pilot-row-bottom">
                     <input type="hidden" name="_token" value="{{ csrf_token('pilot_project_run' ~ project.id) }}">
                     <input type="hidden" name="action" value="{{ action.key }}">
                     {% for name in action.params %}
-                        <input name="params[{{ name }}]" placeholder="{{ name }}" aria-label="{{ name }}" class="form-control form-control-sm">
+                        <input name="params[{{ name }}]" placeholder="{{ name }}" aria-label="{{ name }}" class="pilot-auto">
                     {% endfor %}
-                    <button class="btn btn-sm btn-primary" title="{{ action.help ? action.help ~ ' · ' }}{{ action.machine }}"><i class="fas fa-play me-1"></i>{{ action.label }}</button>
+                    <button class="pilot-btn pilot-btn-primary" title="{{ action.help ? action.help ~ ' · ' }}{{ action.machine }}">{{ pilot_icon('play') }}{{ action.label }}</button>
                 </form>
             {% endfor %}
         </div>
@@ -48,17 +50,17 @@
 
 
     {% if templates is not empty %}
-        <form method="get" action="{{ path('pilot_plan_new', {slug: project.slug}) }}" class="d-flex gap-2 align-items-end mt-3 pilot-plan-start">
-            <label class="form-label mb-0">{{ 'label.plan_new'|trans({}, 'pilot') }}
-                <select name="template" class="form-select form-select-sm">
+        <form method="get" action="{{ path('pilot_plan_new', {slug: project.slug}) }}" class="pilot-row pilot-row-bottom pilot-mt pilot-plan-start">
+            <label class="pilot-label pilot-m0">{{ 'label.plan_new'|trans({}, 'pilot') }}
+                <select name="template">
                     {% for template in templates %}<option value="{{ template.id }}">{{ template.name }}</option>{% endfor %}
                 </select>
             </label>
-            <button class="btn btn-sm btn-outline-primary">{{ 'label.plan_next'|trans({}, 'pilot') }}</button>
+            <button class="pilot-btn pilot-btn-outline-primary">{{ 'label.plan_next'|trans({}, 'pilot') }}</button>
         </form>
         {# The templates offered here, each opened on its own form to change its steps #}
-        <p class="small mt-1 mb-0 pilot-templates">{{ 'label.templates_offered'|trans({}, 'pilot') }}
-            {% for template in templates %}<a href="{{ path('pilot_settings_edit', {kind: 'template', id: template.id}) }}" class="ms-1">{{ template.name }}</a>{% endfor %}
+        <p class="pilot-small pilot-mt-xs pilot-m0 pilot-templates">{{ 'label.templates_offered'|trans({}, 'pilot') }}
+            {% for template in templates %}<a href="{{ path('pilot_settings_edit', {kind: 'template', id: template.id}) }}" class="pilot-template-link">{{ template.name }}</a>{% endfor %}
         </p>
     {% endif %}
 
@@ -69,52 +71,52 @@
     {% if card_sets is empty or own_cards is not empty %}
         {% set panes = panes|merge([{key: 'cards', set: null, name: card_sets is empty ? 'label.cards'|trans({}, 'pilot') : 'label.cards_other'|trans({}, 'pilot'), cards: own_cards, done: done[0] ?? 0}]) %}
     {% endif %}
-    <div class="mt-4 pilot-tabs" data-controller="pilot-tabs">
+    <div class="pilot-mt-lg pilot-tabs" data-controller="pilot-tabs">
         {# The collection tabs dragged into a new order and renamed by a double click, for the space's owner #}
-        <ul class="nav nav-tabs pilot-tabs-nav" role="tablist"{% if can_manage %} data-controller="pilot-tab-sort" data-pilot-tab-sort-target="list" data-pilot-tab-sort-url-value="{{ path('pilot_collections_order', {slug: project.slug}) }}" data-pilot-tab-sort-token-value="{{ csrf_token('pilot_collections_order' ~ project.id) }}" data-pilot-tab-sort-failed-label-value="{{ 'label.order_failed'|trans({}, 'pilot') }}"{% endif %}>
+        <ul class="pilot-tab-list pilot-tabs-nav" role="tablist"{% if can_manage %} data-controller="pilot-tab-sort" data-pilot-tab-sort-target="list" data-pilot-tab-sort-url-value="{{ path('pilot_collections_order', {slug: project.slug}) }}" data-pilot-tab-sort-token-value="{{ csrf_token('pilot_collections_order' ~ project.id) }}" data-pilot-tab-sort-failed-label-value="{{ 'label.order_failed'|trans({}, 'pilot') }}"{% endif %}>
             {% for pane in panes %}
                 {% set renamed = can_manage and pane.set %}
-                <li class="nav-item" role="presentation"{% if renamed %} data-pilot-tab-sort-target="item" data-set-id="{{ pane.set.id }}" data-controller="pilot-inline-edit"{% endif %}>
-                    <button type="button" class="nav-link" role="tab" id="pilot-tab-{{ pane.key }}" aria-controls="pilot-pane-{{ pane.key }}" aria-selected="false" data-pilot-tabs-target="tab" data-tab="{{ pane.key }}" data-action="pilot-tabs#show{{ renamed ? ' dblclick->pilot-inline-edit#edit' }}" data-pilot-card-drag-target="set" data-collection="{{ pane.set ? pane.set.id }}"{% if renamed %} data-pilot-inline-edit-target="view" title="{{ 'label.collection_rename'|trans({}, 'pilot') }}"{% endif %}>{% if pane.set and pane.set.sheets %}<i class="far fa-id-card me-1"></i>{% endif %}{{ pane.name }} <span class="badge text-bg-primary">{{ pane.cards|length }}</span></button>
+                <li role="presentation"{% if renamed %} data-pilot-tab-sort-target="item" data-set-id="{{ pane.set.id }}" data-controller="pilot-inline-edit"{% endif %}>
+                    <button type="button" class="pilot-tab" role="tab" id="pilot-tab-{{ pane.key }}" aria-controls="pilot-pane-{{ pane.key }}" aria-selected="false" data-pilot-tabs-target="tab" data-tab="{{ pane.key }}" data-action="pilot-tabs#show{{ renamed ? ' dblclick->pilot-inline-edit#edit' }}" data-pilot-card-drag-target="set" data-collection="{{ pane.set ? pane.set.id }}"{% if renamed %} data-pilot-inline-edit-target="view" title="{{ 'label.collection_rename'|trans({}, 'pilot') }}"{% endif %}>{% if pane.set and pane.set.sheets %}{{ pilot_icon('id-card') }}{% endif %}{{ pane.name }} <span class="pilot-tag pilot-tag-primary">{{ pane.cards|length }}</span></button>
                     {% if renamed %}
                     <form method="post" action="{{ path('pilot_collection_rename', {id: pane.set.id}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
                         <input type="hidden" name="_token" value="{{ csrf_token('pilot_collection_rename' ~ pane.set.id) }}">
-                        <input name="name" value="{{ pane.set.name }}" maxlength="100" required class="form-control form-control-sm" aria-label="{{ 'label.collection_rename'|trans({}, 'pilot') }}">
+                        <input name="name" value="{{ pane.set.name }}" maxlength="100" required aria-label="{{ 'label.collection_rename'|trans({}, 'pilot') }}">
                     </form>
                     {% endif %}
                 </li>
             {% endfor %}
-            {% if can_manage %}<li class="nav-item align-self-center ms-2" role="presentation">{% include '@c975LPilot/pilot/_collection_new.html.twig' %}</li>{% endif %}
+            {% if can_manage %}<li class="pilot-tab-add" role="presentation">{% include '@c975LPilot/pilot/_collection_new.html.twig' %}</li>{% endif %}
         </ul>
         {% for pane in panes %}
-            <section class="pt-3 pilot-tab-pane" role="tabpanel" id="pilot-pane-{{ pane.key }}" aria-labelledby="pilot-tab-{{ pane.key }}" data-pilot-tabs-target="pane" data-tab="{{ pane.key }}"{{ not loop.first ? ' hidden' }}>
+            <section class="pilot-tab-pane" role="tabpanel" id="pilot-pane-{{ pane.key }}" aria-labelledby="pilot-tab-{{ pane.key }}" data-pilot-tabs-target="pane" data-tab="{{ pane.key }}"{{ not loop.first ? ' hidden' }}>
                 {% if can_edit or (can_manage and pane.set) %}
-                    <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="pilot-row pilot-mb-sm">
                         {% if can_edit %}{% include '@c975LPilot/pilot/_card_new.html.twig' with {new_project: project, new_set: pane.set, new_paste: true} %}{% endif %}
                         {% if can_manage and pane.set %}{% include '@c975LPilot/pilot/_collection_edit.html.twig' with {set: pane.set} %}{% endif %}
                     </div>
                 {% endif %}
                 <div class="pilot-cards pilot-drop{{ pane.set and pane.set.sheets ? ' pilot-sheets' }}" data-pilot-card-drag-target="zone" data-collection="{{ pane.set ? pane.set.id }}">
-                    {% for card in pane.cards %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% else %}<p class="text-body-secondary">{{ 'label.cards_empty'|trans({}, 'pilot') }}</p>{% endfor %}
+                    {% for card in pane.cards %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% else %}<p class="pilot-muted">{{ 'label.cards_empty'|trans({}, 'pilot') }}</p>{% endfor %}
                 </div>
                 {# The done ones of the tab folded below, as tiles too, read when the fold opens (pilot-done), each put back to do from its tile #}
                 {% if pane.done > 0 %}
-                    <details class="mt-3" data-controller="pilot-done" data-action="toggle->pilot-done#load" data-pilot-done-url-value="{{ path('pilot_project_done', {slug: project.slug, set: pane.set ? pane.set.id : 0}) }}" data-pilot-done-failed-label-value="{{ 'label.done_failed'|trans({}, 'pilot') }}">
+                    <details class="pilot-mt" data-controller="pilot-done" data-action="toggle->pilot-done#load" data-pilot-done-url-value="{{ path('pilot_project_done', {slug: project.slug, set: pane.set ? pane.set.id : 0}) }}" data-pilot-done-failed-label-value="{{ 'label.done_failed'|trans({}, 'pilot') }}">
                         <summary>{{ 'label.done_cards'|trans({'%count%': pane.done}, 'pilot') }}</summary>
-                        <div class="pilot-cards mt-2 pilot-cards-done" data-pilot-done-target="list"></div>
+                        <div class="pilot-cards pilot-mt-sm pilot-cards-done" data-pilot-done-target="list"></div>
                     </details>
                 {% endif %}
             </section>
         {% endfor %}
     </div>
 
-    <div class="mt-4">{% include '@c975LPilot/pilot/_reports.html.twig' %}</div>
+    <div class="pilot-mt-lg">{% include '@c975LPilot/pilot/_reports.html.twig' %}</div>
 
 
     {# The references common to the project, as tiles opening in the dialog; one that belongs to a single card is on that card #}
     {% if references is not empty %}
-        <section class="mt-4" data-pilot-fold="docs">
-            <h2 class="h5 pilot-fold-head">{{ 'label.docs'|trans({}, 'pilot') }}</h2>
+        <section class="pilot-mt-lg" data-pilot-fold="docs">
+            <h2 class="pilot-title pilot-fold-head">{{ 'label.docs'|trans({}, 'pilot') }}</h2>
             <div class="pilot-cards">
                 {% for doc in references %}{% include '@c975LPilot/pilot/_reference.html.twig' %}{% endfor %}
             </div>

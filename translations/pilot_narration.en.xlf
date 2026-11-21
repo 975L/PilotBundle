@@ -1,0 +1,183 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="en" datatype="plaintext" original="pilot_narration.en.xlf">
+        <body>
+            <trans-unit id="WCGaA4V">
+                <source>narration.guided_step_pilot_card_new</source>
+                <target>Click the plus of the tab the card goes in.</target>
+            </trans-unit>
+            <trans-unit id="CVhB4SC">
+                <source>narration.guided_step_pilot_card_open</source>
+                <target>Open the piloting pages, on their dashboard.</target>
+            </trans-unit>
+            <trans-unit id="v3b5ELx">
+                <source>narration.guided_step_pilot_card_space</source>
+                <target>Click the space the card belongs to, in the left column.</target>
+            </trans-unit>
+            <trans-unit id="nK7qYns">
+                <source>narration.guided_step_pilot_card_title</source>
+                <target>Type its title and press Enter: the card is added to the tab.</target>
+            </trans-unit>
+            <trans-unit id="MK3qNqw">
+                <source>narration.guided_step_pilot_credits_api_key</source>
+                <target>Paste the API key of your account on that service; for Expo, type the account's name too.</target>
+            </trans-unit>
+            <trans-unit id="TQi_db.">
+                <source>narration.guided_step_pilot_credits_dashboard</source>
+                <target>Click the piloting's name to go back to the dashboard.</target>
+            </trans-unit>
+            <trans-unit id="udnBeFM">
+                <source>narration.guided_step_pilot_credits_done</source>
+                <target>Save: the credit joins the list.</target>
+            </trans-unit>
+            <trans-unit id="5lJpsdB">
+                <source>narration.guided_step_pilot_credits_key</source>
+                <target>Type its key, in lowercase and dashes.</target>
+            </trans-unit>
+            <trans-unit id="JgEdlwn">
+                <source>narration.guided_step_pilot_credits_label</source>
+                <target>Type the name of the service.</target>
+            </trans-unit>
+            <trans-unit id="FMs_Cp2">
+                <source>narration.guided_step_pilot_credits_open</source>
+                <target>Open the form of a new credit, among the settings.</target>
+            </trans-unit>
+            <trans-unit id="drE.Alo">
+                <source>narration.guided_step_pilot_credits_provider</source>
+                <target>Choose the service whose API gives the balance, or leave Typed in by hand.</target>
+            </trans-unit>
+            <trans-unit id="vU32us7">
+                <source>narration.guided_step_pilot_credits_refresh</source>
+                <target>Click Refresh the balances to read the services again.</target>
+            </trans-unit>
+            <trans-unit id="u1Hh5eD">
+                <source>narration.guided_step_pilot_credits_remaining</source>
+                <target>Type what is left on the account.</target>
+            </trans-unit>
+            <trans-unit id="smWHSwt">
+                <source>narration.guided_step_pilot_machine_done</source>
+                <target>Save, then copy the token shown once into the runner's settings on the machine.</target>
+            </trans-unit>
+            <trans-unit id="n2qtNd.">
+                <source>narration.guided_step_pilot_machine_name</source>
+                <target>Type the name of the machine, the computer it runs on.</target>
+            </trans-unit>
+            <trans-unit id="64sJ6Bk">
+                <source>narration.guided_step_pilot_machine_open</source>
+                <target>Open the form of a new machine, among the settings.</target>
+            </trans-unit>
+            <trans-unit id="H7MWGP8">
+                <source>narration.guided_step_pilot_machine_parallel</source>
+                <target>Say how many runs it takes at the same time.</target>
+            </trans-unit>
+            <trans-unit id="V_N3l7f">
+                <source>narration.guided_step_pilot_machine_projects</source>
+                <target>Tick the spaces whose cards it takes.</target>
+            </trans-unit>
+            <trans-unit id="6Z6IMzN">
+                <source>narration.guided_step_pilot_run_card</source>
+                <target>Click a card's tile: it opens over the page.</target>
+            </trans-unit>
+            <trans-unit id="yXAY7Pt">
+                <source>narration.guided_step_pilot_run_feedback</source>
+                <target>Note your feedback, then click Hand to the machine.</target>
+            </trans-unit>
+            <trans-unit id="WZzL1wt">
+                <source>narration.guided_step_pilot_run_open</source>
+                <target>Open the piloting pages, on their dashboard.</target>
+            </trans-unit>
+            <trans-unit id="Eph6OId">
+                <source>narration.guided_step_pilot_run_run</source>
+                <target>Click the step's play button: a machine takes it and its progress shows.</target>
+            </trans-unit>
+            <trans-unit id="zJeSfvc">
+                <source>narration.guided_step_pilot_run_space</source>
+                <target>Click the space of the card, in the left column.</target>
+            </trans-unit>
+            <trans-unit id="0to.xu_">
+                <source>narration.guided_step_pilot_share_card</source>
+                <target>Click a card's tile: it opens over the page.</target>
+            </trans-unit>
+            <trans-unit id="YtbeBG9">
+                <source>narration.guided_step_pilot_share_link</source>
+                <target>Click the eye: the reading link is copied, ready to paste.</target>
+            </trans-unit>
+            <trans-unit id="s2_ACN2">
+                <source>narration.guided_step_pilot_share_open</source>
+                <target>Open the piloting pages, on their dashboard.</target>
+            </trans-unit>
+            <trans-unit id="UMNjv5R">
+                <source>narration.guided_step_pilot_share_space</source>
+                <target>Click the space of the card, in the left column.</target>
+            </trans-unit>
+            <trans-unit id="ErmIV1o">
+                <source>narration.guided_step_pilot_space_color</source>
+                <target>Pick its colour: its cards are tinted with it.</target>
+            </trans-unit>
+            <trans-unit id="uGR5Gs5">
+                <source>narration.guided_step_pilot_space_done</source>
+                <target>Save: the space appears in the column, ready for its cards.</target>
+            </trans-unit>
+            <trans-unit id="OIVICla">
+                <source>narration.guided_step_pilot_space_name</source>
+                <target>Type the name of the space, the one the column of the spaces will show.</target>
+            </trans-unit>
+            <trans-unit id="IcmNFC2">
+                <source>narration.guided_step_pilot_space_open</source>
+                <target>Open the form of a new space, from the plus beside the spaces in the left column.</target>
+            </trans-unit>
+            <trans-unit id="CDl.l4e">
+                <source>narration.guided_step_pilot_space_slug</source>
+                <target>Choose the last word of its address, in lowercase letters and dashes.</target>
+            </trans-unit>
+            <trans-unit id="69KZ9V6">
+                <source>narration.guided_step_pilot_steps_card</source>
+                <target>Click a card's tile: it opens over the page.</target>
+            </trans-unit>
+            <trans-unit id="18WlJ0e">
+                <source>narration.guided_step_pilot_steps_feedback</source>
+                <target>Note a feedback after the steps, with a screenshot pasted on the field if needed.</target>
+            </trans-unit>
+            <trans-unit id="XHp6nB.">
+                <source>narration.guided_step_pilot_steps_fold</source>
+                <target>Click Fold all to fold every group of steps at once.</target>
+            </trans-unit>
+            <trans-unit id="GqUZgge">
+                <source>narration.guided_step_pilot_steps_open</source>
+                <target>Open the piloting pages, on their dashboard.</target>
+            </trans-unit>
+            <trans-unit id="pSDowMm">
+                <source>narration.guided_step_pilot_steps_space</source>
+                <target>Click the space of the card, in the left column.</target>
+            </trans-unit>
+            <trans-unit id="OnobQL.">
+                <source>narration.guided_step_pilot_steps_step</source>
+                <target>Add a step in one line, under the others. On a card following a template, the steps come from the template.</target>
+            </trans-unit>
+            <trans-unit id="2EYFgQ.">
+                <source>narration.guided_step_pilot_template_checklist</source>
+                <target>Tick the box for a single card to tick, leave it empty for one card per step.</target>
+            </trans-unit>
+            <trans-unit id="LBeYwZu">
+                <source>narration.guided_step_pilot_template_done</source>
+                <target>Save: the template joins the list.</target>
+            </trans-unit>
+            <trans-unit id="m2hZ2m5">
+                <source>narration.guided_step_pilot_template_name</source>
+                <target>Type the name of the template.</target>
+            </trans-unit>
+            <trans-unit id="hhAVWvO">
+                <source>narration.guided_step_pilot_template_open</source>
+                <target>Open the form of a new template, among the settings.</target>
+            </trans-unit>
+            <trans-unit id="K6tWj18">
+                <source>narration.guided_step_pilot_template_projects</source>
+                <target>Tick the spaces where the template is offered.</target>
+            </trans-unit>
+            <trans-unit id="mcJcKrE">
+                <source>narration.guided_step_pilot_template_steps</source>
+                <target>Add one step per click, in the order they follow.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

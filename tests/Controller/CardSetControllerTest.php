@@ -19,17 +19,18 @@ use c975L\PilotBundle\Repository\CardSetRepository;
 use c975L\PilotBundle\Repository\PlanTemplateRepository;
 use c975L\PilotBundle\Repository\ProjectRepository;
 use c975L\PilotBundle\Security\PilotAccess;
+use c975L\PilotBundle\Tests\Fixtures\PilotTestStubs;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class CardSetControllerTest extends TestCase
 {
+    use PilotTestStubs;
+
     // The space's page comes back on the collection's tab, or on its first tab without one
     public function testBackOpensTheTab(): void
     {
@@ -103,14 +104,7 @@ class CardSetControllerTest extends TestCase
     {
         $router = $this->createStub(UrlGeneratorInterface::class);
         $router->method('generate')->willReturn('/catalog');
-        $checker = $this->createStub(AuthorizationCheckerInterface::class);
-        $checker->method('isGranted')->willReturn(true);
-        $csrf = $this->createStub(CsrfTokenManagerInterface::class);
-        $csrf->method('isTokenValid')->willReturn(true);
-        $container = new Container();
-        $container->set('router', $router);
-        $container->set('security.authorization_checker', $checker);
-        $container->set('security.csrf.token_manager', $csrf);
+        $container = $this->grantedContainer($router);
         $controller = new CardSetController($access, $this->createStub(ProjectRepository::class), $cards, $sets ?? $this->createStub(CardSetRepository::class), $this->createStub(PlanTemplateRepository::class), $this->createStub(EntityManagerInterface::class), $this->createStub(TranslatorInterface::class));
         $controller->setContainer($container);
 

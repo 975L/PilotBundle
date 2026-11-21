@@ -7,7 +7,7 @@
  */
 import { Controller } from "@hotwired/stimulus";
 
-// Copies a card's link to the clipboard (the one it has, or the one a gesture makes the first time, sent back in X-Pilot-Share), or a text followed by the context an element holds; its icon telling for a moment whether it worked
+// Copies a card's link to the clipboard (the one it has, or the one a gesture makes the first time, sent back in X-Pilot-Share), or a text followed by the context an element holds; its button turning green or red for a moment to tell whether it worked
 export default class extends Controller {
     static values = { text: String, url: String, token: String, context: String };
 
@@ -16,7 +16,7 @@ export default class extends Controller {
         event.stopPropagation();
         const text = this.textValue ? Promise.resolve(this.textValue + this.attached()) : this.make();
         const item = new ClipboardItem({ "text/plain": text.then((value) => new Blob([value], { type: "text/plain" })) });
-        navigator.clipboard.write([item]).then(() => this.flash("fa-check"), () => this.flash("fa-xmark"));
+        navigator.clipboard.write([item]).then(() => this.flash("pilot-copied"), () => this.flash("pilot-copy-failed"));
     }
 
     // The text of the element the context names (a card's markdown), after a blank line, none without one
@@ -39,12 +39,9 @@ export default class extends Controller {
         });
     }
 
-    flash(icon) {
-        const glyph = this.element.querySelector("i");
-        if (!glyph) return;
-
-        const before = glyph.className;
-        glyph.className = "fas " + icon;
-        setTimeout(() => { glyph.className = before; }, 1500);
+    // The button marked copied or failed for a moment
+    flash(state) {
+        this.element.classList.add(state);
+        setTimeout(() => { this.element.classList.remove(state); }, 1500);
     }
 }

@@ -3,8 +3,8 @@
 <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: finished ? 'reopen' : 'done'}) }}"{% if toggle_class is defined %} class="{{ toggle_class }}"{% endif %}>
     <input type="hidden" name="_token" value="{{ csrf_token('pilot_card_gesture' ~ card.id) }}">
     {% if finished %}
-        <button class="btn btn-sm btn-outline-secondary pilot-card-reopen" title="{{ 'label.reopen'|trans({}, 'pilot') }}" aria-label="{{ 'label.reopen'|trans({}, 'pilot') }}"><i class="fas fa-rotate-left{{ toggle_named ?? false ? ' me-1' }}"></i>{% if toggle_named ?? false %}{{ 'label.reopen'|trans({}, 'pilot') }}{% endif %}</button>
+        <button class="pilot-btn pilot-card-reopen" title="{{ 'label.reopen'|trans({}, 'pilot') }}" aria-label="{{ 'label.reopen'|trans({}, 'pilot') }}">{{ pilot_icon('rotate-left') }}{% if toggle_named ?? false %}{{ 'label.reopen'|trans({}, 'pilot') }}{% endif %}</button>
     {% else %}
-        <button class="btn btn-sm btn-outline-success" title="{{ 'label.done'|trans({}, 'pilot') }}" aria-label="{{ 'label.done'|trans({}, 'pilot') }}"><i class="fas fa-check"></i></button>
+        <button class="pilot-btn pilot-btn-outline-success" title="{{ 'label.done'|trans({}, 'pilot') }}" aria-label="{{ 'label.done'|trans({}, 'pilot') }}">{{ pilot_icon('check') }}</button>
     {% endif %}
 </form>

@@ -1,0 +1,183 @@
+<?xml version="1.0"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="es" datatype="plaintext" original="pilot_narration.en.xlf">
+        <body>
+            <trans-unit id="WCGaA4V">
+                <source>narration.guided_step_pilot_card_new</source>
+                <target>Haga clic en el más de la pestaña donde va la tarjeta.</target>
+            </trans-unit>
+            <trans-unit id="CVhB4SC">
+                <source>narration.guided_step_pilot_card_open</source>
+                <target>Abra las páginas del pilotaje, en su panel.</target>
+            </trans-unit>
+            <trans-unit id="v3b5ELx">
+                <source>narration.guided_step_pilot_card_space</source>
+                <target>Haga clic en el espacio al que pertenece la tarjeta, en la columna de la izquierda.</target>
+            </trans-unit>
+            <trans-unit id="nK7qYns">
+                <source>narration.guided_step_pilot_card_title</source>
+                <target>Escriba su título y pulse Intro: la tarjeta se añade a la pestaña.</target>
+            </trans-unit>
+            <trans-unit id="MK3qNqw">
+                <source>narration.guided_step_pilot_credits_api_key</source>
+                <target>Pegue la clave de API de su cuenta en ese servicio; para Expo, escriba también el nombre de la cuenta.</target>
+            </trans-unit>
+            <trans-unit id="TQi_db.">
+                <source>narration.guided_step_pilot_credits_dashboard</source>
+                <target>Haga clic en el nombre del pilotaje para volver al panel.</target>
+            </trans-unit>
+            <trans-unit id="udnBeFM">
+                <source>narration.guided_step_pilot_credits_done</source>
+                <target>Guarde: el crédito se añade a la lista.</target>
+            </trans-unit>
+            <trans-unit id="5lJpsdB">
+                <source>narration.guided_step_pilot_credits_key</source>
+                <target>Escriba su clave, en minúsculas y guiones.</target>
+            </trans-unit>
+            <trans-unit id="JgEdlwn">
+                <source>narration.guided_step_pilot_credits_label</source>
+                <target>Escriba el nombre del servicio.</target>
+            </trans-unit>
+            <trans-unit id="FMs_Cp2">
+                <source>narration.guided_step_pilot_credits_open</source>
+                <target>Abra el formulario de un nuevo crédito, entre los ajustes.</target>
+            </trans-unit>
+            <trans-unit id="drE.Alo">
+                <source>narration.guided_step_pilot_credits_provider</source>
+                <target>Elija el servicio cuya API da el saldo, o deje Introducido a mano.</target>
+            </trans-unit>
+            <trans-unit id="vU32us7">
+                <source>narration.guided_step_pilot_credits_refresh</source>
+                <target>Haga clic en Actualizar los saldos para volver a leer los servicios.</target>
+            </trans-unit>
+            <trans-unit id="u1Hh5eD">
+                <source>narration.guided_step_pilot_credits_remaining</source>
+                <target>Escriba lo que queda en la cuenta.</target>
+            </trans-unit>
+            <trans-unit id="smWHSwt">
+                <source>narration.guided_step_pilot_machine_done</source>
+                <target>Guarde y copie el token mostrado una sola vez en los ajustes del runner, en la máquina.</target>
+            </trans-unit>
+            <trans-unit id="n2qtNd.">
+                <source>narration.guided_step_pilot_machine_name</source>
+                <target>Escriba el nombre de la máquina, el ordenador donde funciona.</target>
+            </trans-unit>
+            <trans-unit id="64sJ6Bk">
+                <source>narration.guided_step_pilot_machine_open</source>
+                <target>Abra el formulario de una nueva máquina, entre los ajustes.</target>
+            </trans-unit>
+            <trans-unit id="H7MWGP8">
+                <source>narration.guided_step_pilot_machine_parallel</source>
+                <target>Indique cuántas ejecuciones toma a la vez.</target>
+            </trans-unit>
+            <trans-unit id="V_N3l7f">
+                <source>narration.guided_step_pilot_machine_projects</source>
+                <target>Marque los espacios cuyas tarjetas toma.</target>
+            </trans-unit>
+            <trans-unit id="6Z6IMzN">
+                <source>narration.guided_step_pilot_run_card</source>
+                <target>Haga clic en el mosaico de una tarjeta: se abre sobre la página.</target>
+            </trans-unit>
+            <trans-unit id="yXAY7Pt">
+                <source>narration.guided_step_pilot_run_feedback</source>
+                <target>Anote sus comentarios y haga clic en Confiar a la máquina.</target>
+            </trans-unit>
+            <trans-unit id="WZzL1wt">
+                <source>narration.guided_step_pilot_run_open</source>
+                <target>Abra las páginas del pilotaje, en su panel.</target>
+            </trans-unit>
+            <trans-unit id="Eph6OId">
+                <source>narration.guided_step_pilot_run_run</source>
+                <target>Haga clic en el botón de reproducción del paso: una máquina lo toma y se muestra su progreso.</target>
+            </trans-unit>
+            <trans-unit id="zJeSfvc">
+                <source>narration.guided_step_pilot_run_space</source>
+                <target>Haga clic en el espacio de la tarjeta, en la columna de la izquierda.</target>
+            </trans-unit>
+            <trans-unit id="0to.xu_">
+                <source>narration.guided_step_pilot_share_card</source>
+                <target>Haga clic en el mosaico de una tarjeta: se abre sobre la página.</target>
+            </trans-unit>
+            <trans-unit id="YtbeBG9">
+                <source>narration.guided_step_pilot_share_link</source>
+                <target>Haga clic en el ojo: el enlace de lectura se copia, listo para pegar.</target>
+            </trans-unit>
+            <trans-unit id="s2_ACN2">
+                <source>narration.guided_step_pilot_share_open</source>
+                <target>Abra las páginas del pilotaje, en su panel.</target>
+            </trans-unit>
+            <trans-unit id="UMNjv5R">
+                <source>narration.guided_step_pilot_share_space</source>
+                <target>Haga clic en el espacio de la tarjeta, en la columna de la izquierda.</target>
+            </trans-unit>
+            <trans-unit id="ErmIV1o">
+                <source>narration.guided_step_pilot_space_color</source>
+                <target>Elija su color: sus tarjetas toman su tono.</target>
+            </trans-unit>
+            <trans-unit id="uGR5Gs5">
+                <source>narration.guided_step_pilot_space_done</source>
+                <target>Guarde: el espacio aparece en la columna, listo para sus tarjetas.</target>
+            </trans-unit>
+            <trans-unit id="OIVICla">
+                <source>narration.guided_step_pilot_space_name</source>
+                <target>Escriba el nombre del espacio, el que mostrará la columna de los espacios.</target>
+            </trans-unit>
+            <trans-unit id="IcmNFC2">
+                <source>narration.guided_step_pilot_space_open</source>
+                <target>Abra el formulario de un nuevo espacio, con el más junto a los espacios, en la columna de la izquierda.</target>
+            </trans-unit>
+            <trans-unit id="CDl.l4e">
+                <source>narration.guided_step_pilot_space_slug</source>
+                <target>Elija la última palabra de su dirección, en minúsculas y guiones.</target>
+            </trans-unit>
+            <trans-unit id="69KZ9V6">
+                <source>narration.guided_step_pilot_steps_card</source>
+                <target>Haga clic en el mosaico de una tarjeta: se abre sobre la página.</target>
+            </trans-unit>
+            <trans-unit id="18WlJ0e">
+                <source>narration.guided_step_pilot_steps_feedback</source>
+                <target>Anote un comentario después de los pasos, con una captura pegada en el campo si hace falta.</target>
+            </trans-unit>
+            <trans-unit id="XHp6nB.">
+                <source>narration.guided_step_pilot_steps_fold</source>
+                <target>Haga clic en Plegar todo para plegar de una vez todos los grupos de pasos.</target>
+            </trans-unit>
+            <trans-unit id="GqUZgge">
+                <source>narration.guided_step_pilot_steps_open</source>
+                <target>Abra las páginas del pilotaje, en su panel.</target>
+            </trans-unit>
+            <trans-unit id="pSDowMm">
+                <source>narration.guided_step_pilot_steps_space</source>
+                <target>Haga clic en el espacio de la tarjeta, en la columna de la izquierda.</target>
+            </trans-unit>
+            <trans-unit id="OnobQL.">
+                <source>narration.guided_step_pilot_steps_step</source>
+                <target>Añada un paso en una línea, bajo los demás. En una tarjeta que sigue una plantilla, los pasos vienen de la plantilla.</target>
+            </trans-unit>
+            <trans-unit id="2EYFgQ.">
+                <source>narration.guided_step_pilot_template_checklist</source>
+                <target>Marque la casilla para una sola tarjeta, déjela vacía para una tarjeta por paso.</target>
+            </trans-unit>
+            <trans-unit id="LBeYwZu">
+                <source>narration.guided_step_pilot_template_done</source>
+                <target>Guarde: la plantilla se añade a la lista.</target>
+            </trans-unit>
+            <trans-unit id="m2hZ2m5">
+                <source>narration.guided_step_pilot_template_name</source>
+                <target>Escriba el nombre de la plantilla.</target>
+            </trans-unit>
+            <trans-unit id="hhAVWvO">
+                <source>narration.guided_step_pilot_template_open</source>
+                <target>Abra el formulario de una nueva plantilla, entre los ajustes.</target>
+            </trans-unit>
+            <trans-unit id="K6tWj18">
+                <source>narration.guided_step_pilot_template_projects</source>
+                <target>Marque los espacios donde se propone la plantilla.</target>
+            </trans-unit>
+            <trans-unit id="mcJcKrE">
+                <source>narration.guided_step_pilot_template_steps</source>
+                <target>Añada un paso por clic, en el orden en que se siguen.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

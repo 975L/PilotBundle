@@ -26,6 +26,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function Symfony\Component\Translation\t;
 
@@ -47,6 +48,7 @@ class ShareController extends AbstractController
         private readonly ActionOffer $actionOffer,
         private readonly StepOrder $stepOrder,
         private readonly CardImages $cardImages,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -56,15 +58,22 @@ class ShareController extends AbstractController
     {
         [$card, $editable] = $this->find($token);
 
+        return $this->page($card, $editable, $token);
+    }
+
+    // The page of the card, a refused rewrite shown above its markdown kept as it was typed
+    private function page(Card $card, bool $editable, string $token, ?FlowException $refusal = null, ?string $markdown = null): Response
+    {
         return $this->unlisted($this->render('@c975LPilot/share/card.html.twig', [
             'card' => $card,
             'editable' => $editable,
             'token' => $token,
-            'markdown' => $editable ? $this->cardMarkdown->write($card) : null,
+            'markdown' => $markdown ?? ($editable ? $this->cardMarkdown->write($card) : null),
+            'refusal' => $refusal?->reason,
             'run' => $card->lastRun(),
             'action_labels' => $editable ? $this->actionOffer->labels() : [],
             'actions' => $editable ? array_filter($this->actionOffer->on($card->getProject()), static fn (array $action): bool => [] === $action['params']) : [],
-        ]));
+        ], new Response(null, null === $refusal ? Response::HTTP_OK : Response::HTTP_UNPROCESSABLE_ENTITY)));
     }
 
     // The card as one markdown text, for whoever works on it outside the page
@@ -87,7 +96,16 @@ class ShareController extends AbstractController
         }
         $before = $card->getChecklist();
         $images = $card->getFeedbackImages();
-        $this->cardMarkdown->read($card, $form ? $request->request->getString('markdown') : $request->getContent(), $this->clock->now());
+        $markdown = $form ? $request->request->getString('markdown') : $request->getContent();
+
+        // A rewrite refused, a step added to a card following a checklist template for instance: nothing saved, the page saying why, a text sent outside it answered 422 with the reason
+        try {
+            $this->cardMarkdown->read($card, $markdown, $this->clock->now());
+        } catch (FlowException $refusal) {
+            $this->entityManager->refresh($card);
+
+            return $form ? $this->page($card, true, $token, $refusal, $markdown) : $this->unlisted(new Response($refusal->reason->trans($this->translator), Response::HTTP_UNPROCESSABLE_ENTITY, ['Content-Type' => 'text/plain; charset=UTF-8']));
+        }
         $this->stepOrder->follow($card, $before);
         $this->entityManager->flush();
         $this->cardImages->forget(array_values(array_diff($images, $card->getFeedbackImages())));

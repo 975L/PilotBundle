@@ -10,6 +10,7 @@
 
 namespace c975L\PilotBundle\Tests\Twig;
 
+use c975L\PilotBundle\Twig\PilotIconExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Twig\Extension\TranslationExtension;
 use Symfony\Component\Translation\IdentityTranslator;
@@ -18,6 +19,7 @@ use Symfony\Component\Translation\Translator;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use Twig\TwigFunction;
 
 class AiShareTemplateTest extends TestCase
 {
@@ -55,13 +57,14 @@ class AiShareTemplateTest extends TestCase
         return $this->twig(new IdentityTranslator())->render('@c975LPilot/pilot/_ai_share.html.twig', ['step' => $step, 'card' => ['id' => 7]]);
     }
 
-    // The bundle's templates read with the given translator, an unknown variable refused
+    // The bundle's templates read with the given translator and its icons, an unknown variable refused
     private function twig(TranslatorInterface $translator): Environment
     {
         $loader = new FilesystemLoader();
         $loader->addPath(\dirname(__DIR__, 2) . '/templates', 'c975LPilot');
         $twig = new Environment($loader, ['strict_variables' => true]);
         $twig->addExtension(new TranslationExtension($translator));
+        $twig->addFunction(new TwigFunction('pilot_icon', new PilotIconExtension()->icon(...), ['is_safe' => ['html']]));
 
         return $twig;
     }

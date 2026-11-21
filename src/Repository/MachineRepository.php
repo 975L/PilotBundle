@@ -30,6 +30,12 @@ class MachineRepository extends ServiceEntityRepository
         return '' === $token ? null : $this->findOneBy(['tokenHash' => hash('sha256', $token)]);
     }
 
+    // The machine whose token an Authorization header carries as a Bearer, null without one or for an unknown one
+    public function findOneByBearer(?string $authorization): ?Machine
+    {
+        return str_starts_with((string) $authorization, 'Bearer ') ? $this->findOneByToken(substr((string) $authorization, 7)) : null;
+    }
+
     // Machines that called recently, with the actions they declared
     /** @return list<Machine> */
     public function findOnline(\DateTimeImmutable $now): array

@@ -1,11 +1,10 @@
-{# The colour of a planned day by its nearness while still to do: past in purple, within two weeks in red, within a month in orange, within two months in green, later in white #}
+{# The colour of a planned day by its nearness while still to do: past in purple, within two weeks in red, within a month in orange, within two months in green, later plain #}
 {% macro tone(due, open) -%}
     {%- set day = date(due) -%}
-    {%- if not open -%}text-bg-light
+    {%- if not open -%}
     {%- elseif day < date('today') -%}pilot-due-past
-    {%- elseif day < date('today +14 days') -%}text-bg-danger
+    {%- elseif day < date('today +14 days') -%}pilot-tag-danger
     {%- elseif day < date('today +1 month') -%}pilot-due-near
-    {%- elseif day < date('today +2 months') -%}text-bg-success
-    {%- else -%}text-bg-light border
+    {%- elseif day < date('today +2 months') -%}pilot-tag-success
     {%- endif -%}
 {%- endmacro %}

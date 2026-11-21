@@ -21,11 +21,11 @@ class PilotSettingsExtension
     ) {
     }
 
-    // Every kind, in the order the settings show them
-    /** @return array<string, array{class: class-string, form: class-string, label: string, title: string, description: string, icon: string, columns: list<array{property: string, label: string}>, translation_domain: string, sort: array<string, string>, new: bool, edit: bool}> */
+    // The kinds the settings list, in their order
+    /** @return array<string, array{class: class-string, form: class-string, label: string, title: string, description: string, icon: string, columns: list<array{property: string, label: string}>, translation_domain: string, sort: array<string, string>, new: bool, edit: bool, nav?: bool}> */
     #[AsTwigFunction('pilot_setting_kinds')]
     public function all(): array
     {
-        return $this->settingsKinds->all();
+        return $this->settingsKinds->listed();
     }
 }

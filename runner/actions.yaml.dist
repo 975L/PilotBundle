@@ -1,8 +1,9 @@
 # Allowlist of the actions this machine runs, keyed as the site names them, in the order their buttons show
 # label: name on the buttons; help: shown on hover; card: true for an action working on the card itself, never a button of the project's page
-# argv: the command, without a shell, {name} replaced by a parameter, {workdir} or the card's {title}, {note}, {project}, {doc}
-# params: each parameter with the pattern its value must match; comment receives the text of a send-back
+# argv: the command, without a shell, {name} replaced by a parameter, {workdir} or the card's {title}, {note}, {due} (its date, YYYY-MM-DD, empty in the backlog), {project}, {doc}
+# params: each parameter with the pattern its value must match; comment receives the card's open feedback, numbered one per line, the command printing "FEEDBACK <n> <reason>" for a line it leaves open
 # outputs: files sent back to the card (glob accepted, a leading "?" for an optional one)
+# exclusive: true for an action that must run alone (a browser driven, a heavy export): started only on an idle machine, nothing else taken until it ends; the others run side by side, up to the "Runs in parallel" the machine is given in the settings
 hello:
   label: Write a text
   help: Demo action writing the given text in about fifteen seconds

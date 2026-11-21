@@ -11,11 +11,12 @@
 namespace c975L\PilotBundle\Entity;
 
 use c975L\PilotBundle\Repository\CreditRepository;
+use c975L\PilotBundle\Service\Credit\CreditBalance;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-// What is left on a paid service account: reported by a machine, or typed in by hand for a service without an API
+// What is left on a paid service account: read from its API with the account's own key, or typed in by hand for a service without one
 #[ORM\Entity(repositoryClass: CreditRepository::class)]
 #[ORM\Table(name: 'pilot_credit')]
 class Credit implements \Stringable
@@ -53,8 +54,19 @@ class Credit implements \Stringable
     #[Assert\Length(max: 255)]
     private ?string $note = null;
 
-    #[ORM\Column(options: ['default' => true])]
-    private bool $manual = true;
+    // The service whose API is read (a CreditReaderInterface's name), none for a balance typed in by hand
+    #[ORM\Column(length: 30, nullable: true)]
+    #[Assert\Length(max: 30)]
+    private ?string $provider = null;
+
+    // The account named in the API call, for a service whose key reaches several (an Expo account)
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
+    private ?string $account = null;
+
+    // The API key, encrypted by ConfigBundle's VaultEncryptor
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $apiKey = null;
 
     #[ORM\Column(options: ['default' => 0])]
     private int $position = 0;
@@ -180,16 +192,56 @@ class Credit implements \Stringable
         return $this;
     }
 
+    // Whether the balance is typed in by hand, no API being read for it
     public function isManual(): bool
     {
-        return $this->manual;
+        return null === $this->provider;
     }
 
-    public function setManual(bool $manual): static
+    public function getProvider(): ?string
     {
-        $this->manual = $manual;
+        return $this->provider;
+    }
+
+    public function setProvider(?string $provider): static
+    {
+        $this->provider = '' === $provider ? null : $provider;
 
         return $this;
+    }
+
+    public function getAccount(): ?string
+    {
+        return $this->account;
+    }
+
+    public function setAccount(?string $account): static
+    {
+        $this->account = '' === $account ? null : $account;
+
+        return $this;
+    }
+
+    // The key as stored, encrypted
+    public function getApiKey(): ?string
+    {
+        return $this->apiKey;
+    }
+
+    public function setApiKey(?string $apiKey): static
+    {
+        $this->apiKey = '' === $apiKey ? null : $apiKey;
+
+        return $this;
+    }
+
+    // A balance read from the service, the label, unit, monthly budget and note staying the admin's
+    public function read(CreditBalance $balance, \DateTimeImmutable $now): static
+    {
+        $this->total = $balance->total;
+        $this->renewsOn = $balance->renewsOn;
+
+        return $this->setRemaining($balance->remaining, $now);
     }
 
     public function getPosition(): int

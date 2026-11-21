@@ -6,6 +6,7 @@
 coverage
 composer.lock
 vendor
+__pycache__
 
 ### Codacy CLI (généré localement) ###
 /.codacy/cli-config.yaml

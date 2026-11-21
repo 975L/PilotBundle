@@ -1,0 +1,9 @@
+{# A step or a feedback deleted by its bin once confirmed, its text emptied as the stepedit gesture takes it, never while its run is under way #}
+{% if can.edit and not running %}
+    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'stepedit'}) }}" data-pilot-confirm="{{ 'label.info_step_delete'|trans({}, 'pilot') }}">
+        <input type="hidden" name="_token" value="{{ token }}">
+        <input type="hidden" name="index" value="{{ index }}">
+        <input type="hidden" name="text" value="">
+        <button class="pilot-btn pilot-btn-ghost pilot-btn-delete pilot-line-delete" title="{{ 'label.step_delete'|trans({}, 'pilot') }}" aria-label="{{ 'label.step_delete'|trans({}, 'pilot') }}">{{ pilot_icon('trash') }}</button>
+    </form>
+{% endif %}

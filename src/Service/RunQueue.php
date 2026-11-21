@@ -30,6 +30,7 @@ class RunQueue
         private readonly ActionRepository $actionRepository,
         private readonly CardFlow $cardFlow,
         private readonly ClockInterface $clock,
+        private readonly CreditRefresher $creditRefresher,
     ) {
     }
 
@@ -47,16 +48,26 @@ class RunQueue
         return \count($expired);
     }
 
-    // Gives the oldest queued run among the declared actions, of the spaces it serves, to the machine, null when there is nothing to do
-    /** @param array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> $capabilities */
-    public function claim(Machine $machine, array $capabilities): ?Run
+    // Gives the oldest queued run among the declared actions, of the spaces it serves, to the machine, null when there is nothing to do; $only narrows the actions to those the runner can start now, an exclusive one waiting while others run, and none given while an exclusive one waits so that the machine empties for it
+    /**
+     * @param array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> $capabilities
+     * @param list<string>|null                                                                      $only
+     */
+    public function claim(Machine $machine, array $capabilities, ?array $only = null): ?Run
     {
         $this->releaseExpired();
         $now = $this->clock->now();
         $machine->seen($capabilities, $now);
         $this->actionRepository->declare($capabilities);
         $this->entityManager->flush();
-        foreach ($this->runRepository->queuedIds(array_map(strval(...), array_keys($capabilities)), $machine->projectIds()) as $id) {
+        $actions = array_map(strval(...), array_keys($capabilities));
+        if (null !== $only) {
+            if ([] !== $this->runRepository->queuedIds(array_values(array_diff($actions, $only)), $machine->projectIds(), 1)) {
+                return null;
+            }
+            $actions = array_values(array_intersect($actions, $only));
+        }
+        foreach ($this->runRepository->queuedIds($actions, $machine->projectIds()) as $id) {
             if ($this->runRepository->take($id, $machine, $now)) {
                 $run = $this->runRepository->find($id);
                 if (null !== $run) {
@@ -80,24 +91,51 @@ class RunQueue
         $this->entityManager->flush();
     }
 
-    // Closes a run the machine holds and moves its card on
-    /** @param list<string> $outputs */
-    public function finish(Run $run, Machine $machine, RunStatus $status, ?string $message, array $outputs, ?string $log, ?string $title = null): void
+    // Closes a run the machine holds, settles the feedback it was handed (by number, the reason the machine left one open) and moves its card on
+    /**
+     * @param list<string>       $outputs
+     * @param array<int, string> $left
+     * @param array<string, int> $spent
+     * @param list<string>       $files
+     */
+    public function finish(Run $run, Machine $machine, RunStatus $status, ?string $message, array $outputs, ?string $title = null, array $left = [], ?string $result = null, array $spent = [], array $files = []): void
     {
         $this->expectHeld($run, $machine);
         if (!$status->isFinished()) {
             throw new FlowException(t('flow.unknown_status', [], 'pilot'));
         }
         $now = $this->clock->now();
-        $run->finish($status, $message, $outputs, $log, $now);
+        $run->finish($status, $message, $outputs, $now)->setFiles($files);
 
         // The title the action gave its card, a number it took for instance
         if ('' !== trim((string) $title)) {
             $run->getCard()->setTitle(trim((string) $title));
         }
+
+        // The address of what the action made, a page it published for instance, a line that is no http(s) address leaving the card's as it was
+        if (1 === preg_match('~^https?://\S+$~i', trim((string) $result))) {
+            $run->getCard()->setResultUrl(trim((string) $result));
+        }
         $machine->seen($machine->getCapabilities(), $now);
+        $this->cardFlow->feedbackSettled($run, $left);
         $this->cardFlow->runFinished($run);
+
+        // What the run spent on the paid services, as the services themselves told it
+        $this->creditRefresher->spend($this->stepSpent($run, $spent));
         $this->entityManager->flush();
+    }
+
+    // Of what the machine says the run spent, only the credit its step's cost names, so a machine never debits another credit
+    /**
+     * @param array<string, int> $spent
+     *
+     * @return array<string, int>
+     */
+    private function stepSpent(Run $run, array $spent): array
+    {
+        $credit = $run->getCard()->getChecklist()[$run->getStep() ?? Run::LEFT_STEP]['cost']['credit'] ?? null;
+
+        return null === $credit ? [] : array_intersect_key($spent, [$credit => true]);
     }
 
     // Refuses news about a run the machine no longer holds, after a lost lease for instance

@@ -28,6 +28,9 @@ class Machine implements UserInterface
     // Seconds without a call after which a machine shows offline
     public const ONLINE_SECONDS = 45;
 
+    // Most runs a machine may be given at once
+    public const int MAX_PARALLEL = 8;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -39,6 +42,11 @@ class Machine implements UserInterface
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastSeenAt = null;
+
+    // Runs it takes at once, set by hand to what the machine bears; an action its runner marks exclusive still runs alone
+    #[ORM\Column(options: ['default' => 1])]
+    #[Assert\Range(min: 1, max: self::MAX_PARALLEL)]
+    private int $parallel = 1;
 
     // The spaces whose cards it takes, reports it fills and files it writes
     /** @var Collection<int, Project> */
@@ -69,12 +77,6 @@ class Machine implements UserInterface
     public function canRun(string $action, Project $project, \DateTimeImmutable $now): bool
     {
         return $this->isOnline($now) && $this->serves($project) && isset($this->getCapabilities()[$action]);
-    }
-
-    // Whether it works for the whole site, the only machines reporting the paid services' balances
-    public function servesAll(): bool
-    {
-        return $this->projects->isEmpty();
     }
 
     // Ids of the spaces chosen for it, empty for every space
@@ -123,6 +125,19 @@ class Machine implements UserInterface
     public function getCapabilities(): array
     {
         return $this->capabilities;
+    }
+
+    public function getParallel(): int
+    {
+        return $this->parallel;
+    }
+
+    // Kept between one and the most a machine may take, an empty field meaning one
+    public function setParallel(?int $parallel): static
+    {
+        $this->parallel = max(1, min(self::MAX_PARALLEL, $parallel ?? 1));
+
+        return $this;
     }
 
     // Labels of the actions declared, for the list of machines

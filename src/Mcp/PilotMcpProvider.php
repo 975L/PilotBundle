@@ -1,0 +1,53 @@
+<?php
+
+/*
+ * (c) 2026: 975L <contact@975l.com>
+ * (c) 2026: Laurent Marquet <laurent.marquet@laposte.net>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+namespace c975L\PilotBundle\Mcp;
+
+use c975L\ConfigBundle\Mcp\McpTool;
+use c975L\ConfigBundle\Mcp\McpToolProviderInterface;
+
+// The piloting's tools on the site's MCP endpoint, its cards and files, acting with the rights of the agent token's account
+class PilotMcpProvider implements McpToolProviderInterface
+{
+    public function __construct(
+        private readonly PilotTools $pilotTools,
+        private readonly PilotDocTools $pilotDocTools,
+    ) {
+    }
+
+    public function getMcpKey(): string
+    {
+        return 'pilot';
+    }
+
+    public function getMcpInstructions(): string
+    {
+        return 'Cards are tasks grouped in spaces, each space in collections. List the spaces, then the cards of one, read a card before changing it, and give the user the card\'s url. To sort cards, edit their space, collection or day; to merge duplicates, read both and merge the newer into the older; delete only what the user asked to. A step naming a machine action is run by a machine of its space with pilot_run_step, read the card again to follow it. Files hold a short summary for a human and the detail for an agent.';
+    }
+
+    public function getMcpTools(): iterable
+    {
+        yield new McpTool('pilot_spaces', 'Spaces', 'The spaces the account sees, with their open cards counted.', $this->pilotTools->spaces(...));
+        yield new McpTool('pilot_cards', 'Cards', 'Cards whose title or note holds the search words, else the open cards of a space, else every open card due today or late.', $this->pilotTools->cards(...));
+        yield new McpTool('pilot_card', 'Card', 'A card as markdown, with the index of each step and comment.', $this->pilotTools->card(...));
+        yield new McpTool('pilot_add_card', 'Add a card', 'Adds a card to a space, with an optional note and day (YYYY-MM-DD).', $this->pilotTools->addCard(...), true);
+        yield new McpTool('pilot_tick_step', 'Tick a step', 'Ticks a step of a card by its index, or unticks it with done false; a step already in that state is left as it is.', $this->pilotTools->tickStep(...), true);
+        yield new McpTool('pilot_comment', 'Comment a card', 'Leaves a comment at the end of a card, a done card opening again.', $this->pilotTools->comment(...), true);
+        yield new McpTool('pilot_edit_card', 'Edit a card', 'Changes only the fields given: title, note (empty clears it), day (YYYY-MM-DD, empty for the backlog), space (slug), collection (name, in the card\'s space once moved) and doc (slug of a file of its space, empty to detach it).', $this->pilotTools->editCard(...), true);
+        yield new McpTool('pilot_add_steps', 'Add steps', 'Adds steps after the last one of a card, before its comments.', $this->pilotTools->addSteps(...), true);
+        yield new McpTool('pilot_close_card', 'Close a card', 'Marks a card done, or opens it again with done false.', $this->pilotTools->closeCard(...), true);
+        yield new McpTool('pilot_run_step', 'Run a step', 'Queues the machine action a step names for a machine of its space; its run then shows on the step in pilot_card.', $this->pilotTools->runStep(...), true);
+        yield new McpTool('pilot_merge_cards', 'Merge two cards', 'Merges card into the card into: its note, steps and comments carried over, then card deleted.', $this->pilotTools->mergeCards(...), true, true);
+        yield new McpTool('pilot_delete_card', 'Delete a card', 'Deletes a card for good, with its runs and their files.', $this->pilotTools->deleteCard(...), true, true);
+        yield new McpTool('pilot_docs', 'Files', 'Files whose title or text holds the search words, else those of a space, else every file the account sees.', $this->pilotDocTools->docs(...));
+        yield new McpTool('pilot_doc', 'File', 'A file as markdown: title, summary, then detail.', $this->pilotDocTools->doc(...));
+        yield new McpTool('pilot_write_doc', 'Write a file', 'Adds a file to a space (space and title), or rewrites the one named by doc, only the summary or detail given changing.', $this->pilotDocTools->writeDoc(...), true);
+    }
+}

@@ -51,6 +51,16 @@ class RunTest extends TestCase
     }
 
     // A run follows its step moved
+    // The files a run wrote keep their absolute paths only, once each, grouped by folder for the step
+    public function testFilesKeptByFolder(): void
+    {
+        $run = new Run($this->card, 'copy', [], 0)->setFiles(['/catalog/item-1/01.jpg', ' /catalog/item-1/item-1.pdf ', '/catalog/item-1/01.jpg', 'item-2.jpg', '/catalog/item-3.mp4']);
+
+        $this->assertSame(['/catalog/item-1/01.jpg', '/catalog/item-1/item-1.pdf', '/catalog/item-3.mp4'], $run->getFiles());
+        $this->assertSame(['/catalog/item-1' => ['01.jpg', 'item-1.pdf'], '/catalog' => ['item-3.mp4']], $run->getFilesByFolder());
+        $this->assertCount(Run::MAX_FILES, $run->setFiles(array_map(static fn (int $index): string => '/catalog/item-' . $index, range(1, 60)))->getFiles());
+    }
+
     public function testMoveToStep(): void
     {
         $run = new Run($this->card, 'copy', [], 0);
@@ -73,7 +83,7 @@ class RunTest extends TestCase
     {
         $now = new \DateTimeImmutable('2026-11-18 10:00');
         $waiting = new Run($this->card, 'copy', [], 0)->leaveStep($now);
-        $finished = new Run($this->card, 'copy', [], 1)->finish(RunStatus::Done, 'ok', [], null, $now)->leaveStep($now->modify('+1 hour'));
+        $finished = new Run($this->card, 'copy', [], 1)->finish(RunStatus::Done, 'ok', [], $now)->leaveStep($now->modify('+1 hour'));
 
         $this->assertSame([RunStatus::Cancelled, Run::LEFT_STEP], [$waiting->getStatus(), $waiting->getStep()]);
         $this->assertSame([RunStatus::Done, 'ok', Run::LEFT_STEP], [$finished->getStatus(), $finished->getMessage(), $finished->getStep()]);

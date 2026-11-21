@@ -1,76 +1,95 @@
-{# One step of a card: its box, its text edited in place with the reason its run failed under it, its day, its cost, its run or its machine button, its AI copy last #}
-{% import '@c975LPilot/pilot/_due.html.twig' as due %}
+{# One step of a card: its box, its text edited in place with the reason its run failed and the files its run produced under it, its cost, its run or its machine button, its AI copy last #}
 {# A step still waiting for the steps it needs shows greyed out, its box still ticked by hand #}
 {% set waiting = not (step.done ?? false) and card.isStepWaiting(index) %}
 {% set step_run = step_runs[index] ?? null %}
 {% set step_failed = step_run and step_run.status.value in ['failed', 'blocked'] %}
-<li class="d-flex align-items-start gap-2 mb-1 pilot-step-line" data-pilot-step-sort-target="item" data-index="{{ index }}">
+{% set stale = index in (stale_steps ?? []) %}
+<li class="pilot-step-line" data-pilot-step-sort-target="item" data-index="{{ index }}">
     {# Moved by hand only while open and on a card of its own, a template setting the order of the cards following it; a ticked step keeps the handle's room so its box lines up with the others #}
     {% if not (card.template and card.template.checklist) %}
-        {% if step.done ?? false %}<span class="pilot-sort-handle invisible" aria-hidden="true"><i class="fas fa-grip-vertical fa-xs"></i></span>{% else %}<span class="text-body-secondary pilot-sort-handle pilot-step-handle" data-pilot-step-sort-handle title="{{ 'label.step_move'|trans({}, 'pilot') }}" aria-hidden="true"><i class="fas fa-grip-vertical fa-xs"></i></span>{% endif %}
+        {% if step.done ?? false %}<span class="pilot-sort-handle pilot-invisible" aria-hidden="true">{{ pilot_icon('grip-vertical', 'pilot-icon-sm') }}</span>{% else %}<span class="pilot-sort-handle pilot-step-handle" data-pilot-step-sort-handle title="{{ 'label.step_move'|trans({}, 'pilot') }}" aria-hidden="true">{{ pilot_icon('grip-vertical', 'pilot-icon-sm') }}</span>{% endif %}
     {% endif %}
-    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'step'}) }}" class="form-check mb-0 me-n1">
+    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'step'}) }}" class="pilot-step-box">
         <input type="hidden" name="_token" value="{{ token }}">
         <input type="hidden" name="index" value="{{ index }}">
-        <input type="checkbox" class="form-check-input" data-pilot-autosubmit aria-label="{{ step.t }}"{{ (step.done ?? false) ? ' checked' }}>
+        <input type="checkbox" data-pilot-autosubmit aria-label="{{ step.t }}"{{ (step.done ?? false) ? ' checked' }}>
     </form>
     {# The step's text edited in place like the card's other fields, emptied to remove the step #}
     <span data-controller="pilot-inline-edit" class="pilot-step-body">
-        <span class="pilot-inline-view pilot-step-text{{ (step.done ?? false) ? ' text-decoration-line-through text-body-secondary' }}{{ waiting ? ' text-body-tertiary' }}" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.step_edit'|trans({}, 'pilot') }}">{{ step.t }}</span>
+        <span class="pilot-inline-view pilot-step-text{{ (step.done ?? false) ? ' pilot-step-done' }}{{ waiting ? ' pilot-step-waiting' }}" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.step_edit'|trans({}, 'pilot') }}">{{ step.t }}</span>
+        {# When the step was last made and by whom: its run's files and the machine, else the moment it was ticked and the initials of who ticked it; marked to redo when an earlier step was redone after its files #}
+        {% set run_made = step_run and step_run.status.value == 'done' and step_run.files is not empty %}
+        {% set made_at = run_made ? step_run.finishedAt : ((step.done ?? false) ? step.doneAt ?? null : null) %}
+        {% set made_by = (step.done ?? false) and step.doneBy is defined ? step.doneBy : (run_made ? step_run.machine.name ?? null : null) %}
+        {% set with_time = run_made ? step_run.machine is not null : made_at|length > 10 %}
+        {% if made_at %}<span class="pilot-step-date">{{ made_at|date(with_time ? 'd/m/Y H:i' : 'd/m/Y') }}{% if made_by %} - {{ made_by }}{% endif %}</span>{% endif %}
+        {% if stale %}<span class="pilot-tag pilot-tag-warning pilot-step-stale" title="{{ 'label.info_step_stale'|trans({}, 'pilot') }}">{{ 'label.step_stale'|trans({}, 'pilot') }}</span>{% endif %}
         <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'stepedit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
             <input type="hidden" name="_token" value="{{ token }}">
             <input type="hidden" name="index" value="{{ index }}">
-            <input name="text" value="{{ step.t }}" maxlength="500" class="form-control form-control-sm" aria-label="{{ 'label.step_edit'|trans({}, 'pilot') }}" placeholder="{{ 'label.info_step_edit'|trans({}, 'pilot') }}">
+            <input name="text" value="{{ step.t }}" maxlength="500" class="pilot-grow pilot-auto" aria-label="{{ 'label.step_edit'|trans({}, 'pilot') }}" placeholder="{{ 'label.info_step_edit'|trans({}, 'pilot') }}">
             {# The machine action the step hands the card to, among those the machines declared #}
-            <select name="action" class="form-select form-select-sm w-auto" aria-label="{{ 'label.step_action'|trans({}, 'pilot') }}">
+            <select name="action" class="pilot-auto" aria-label="{{ 'label.step_action'|trans({}, 'pilot') }}">
                 <option value="">{{ 'label.step_no_action'|trans({}, 'pilot') }}</option>
                 {% for key, label in action_labels %}<option value="{{ key }}"{{ key == (step.action ?? null) ? ' selected' }}>{{ label }}</option>{% endfor %}
                 {% if step.action is defined and action_labels[step.action] is not defined %}<option value="{{ step.action }}" selected>{{ step.action }}</option>{% endif %}
             </select>
         </form>
         {# Why the step's run stopped, written under the step rather than hidden in a tooltip #}
-        {% if step_failed and step_run.message and not (step.done ?? false) %}<span class="d-block small text-danger pilot-step-failed-reason">{{ step_run.message }}</span>{% endif %}
-    </span>
-    {# The day the step is planned for, a release or a publication, set or emptied in place #}
-    {% if step.due is defined or can.edit %}
-    <span data-controller="pilot-inline-edit" class="pilot-step-due">
-        <span class="badge {{ step.due is defined ? due.tone(step.due, not (step.done ?? false)) : 'text-body-tertiary' }}{{ can.edit ? ' pilot-inline-view' }}" data-pilot-inline-edit-target="view"{% if can.edit %} data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.step_due'|trans({}, 'pilot') }}"{% endif %}><i class="far fa-calendar"></i>{% if step.due is defined %} {{ step.due|date('d/m/Y') }}{% endif %}</span>
-        {% if can.edit %}
-        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'stepdue'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
-            <input type="hidden" name="_token" value="{{ token }}">
-            <input type="hidden" name="index" value="{{ index }}">
-            <input type="date" name="due" value="{{ step.due ?? '' }}" class="form-control form-control-sm w-auto" aria-label="{{ 'label.step_due'|trans({}, 'pilot') }}">
-        </form>
+        {% if step_failed and step_run.message and not (step.done ?? false) %}<span class="pilot-block pilot-small pilot-danger-text pilot-step-failed-reason">{{ step_run.message }}</span>{% endif %}
+        {# Where the files its last run wrote live on the machine, greyed when an earlier step was redone since: each folder by its name, its whole path on hover, and its files one by one, each opened on the computer when the site sets an opening scheme #}
+        {% if run_made %}
+            {% for folder, names in step_run.filesByFolder %}
+                <span class="pilot-step-files{{ stale ? ' pilot-faded' }}">
+                    {% set open = pilot_open_url(folder) %}
+                    {% if open %}<a href="{{ open }}" class="pilot-file-folder" title="{{ folder }}">{{ pilot_icon('folder-open', 'pilot-icon-before') }}{{ folder|split('/')|last }}</a>{% else %}<span class="pilot-file-folder" title="{{ folder }}">{{ pilot_icon('folder-open', 'pilot-icon-before') }}{{ folder|split('/')|last }}</span>{% endif %}
+                    {% for name in names %}
+                        {% set extension = name|split('.')|last|lower %}
+                        {% set kind = extension in ['jpg', 'jpeg', 'png', 'webp', 'gif'] ? 'image' : (extension in ['mp4', 'mov', 'mkv', 'webm'] ? 'video' : (extension == 'pdf' ? 'pdf' : 'other')) %}
+                        {% set icon = {image: 'file-image', video: 'file-video', pdf: 'file-pdf', other: 'file'}[kind] %}
+                        {% set open = pilot_open_url(folder ~ '/' ~ name) %}
+                        {% if open %}<a href="{{ open }}" class="pilot-file-{{ kind }}" title="{{ folder ~ '/' ~ name }}">{{ pilot_icon(icon, 'pilot-icon-before') }}{{ name }}</a>{% else %}<span class="pilot-file-{{ kind }}" title="{{ folder ~ '/' ~ name }}">{{ pilot_icon(icon, 'pilot-icon-before') }}{{ name }}</span>{% endif %}
+                    {% endfor %}
+                </span>
+            {% endfor %}
         {% endif %}
+        {# The files the step's last run produced: those sent opened from the site, those left on the machine by the opening link, which opens only the folders the machine allows, shown as text without it #}
+        {% set files = step_files[index] ?? null %}
+        {% if files %}<span class="pilot-step-files">
+            {% for file in files.files %}
+                {% if file.kind == 'elsewhere' %}{% set open = pilot_open_url(file.name) %}{% if open %}<a href="{{ open }}" class="pilot-file-other" title="{{ 'label.output_elsewhere'|trans({}, 'pilot') }}">{{ pilot_icon('laptop-code', 'pilot-icon-before') }}{{ file.name|split('/')|last }}</a>{% else %}<span class="pilot-file-other" title="{{ 'label.output_elsewhere'|trans({}, 'pilot') }}">{{ pilot_icon('laptop-code', 'pilot-icon-before') }}{{ file.name|split('/')|last }}</span>{% endif %}
+                {% else %}<a href="{{ path('pilot_run_output', {id: files.run.id, name: file.name}) }}" target="_blank" rel="noopener" class="pilot-file-{{ file.kind in ['image', 'video'] ? file.kind : 'other' }}">{{ pilot_icon(file.kind == 'image' ? 'image' : (file.kind == 'video' ? 'file-video' : 'file'), 'pilot-icon-before') }}{{ file.name }}</a>{% endif %}
+            {% endfor %}
+        </span>{% endif %}
     </span>
-    {% endif %}
     {% if step.cost is defined and not (step.done ?? false) %}
         {# What the step spends, in red when the balance left is short #}
         {% set credit = credits[step.cost.credit] ?? null %}
         {% set short = credit and credit.remaining is not null and credit.remaining < step.cost.amount %}
-        <span class="badge {{ short ? 'text-bg-danger' : 'text-bg-light' }}">{{ credit ? credit.label : step.cost.credit }} {{ (step.cost.guess ?? false) ? '≈ ' }}{{ step.cost.amount|format_number }}{% if credit and credit.remaining is not null %} · {{ 'label.credit_left'|trans({'%left%': credit.remaining|format_number}, 'pilot') }}{% endif %}</span>
+        <span class="pilot-tag{{ short ? ' pilot-tag-danger' }}">{{ credit ? credit.label : step.cost.credit }} {{ (step.cost.guess ?? false) ? '≈ ' }}{{ step.cost.amount|format_number }}{% if credit and credit.remaining is not null %} · {{ 'label.credit_left'|trans({'%left%': credit.remaining|format_number}, 'pilot') }}{% endif %}</span>
     {% endif %}
     {% if step_run and step_run.status.value in ['queued', 'claimed'] %}
         {# The step's run under way in place of its button: queued after the others, then taken with its progress and what it is doing; withdrawn while queued, stopped once taken #}
-        <span class="badge text-bg-info pilot-step-running">{{ step_run.status.label|trans }}{% if step_run.status.value == 'claimed' %} · {{ step_run.progress }} %{% endif %}</span>
+        <span class="pilot-tag pilot-tag-info pilot-step-running">{{ step_run.status.label|trans }}{% if step_run.status.value == 'claimed' %}{% set shown = pilot_run_progress(step_run) %} · {{ shown.estimated ? '≈ ' }}{{ shown.value }} %{% endif %}</span>
         {# A queued run no online machine can take says so, the queue otherwise waiting silently #}
-        {% if step_run.status.value == 'queued' and step_run.action not in online_actions %}<span class="badge text-bg-warning pilot-step-no-machine" title="{{ 'label.info_run_no_machine'|trans({}, 'pilot') }}"><i class="fas fa-plug-circle-xmark me-1"></i>{{ 'label.run_no_machine'|trans({}, 'pilot') }}</span>{% endif %}
-        {% if step_run.message %}<span class="small text-body-secondary">{{ step_run.message }}</span>{% endif %}
+        {% if step_run.status.value == 'queued' and step_run.action not in online_actions %}<span class="pilot-tag pilot-tag-warning pilot-step-no-machine" title="{{ 'label.info_run_no_machine'|trans({}, 'pilot') }}">{{ pilot_icon('plug-circle-xmark') }}{{ 'label.run_no_machine'|trans({}, 'pilot') }}</span>{% endif %}
+        {% if step_run.message %}<span class="pilot-small pilot-muted">{{ step_run.message }}</span>{% endif %}
         {% set stop_label = step_run.status.value == 'claimed' ? 'label.run_stop'|trans({}, 'pilot') : 'label.run_cancel'|trans({}, 'pilot') %}
         <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'cancel'}) }}">
             <input type="hidden" name="_token" value="{{ token }}">
             <input type="hidden" name="run" value="{{ step_run.id }}">
-            <button class="btn btn-sm btn-link text-body-secondary p-0 pilot-step-cancel" title="{{ stop_label }}" aria-label="{{ stop_label }}"><i class="fas {{ step_run.status.value == 'claimed' ? 'fa-stop' : 'fa-xmark' }}"></i></button>
+            <button class="pilot-btn pilot-btn-ghost pilot-btn-delete pilot-step-cancel" title="{{ stop_label }}" aria-label="{{ stop_label }}">{{ pilot_icon(step_run.status.value == 'claimed' ? 'stop' : 'xmark') }}</button>
         </form>
     {% elseif can.run and step.action is defined and not (step.done ?? false) and card.status.value not in ['review', 'done'] %}
-        {% if step_failed %}<span class="badge text-bg-danger pilot-step-failed">{{ step_run.status.label|trans }}</span>{% endif %}
+        {% if step_failed %}<span class="pilot-tag pilot-tag-danger pilot-step-failed">{{ step_run.status.label|trans }}</span>{% endif %}
         {# The machine action the step names, queued by hand right after its text, named on the button, after any action already queued; disabled while a step it waits for is still to tick #}
         <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'runstep'}) }}">
             <input type="hidden" name="_token" value="{{ token }}">
             <input type="hidden" name="index" value="{{ index }}">
-            <button class="btn btn-sm btn-outline-primary py-0 pilot-step-run"{% if waiting %} disabled{% endif %} title="{{ waiting ? 'label.step_waiting'|trans({'%steps%': card.stepAwaits(index)|join(', ')}, 'pilot') : 'label.step_run'|trans({}, 'pilot') }}"><i class="fas fa-play me-1"></i>{{ action_labels[step.action] ?? step.action }}</button>
+            <button class="pilot-btn pilot-btn-primary pilot-step-run"{% if waiting %} disabled{% endif %} title="{{ waiting ? 'label.step_waiting'|trans({'%steps%': card.stepAwaits(index)|join(', ')}, 'pilot') : 'label.step_run'|trans({}, 'pilot') }}">{{ pilot_icon('play') }}{{ action_labels[step.action] ?? step.action }}</button>
         </form>
     {% endif %}
+    {% include '@c975LPilot/pilot/_line_delete.html.twig' with {running: step_run and step_run.status.value in ['queued', 'claimed']} %}
     {# Handed to an AI only on a card of its own, a template's step being done by its runner #}
     {% if not (card.template and card.template.checklist) %}{% include '@c975LPilot/pilot/_ai_share.html.twig' %}{% endif %}
 </li>

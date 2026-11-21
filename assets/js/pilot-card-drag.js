@@ -30,7 +30,7 @@ export default class extends Controller {
         this.space = null;
         this.set = null;
         this.origin = { parent: card.parentElement, next: card.nextElementSibling };
-        card.classList.add("opacity-50");
+        card.classList.add("pilot-faded");
         this.element.classList.add("pilot-dragging");
     }
 
@@ -146,7 +146,7 @@ export default class extends Controller {
     }
 
     settle(card) {
-        card.classList.remove("opacity-50");
+        card.classList.remove("pilot-faded");
         this.element.classList.remove("pilot-dragging");
     }
 

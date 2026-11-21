@@ -1,0 +1,218 @@
+// The few layout and text helpers the templates compose with, each named for what it does
+.pilot-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+    flex-shrink: 0;
+    vertical-align: -.125em;
+}
+
+.pilot-icon-sm {
+    width: .8em;
+    height: .8em;
+}
+
+// An icon placed before its words
+.pilot-icon-before {
+    margin-inline-end: .4em;
+}
+
+.pilot-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.pilot-row-tight {
+    gap: .25rem;
+}
+
+.pilot-row-loose {
+    gap: 1rem;
+}
+
+.pilot-row-top {
+    align-items: flex-start;
+}
+
+.pilot-row-bottom {
+    align-items: flex-end;
+}
+
+.pilot-row-end {
+    justify-content: flex-end;
+}
+
+.pilot-row-between {
+    justify-content: space-between;
+}
+
+.pilot-row-nowrap {
+    flex-wrap: nowrap;
+}
+
+.pilot-stack {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.pilot-push {
+    margin-inline-start: auto;
+}
+
+.pilot-grow {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.pilot-fixed {
+    flex-shrink: 0;
+}
+
+.pilot-block {
+    display: block;
+}
+
+.pilot-inline {
+    display: inline-block;
+}
+
+.pilot-full {
+    width: 100%;
+}
+
+.pilot-auto {
+    width: auto;
+}
+
+.pilot-faded {
+    opacity: .5;
+}
+
+.pilot-invisible {
+    visibility: hidden;
+}
+
+.pilot-muted {
+    color: var(--pilot-muted);
+}
+
+.pilot-faint {
+    color: var(--pilot-faint);
+}
+
+.pilot-plain {
+    color: inherit;
+}
+
+.pilot-danger-text {
+    color: var(--pilot-danger);
+}
+
+.pilot-success-text {
+    color: var(--pilot-success);
+}
+
+.pilot-small {
+    font-size: .8125rem;
+}
+
+.pilot-strong {
+    font-weight: 600;
+}
+
+.pilot-normal {
+    font-weight: 400;
+}
+
+.pilot-upper {
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.pilot-nowrap {
+    white-space: nowrap;
+}
+
+.pilot-break {
+    overflow-wrap: anywhere;
+}
+
+.pilot-mono {
+    font-family: var(--pilot-mono);
+}
+
+.pilot-end {
+    text-align: end;
+}
+
+.pilot-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.pilot-subtitle {
+    font-size: .9375rem;
+    font-weight: 600;
+}
+
+.pilot-m0 {
+    margin: 0;
+}
+
+.pilot-mb-xs {
+    margin-bottom: .25rem;
+}
+
+.pilot-mb-sm {
+    margin-bottom: .5rem;
+}
+
+.pilot-mb {
+    margin-bottom: 1rem;
+}
+
+.pilot-mb-lg {
+    margin-bottom: 1.5rem;
+}
+
+.pilot-mt-xs {
+    margin-top: .25rem;
+}
+
+.pilot-mt-sm {
+    margin-top: .5rem;
+}
+
+.pilot-mt {
+    margin-top: 1rem;
+}
+
+.pilot-mt-lg {
+    margin-top: 1.5rem;
+}
+
+.pilot-pad {
+    padding: .75rem;
+}
+
+.pilot-bare-list {
+    list-style: none;
+    padding: 0;
+}
+
+// Shown on a phone only, the medium screen showing the column instead
+@media (min-width: 768px) {
+    .pilot-phone-only {
+        display: none !important;
+    }
+}
+
+@media print {
+    .pilot-no-print {
+        display: none !important;
+    }
+}

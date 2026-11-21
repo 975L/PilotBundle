@@ -1,5 +1,20 @@
 # UPGRADE
 
+## v1.0.0
+
+A card's output goes back to the machine through its open feedback instead of a free comment.
+
+- The runner API counts the unknown tokens by address: past 20 in an hour, the address gets 429, a right token included, until the hour ends; redefine `c975l_pilot_runner_denied` under `framework.rate_limiter` to change it. The reference runner refuses a site in plain `http://` off `127.0.0.1`, `localhost` or `::1`: serve the site over https. A file left on the machine opens through `pilot-open://` only (`pilot-open-scheme`), no longer as a `vscode://file` link.
+
+- The piloting pages carry their own stylesheet and icons: run `assets:install` so that `public/bundles/c975lpilot/` holds them. A template overridden from the bundle's must use the `pilot-*` classes and `pilot_icon()` instead of Bootstrap's classes and Font Awesome's `<i>`; the layout no longer loads EasyAdmin's `app.css` nor its colour scheme script, the pages following the system's light or dark setting.
+
+- The balances are read by the site itself, no longer sent by a machine: `POST /api/pilot/runner/credits`, `CreditRepository::report()` and `Machine::servesAll()` are removed, and so is the `credits` command of the runner's `runner.yaml` (drop it, with the script it named). Run `doctrine:migrations:diff` then `migrate`: it adds `pilot_credit.provider`, `account` and `api_key` and drops `manual`. Then, in the credits' settings, give each credit the service it is read from and its account's API key (an access token of expo.dev and the account's name for Expo); the site reads them every morning and from the dashboard's button, `C975L_VAULT_KEY` encrypting the keys, the key never shown back on the form. A runner's command may print `SPENT <credit> <amount>` lines, forwarded as `spent: {"key": amount}` in `runs/{id}/finish` (`RunQueue::finish()` takes it last): the amount comes off a credit typed in by hand, only for the credit the cost of the run's step names, any other key ignored.
+- The spaces and the collections leave the settings: a space is made from the + of the column and set from the gear of its page, a collection in place; `CardSetType` and the `collection` kind are removed, `/pilot/settings` opens on the plan templates.
+
+- A machine takes several runs at once: run `doctrine:migrations:diff` then `migrate`, which adds `pilot_machine.parallel` (1 by default) `pilot_run.started_at` and `pilot_run.files`, then set it on the Machines screen. A custom runner reads the `X-Pilot-Parallel` header of the claim answers and may send `only` (the action keys it can start now); `RunQueue::claim()` takes it last. Mark `exclusive: true` in `actions.yaml` an action that must run alone.
+- The `sendback` gesture is now `feedbackrun` and takes no field: it hands the card's open feedback, numbered, as the `comment` parameter; `CardFlow::sendBack()` is replaced by `CardFlow::treatFeedback()`.
+- An action receiving that comment does only what its lines ask; a line it leaves open is reported by a `FEEDBACK <n> <reason>` line of the command, sent by the runner as `feedback: {"n": "reason"}` in `runs/{id}/finish` (`RunQueue::finish()` takes it after the title). A custom runner should forward these lines, and may forward a `RESULT <url>` line as `result`, `RunQueue::finish()`'s last argument.
+
 ## v0.5.0
 
 The piloting leaves the back office for `/pilot`, its pages and its settings on a shell of their own, shared by the members of each space.

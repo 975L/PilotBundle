@@ -12,6 +12,7 @@ namespace c975L\PilotBundle\Tests\Controller;
 
 use c975L\PilotBundle\Controller\ShareController;
 use c975L\PilotBundle\Entity\Card;
+use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Repository\CardRepository;
 use c975L\PilotBundle\Repository\DocRepository;
@@ -20,6 +21,7 @@ use c975L\PilotBundle\Service\CardFlow;
 use c975L\PilotBundle\Service\CardImages;
 use c975L\PilotBundle\Service\CardMarkdown;
 use c975L\PilotBundle\Service\StepOrder;
+use c975L\PilotBundle\Tests\Fixtures\PilotTestStubs;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Clock\MockClock;
@@ -27,10 +29,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ShareControllerTest extends TestCase
 {
+    use PilotTestStubs;
+
     private Card $card;
 
     private ActionOffer $offer;
@@ -68,6 +72,18 @@ class ShareControllerTest extends TestCase
 
         $this->assertSame(Response::HTTP_NO_CONTENT, $response->getStatusCode());
         $this->assertSame('item-2', $this->card->getTitle());
+    }
+
+    // A step added through the editing link to a card following a checklist template is refused with its reason, nothing saved
+    public function testEditLinkRefusesAStepOutOfTheTemplate(): void
+    {
+        $this->card->follow(new PlanTemplate('catalog', [['title' => 'step-1', 'executor' => 'human']])->setChecklist(true));
+
+        $response = $this->controller()->save((string) $this->card->getEditToken(), new Request(content: "## Steps\n\n- [ ] step-1\n- [ ] step-2\n- [ ] step-9\n"));
+
+        $this->assertSame(Response::HTTP_UNPROCESSABLE_ENTITY, $response->getStatusCode());
+        $this->assertSame('flow.template_steps', $response->getContent());
+        $this->assertSame(['step-1', 'step-2'], array_column($this->card->getChecklist(), 't'));
     }
 
     // The read-only link never writes
@@ -147,15 +163,15 @@ class ShareControllerTest extends TestCase
             default => null,
         });
 
-        return new ShareController($cards, new CardMarkdown($this->createStub(DocRepository::class), $this->urls()), $this->createStub(EntityManagerInterface::class), new MockClock(), new CardFlow(new MockClock()), $this->offer, new StepOrder($cards, new MockClock()), new CardImages(sys_get_temp_dir()));
+        return new ShareController($cards, new CardMarkdown($this->createStub(DocRepository::class), $this->urls()), $this->createStub(EntityManagerInterface::class), new MockClock(), new CardFlow(new MockClock()), $this->offer, new StepOrder($cards, new MockClock()), new CardImages(sys_get_temp_dir()), $this->translator());
     }
 
-    // Addresses of the screenshots, as the router writes them
-    private function urls(): UrlGeneratorInterface
+    // A translator handing back the key it was given
+    private function translator(): TranslatorInterface
     {
-        $urls = $this->createStub(UrlGeneratorInterface::class);
-        $urls->method('generate')->willReturnCallback(static fn (string $route, array $parameters): string => 'https://example.com/pilot/share/image/' . $parameters['name']);
+        $translator = $this->createStub(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
 
-        return $urls;
+        return $translator;
     }
 }

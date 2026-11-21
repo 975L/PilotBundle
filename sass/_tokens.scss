@@ -1,0 +1,70 @@
+// The piloting pages' own palette and measures, light by default and dark when the system asks for it
+:root {
+    color-scheme: light dark;
+    --pilot-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --pilot-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --pilot-radius: .375rem;
+    --pilot-radius-lg: .75rem;
+    --pilot-bg: #f6f7f9;
+    --pilot-surface: #ffffff;
+    --pilot-surface-2: #eef0f3;
+    --pilot-text: #1f2328;
+    --pilot-strong-text: #0b0d10;
+    --pilot-muted: #5b6370;
+    --pilot-faint: #8b929c;
+    --pilot-border: #d6dae0;
+    --pilot-shadow: 0 .25rem .75rem rgba(0, 0, 0, .12);
+    --pilot-primary: #2563eb;
+    --pilot-primary-soft: #dbe7fd;
+    --pilot-on-primary: #ffffff;
+    --pilot-info: #0e7490;
+    --pilot-info-soft: #cff1f8;
+    --pilot-success: #15803d;
+    --pilot-success-soft: #d7f3df;
+    --pilot-warning: #b45309;
+    --pilot-warning-soft: #fdecc8;
+    --pilot-danger: #dc2626;
+    --pilot-danger-soft: #fde0e0;
+    --pilot-purple: #7c3aed;
+    --pilot-orange: #ea580c;
+    --pilot-neutral: #6b7280;
+    // Each kind of file its own hue under a step
+    --pilot-file-folder: #d97706;
+    --pilot-file-pdf: #dc2626;
+    --pilot-file-image: #16a34a;
+    --pilot-file-video: #7c3aed;
+    --pilot-file-other: #5b6370;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --pilot-bg: #15181d;
+        --pilot-surface: #1e2228;
+        --pilot-surface-2: #2a2f37;
+        --pilot-text: #e6e8eb;
+        --pilot-strong-text: #f7f8f9;
+        --pilot-muted: #a3aab4;
+        --pilot-faint: #7c838d;
+        --pilot-border: #3a404a;
+        --pilot-shadow: 0 .25rem .75rem rgba(0, 0, 0, .5);
+        --pilot-primary: #5b8def;
+        --pilot-primary-soft: #1f3157;
+        --pilot-on-primary: #0b1220;
+        --pilot-info: #4cc3dc;
+        --pilot-info-soft: #113a44;
+        --pilot-success: #4ade80;
+        --pilot-success-soft: #123522;
+        --pilot-warning: #f5b84a;
+        --pilot-warning-soft: #3d2c0b;
+        --pilot-danger: #f87171;
+        --pilot-danger-soft: #45191b;
+        --pilot-purple: #a78bfa;
+        --pilot-orange: #fb923c;
+        --pilot-neutral: #8b929c;
+        --pilot-file-folder: #f5b84a;
+        --pilot-file-pdf: #f87171;
+        --pilot-file-image: #4ade80;
+        --pilot-file-video: #a78bfa;
+        --pilot-file-other: #a3aab4;
+    }
+}

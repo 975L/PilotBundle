@@ -30,6 +30,7 @@
         .pilot-share-zoom { display: none; position: fixed; inset: 0; z-index: 10; align-items: center; justify-content: center; background: rgb(0 0 0 / .75); cursor: zoom-out; }
         .pilot-share-zoom:target { display: flex; }
         .pilot-share-zoom img { max-width: calc(100vw - 2rem); max-height: calc(100vh - 2rem); border-radius: .5rem; }
+        .pilot-share-refusal { padding: .5rem .75rem; border-radius: .25rem; color: #842029; background: #f8d7da; }
         .pilot-share-edit textarea { box-sizing: border-box; width: 100%; min-height: 24rem; font: .85rem/1.4 ui-monospace, monospace; color: inherit; background: transparent; }
         @media (prefers-color-scheme: dark) {
             body { color: #dee2e6; background: #16191c; }
@@ -38,6 +39,7 @@
             .pilot-share-waiting { color: #6c757d; }
             .pilot-share-steps li { border-color: #343a40; }
             .pilot-share-inline button { background: #2b3035; border-color: #495057; }
+            .pilot-share-refusal { color: #ea868f; background: #2c0b0e; }
         }
     </style>
 </head>
@@ -76,7 +78,7 @@
                         </form>
                     {% endif %}
                     {% set waiting = not done and card.isStepWaiting(index) %}
-                    <span class="pilot-share-text{{ waiting ? ' pilot-share-waiting' }}">{{ step.t }}</span>{% if step.due is defined %} <small>· {{ step.due|date('d/m/Y') }}</small>{% endif %}
+                    <span class="pilot-share-text{{ waiting ? ' pilot-share-waiting' }}">{{ step.t }}</span>
                     {% if step.action is defined %}
                         {% if not editable %}<code>{{ step.action }}</code>{% endif %}
                         {% set step_run = step_runs[index] ?? null %}
@@ -155,9 +157,11 @@
     {% endif %}
 
     {% if editable %}
-        <details>
+        {# A refused rewrite opens the form again on the text as it was typed, the reason above it #}
+        <details{{ refusal ? ' open' }}>
         <summary>{{ 'label.share_rewrite'|trans({}, 'pilot') }}</summary>
         <form method="post" action="{{ path('pilot_share_save', {token: token}) }}" class="pilot-share-edit">
+            {% if refusal %}<p class="pilot-share-refusal" role="alert">{{ refusal|trans }}</p>{% endif %}
             <p class="pilot-share-meta">{{ 'label.info_share_edit'|trans({}, 'pilot') }} <a href="{{ path('pilot_share_markdown', {token: token}) }}">.md</a></p>
             <textarea name="markdown" aria-label="{{ 'label.share_edit'|trans({}, 'pilot') }}">{{ markdown }}</textarea>
             <p><button>{{ 'label.card_save'|trans({}, 'pilot') }}</button></p>

@@ -22,10 +22,11 @@ class PilotUrlsTest extends TestCase
     public function testCard(): void
     {
         $urls = $this->createStub(UrlGeneratorInterface::class);
-        $urls->method('generate')->willReturnCallback(static fn (string $route, array $parameters): string => $route . ' ' . implode('/', $parameters));
+        $urls->method('generate')->willReturnCallback(static fn (string $route, array $parameters, int $type): string => (UrlGeneratorInterface::ABSOLUTE_URL === $type ? 'https:' : '') . $route . ' ' . implode('/', $parameters));
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1');
         new \ReflectionProperty(Card::class, 'id')->setValue($card, 12);
 
         $this->assertSame('pilot_space_card catalog/12', new PilotUrls($urls)->card($card));
+        $this->assertSame('https:pilot_space_card catalog/12', new PilotUrls($urls)->card($card, UrlGeneratorInterface::ABSOLUTE_URL));
     }
 }

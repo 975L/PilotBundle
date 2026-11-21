@@ -42,7 +42,7 @@ class RunOutputsTest extends TestCase
         new Filesystem()->dumpFile($source, 'catalog');
 
         $name = $outputs->store($run, new UploadedFile($source, '../../.item 1.txt', null, null, true));
-        $run->finish(RunStatus::Done, null, ['/home/x/item 1.txt', '/home/x/film.mp4'], null, new \DateTimeImmutable());
+        $run->finish(RunStatus::Done, null, ['/home/x/item 1.txt', '/home/x/film.mp4'], new \DateTimeImmutable());
         $previews = $outputs->previews($run);
 
         $this->assertSame('item_1.txt', $name);
@@ -50,6 +50,42 @@ class RunOutputsTest extends TestCase
         $this->assertSame('elsewhere', $previews[1]['kind'] ?? null);
         $this->assertSame('/home/x/film.mp4', $previews[1]['name']);
         $this->assertNull($outputs->path($run, '../source.txt'));
+    }
+
+    // Each step keeps the files of its last run that produced any, a run without files, a run that only answered in markdown, a failed one, one whose step left or the card's own left aside
+    public function testOfSteps(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1'], ['t' => 'step-2']]);
+        $first = new Run($card, 'action-1', [], 0);
+        $first->finish(RunStatus::Done, null, ['/home/x/item-1.md'], new \DateTimeImmutable());
+        $last = new Run($card, 'action-1', [], 0);
+        $last->finish(RunStatus::Done, null, ['/home/x/item-2.jpg', '/home/x/reponse.md'], new \DateTimeImmutable());
+        new Run($card, 'action-1', [], 0);
+        new Run($card, 'action-1', [], 1)->finish(RunStatus::Done, null, ['/home/x/item-5.md'], new \DateTimeImmutable());
+        new Run($card, 'action-1', [], 1)->finish(RunStatus::Failed, null, ['/home/x/item-3.md'], new \DateTimeImmutable());
+        new Run($card)->finish(RunStatus::Done, null, ['/home/x/item-4.md'], new \DateTimeImmutable());
+        new Run($card, 'action-1', [], Run::LEFT_STEP)->finish(RunStatus::Done, null, ['/home/x/item-6.jpg'], new \DateTimeImmutable());
+
+        $steps = new RunOutputs($this->dir)->ofSteps($card);
+
+        $this->assertSame([0], array_keys($steps));
+        $this->assertSame($last, $steps[0]['run']);
+        $this->assertSame([['name' => '/home/x/item-2.jpg', 'kind' => 'elsewhere', 'text' => null]], $steps[0]['files']);
+    }
+
+    // The files listed under a step are named and typed, never read
+    public function testOfStepsReadsNoFile(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1']]);
+        $run = new Run($card, 'action-1', [], 0);
+        new \ReflectionProperty(Run::class, 'id')->setValue($run, 8);
+        $outputs = new RunOutputs($this->dir);
+        $source = $this->dir . '/source.txt';
+        new Filesystem()->dumpFile($source, 'catalog');
+        $outputs->store($run, new UploadedFile($source, 'item-1.txt', null, null, true));
+        $run->finish(RunStatus::Done, null, ['/home/x/item-1.txt'], new \DateTimeImmutable());
+
+        $this->assertSame([['name' => 'item-1.txt', 'kind' => 'text', 'text' => null]], $outputs->ofSteps($card)[0]['files']);
     }
 
     // Only images and videos get a type to be shown under, an html or svg file none

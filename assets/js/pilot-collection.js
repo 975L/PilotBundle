@@ -15,12 +15,12 @@ export default class extends Controller {
     // A new entry at the end, numbered after the last one ever added
     add() {
         const item = document.createElement("li");
-        item.className = "border rounded p-2";
+        item.className = "pilot-framed";
         item.dataset.pilotCollectionTarget = "entry";
         item.innerHTML = this.prototypeValue.replace(/__name__/g, String(this.indexValue));
         const remove = document.createElement("button");
         remove.type = "button";
-        remove.className = "btn btn-sm btn-link text-danger p-0";
+        remove.className = "pilot-btn pilot-btn-ghost pilot-btn-delete";
         remove.dataset.action = "pilot-collection#remove";
         remove.textContent = this.removeLabelValue;
         item.append(remove);

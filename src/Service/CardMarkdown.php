@@ -12,8 +12,11 @@ namespace c975L\PilotBundle\Service;
 
 use c975L\PilotBundle\Controller\CardImageController;
 use c975L\PilotBundle\Entity\Card;
+use c975L\PilotBundle\Exception\FlowException;
 use c975L\PilotBundle\Repository\DocRepository;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
+use function Symfony\Component\Translation\t;
 
 // A card as one markdown text, read and rewritten through its editing link: title, date and awaited answer, note, steps, feedback, then its reference in full
 class CardMarkdown
@@ -124,13 +127,16 @@ class CardMarkdown
         }
     }
 
-    // The task lists replacing the checklist, the steps then the feedback, a list left out keeping what the card had
+    // The task lists replacing the checklist, the steps then the feedback, a list left out keeping what the card had; a step the card does not have refused on a card following a checklist template, which takes its steps from the template alone
     private function readChecklist(Card $card, ?string $steps, ?string $feedback, \DateTimeImmutable $day): void
     {
         $laid = [];
         $from = [];
         foreach ([[false, $steps, $card->getSteps()], [true, $feedback, $card->getFeedback()]] as [$isFeedback, $text, $own]) {
             [$items, $indices] = null === $text ? [array_values($own), array_keys($own)] : $this->readList($text, $own, $isFeedback, $day);
+            if (!$isFeedback && !$card->takesStepsByHand() && \in_array(null, $indices, true)) {
+                throw new FlowException(t('flow.template_steps', [], 'pilot'));
+            }
             $laid = [...$laid, ...$items];
             $from = [...$from, ...$indices];
         }
@@ -167,14 +173,11 @@ class CardMarkdown
             [, , $mark, $title] = $item;
             // The machine action write() shows after a step is its own, never part of the text
             $title = trim((string) preg_replace('/ `[\w-]+`$/', '', trim($title)));
-            // So is the day the step is planned for, written « @2027-02-03 » after its text
-            $due = !$feedback && 1 === preg_match('/ @(\d{4}-\d{2}-\d{2})$/', $title, $planned) ? $planned[1] : null;
-            $title = null !== $due ? mb_substr($title, 0, -12) : $title;
             $index = StepOrder::take($free, $title);
             $from[] = $index;
             $step = null === $index ? ['t' => mb_substr($title, 0, 500)] : $own[$index];
             unset($step['img']);
-            $steps[] = $this->mark($feedback ? $step : self::planned(StepOrder::grouped($step, ['group' => $group ?? '']), $due), ' ' !== $mark, $feedback, $day);
+            $steps[] = $this->mark($feedback ? $step : StepOrder::grouped($step, ['group' => $group ?? '']), ' ' !== $mark, $feedback, $day);
         }
 
         return [$steps, $from];
@@ -195,36 +198,19 @@ class CardMarkdown
         return $steps;
     }
 
-    // A step planned for the day read, a valid one only, or for none
+    // An item ticked or not, dated to the minute it is ticked, a feedback kept as such
     /**
-     * @param array{t: string, due?: string} $step
+     * @param array{t: string, done?: bool, doneAt?: string, doneBy?: string, feedback?: bool, img?: string} $step
      *
-     * @return array{t: string, due?: string}
-     */
-    private static function planned(array $step, ?string $due): array
-    {
-        unset($step['due']);
-        $parsed = null !== $due ? \DateTimeImmutable::createFromFormat('!Y-m-d', $due) : false;
-        if (false !== $parsed && $due === $parsed->format('Y-m-d')) {
-            $step['due'] = $due;
-        }
-
-        return $step;
-    }
-
-    // An item ticked or not, dated the day it is ticked, a feedback kept as such
-    /**
-     * @param array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string} $step
-     *
-     * @return array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string}
+     * @return array{t: string, done?: bool, doneAt?: string, doneBy?: string, feedback?: bool, img?: string}
      */
     private function mark(array $step, bool $done, bool $feedback, \DateTimeImmutable $day): array
     {
         if (!$done) {
-            unset($step['done'], $step['doneAt']);
+            unset($step['done'], $step['doneAt'], $step['doneBy']);
         } elseif (!($step['done'] ?? false)) {
             $step['done'] = true;
-            $step['doneAt'] = $day->format('Y-m-d');
+            $step['doneAt'] = $day->format('Y-m-d H:i');
         }
         if ($feedback) {
             $step['feedback'] = true;
@@ -243,7 +229,7 @@ class CardMarkdown
         $card->setDoc($doc->fromMarkdown($text));
     }
 
-    // The steps as task list items under the « ### » heading of their group, the day one is planned for after its text, then the feedback, its screenshot as an image on the indented line under it
+    // The steps as task list items under the « ### » heading of their group, then the feedback, its screenshot as an image on the indented line under it
     /** @return list<string> */
     private function steps(Card $card): array
     {
@@ -259,7 +245,7 @@ class CardMarkdown
                     $group = $step['g'] ?? null;
                     array_push($lines, '', '### ' . ($group ?? '-'), '');
                 }
-                $lines[] = '- [' . (($step['done'] ?? false) ? 'x' : ' ') . '] ' . $step['t'] . (isset($step['due']) ? ' @' . $step['due'] : '') . (isset($step['action']) ? ' `' . $step['action'] . '`' : '');
+                $lines[] = '- [' . (($step['done'] ?? false) ? 'x' : ' ') . '] ' . $step['t'] . (isset($step['action']) ? ' `' . $step['action'] . '`' : '');
                 if (isset($step['img'])) {
                     $lines[] = '  ![screenshot](' . $this->imageUrl($step['img']) . ')';
                 }

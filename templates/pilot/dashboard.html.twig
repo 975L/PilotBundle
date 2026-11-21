@@ -2,32 +2,35 @@
 
 {% block pilot %}
     <h1>{{ 'label.dashboard'|trans({}, 'pilot') }}</h1>
-    <p class="text-body-secondary">{{ 'label.info_week'|trans({}, 'pilot') }}</p>
+    <p class="pilot-muted">{{ 'label.info_week'|trans({}, 'pilot') }}</p>
 
     {# The machine work under way first, before anything else #}
     {% include '@c975LPilot/pilot/_runs.html.twig' %}
 
     {% if credits is not empty %}
-        <div class="row g-2 mb-4 pilot-credits">
+        {# The services read again on demand, the ones typed in by hand left as they are #}
+        <form method="post" action="{{ path('pilot_credits_refresh') }}" class="pilot-row pilot-row-end pilot-mb-xs pilot-credits-refresh">
+            <input type="hidden" name="_token" value="{{ csrf_token('pilot_credits_refresh') }}">
+            <button class="pilot-btn pilot-btn-ghost">{{ pilot_icon('rotate') }}{{ 'label.credits_refresh'|trans({}, 'pilot') }}</button>
+        </form>
+        <div class="pilot-mb-lg pilot-credits">
             {% for credit in credits %}
-                <div class="col-6 col-md-4 col-xl-3">
-                    <div class="border rounded p-2 h-100{{ credit.empty ? ' border-danger' }}">
-                        <div class="small text-body-secondary text-uppercase">{{ credit.label }}</div>
+                <div class="pilot-credit{{ credit.empty ? ' pilot-credit-empty' }}">
+                        <div class="pilot-small pilot-muted pilot-upper">{{ credit.label }}</div>
                         {% if credit.manual %}
-                            <form method="post" action="{{ path('pilot_credit', {id: credit.id}) }}" class="d-flex gap-1">
+                            <form method="post" action="{{ path('pilot_credit', {id: credit.id}) }}" class="pilot-row pilot-row-tight pilot-row-nowrap">
                                 <input type="hidden" name="_token" value="{{ csrf_token('pilot_credit' ~ credit.id) }}">
-                                <input type="number" min="0" name="remaining" value="{{ credit.remaining }}" placeholder="{{ 'label.credit_type_in'|trans({}, 'pilot') }}" aria-label="{{ credit.label }}" class="form-control form-control-sm">
-                                <button class="btn btn-sm btn-outline-secondary" title="{{ 'label.credit_save'|trans({}, 'pilot') }}" aria-label="{{ 'label.credit_save'|trans({}, 'pilot') }}"><i class="fas fa-check"></i></button>
+                                <input type="number" min="0" name="remaining" value="{{ credit.remaining }}" placeholder="{{ 'label.credit_type_in'|trans({}, 'pilot') }}" aria-label="{{ credit.label }}">
+                                <button class="pilot-btn pilot-btn-icon" title="{{ 'label.credit_save'|trans({}, 'pilot') }}" aria-label="{{ 'label.credit_save'|trans({}, 'pilot') }}">{{ pilot_icon('check') }}</button>
                             </form>
                         {% else %}
-                            <div class="fs-5{{ credit.empty ? ' text-danger' }}">{{ credit.remaining is null ? '?' : credit.remaining|format_number }}{% if credit.total %} / {{ credit.total|format_number }}{% endif %} {{ credit.unit }}</div>
+                            <div class="pilot-credit-value{{ credit.empty ? ' pilot-danger-text' }}">{{ credit.remaining is null ? '?' : credit.remaining|format_number }}{% if credit.total %} / {{ credit.total|format_number }}{% endif %} {{ credit.unit }}</div>
                         {% endif %}
-                        <div class="small text-body-secondary">
+                        <div class="pilot-small pilot-muted">
                             {% if credit.renewsOn %}{{ 'label.credit_renews_on'|trans({'%date%': credit.renewsOn|format_date('short')}, 'pilot') }}{% endif %}
                             {% if credit.note %} · {{ credit.note }}{% endif %}
                             {% if credit.updatedAt %} · {{ credit.updatedAt|format_date('short') }}{% endif %}
                         </div>
-                    </div>
                 </div>
             {% endfor %}
         </div>
@@ -35,8 +38,8 @@
 
 
     {% if waiting is not empty %}
-        <section class="mb-4">
-            <h2 class="h5">{{ 'label.waiting'|trans({}, 'pilot') }}</h2>
+        <section class="pilot-mb-lg">
+            <h2 class="pilot-title">{{ 'label.waiting'|trans({}, 'pilot') }}</h2>
             <div class="pilot-cards">
                 {% for card in waiting %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% endfor %}
             </div>
@@ -45,8 +48,8 @@
     {% include '@c975LPilot/pilot/_reports.html.twig' %}
 
     {% if late is not empty %}
-        <section class="mb-4">
-            <h2 class="h5 text-danger">{{ 'label.late'|trans({}, 'pilot') }}</h2>
+        <section class="pilot-mb-lg">
+            <h2 class="pilot-title pilot-danger-text">{{ 'label.late'|trans({}, 'pilot') }}</h2>
             <div class="pilot-cards">
                 {% for card in late %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% endfor %}
             </div>
@@ -59,25 +62,25 @@
 
     {% set this_month = today|date('Y-m-01') %}
     {% if spend[this_month] is defined %}
-        <h2 class="h6 text-body-secondary">{{ 'label.spend_month'|trans({'%month%': this_month|format_date(pattern: 'MMMM y')}, 'pilot') }}</h2>
+        <h2 class="pilot-subtitle pilot-muted">{{ 'label.spend_month'|trans({'%month%': this_month|format_date(pattern: 'MMMM y')}, 'pilot') }}</h2>
         {% include '@c975LPilot/pilot/_spend.html.twig' with {month: this_month} %}
     {% endif %}
 
     {% for day, cards in days %}
-        <h2 class="h5">{{ day|format_date('full') }}</h2>
-        <div class="pilot-cards pilot-drop mb-4" data-pilot-card-drag-target="zone" data-due="{{ day }}">
+        <h2 class="pilot-title">{{ day|format_date('full') }}</h2>
+        <div class="pilot-cards pilot-drop pilot-mb-lg" data-pilot-card-drag-target="zone" data-due="{{ day }}">
             {% for card in cards %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% endfor %}
         </div>
     {% endfor %}
 
     {# The later deadlines month by month, every card shown, the month written larger than a day #}
     {% for month, cards in later %}
-        <h2 class="h3 mt-5 pilot-month">{{ month|format_date(pattern: 'MMMM y')|capitalize }}</h2>
+        <h2 class="pilot-mt-lg pilot-month">{{ month|format_date(pattern: 'MMMM y')|capitalize }}</h2>
         {% if spend[month] is defined %}
-            <p class="small text-body-secondary mb-1">{{ 'label.spend_month'|trans({'%month%': month|format_date(pattern: 'MMMM y')}, 'pilot') }}</p>
+            <p class="pilot-small pilot-muted pilot-mb-xs">{{ 'label.spend_month'|trans({'%month%': month|format_date(pattern: 'MMMM y')}, 'pilot') }}</p>
             {% include '@c975LPilot/pilot/_spend.html.twig' %}
         {% endif %}
-        <div class="pilot-cards mb-4">
+        <div class="pilot-cards pilot-mb-lg">
             {% for card in cards %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% endfor %}
         </div>
     {% endfor %}

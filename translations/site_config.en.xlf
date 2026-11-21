@@ -6,9 +6,17 @@
                 <source>description.pilot_horizon_days</source>
                 <target>Days the dashboard shows one by one, before grouping by month</target>
             </trans-unit>
+            <trans-unit id="xjH3Gsq">
+                <source>description.pilot_open_scheme</source>
+                <target>Name of the link scheme opening on the computer a file or a folder named under a step, the link being that name, :// then the path (for instance pilot-open, served by runner/pilot-open.py); empty, the paths stay plain text</target>
+            </trans-unit>
             <trans-unit id="VdOkW5Q">
                 <source>label.pilot_horizon_days</source>
                 <target>Dashboard horizon (days)</target>
+            </trans-unit>
+            <trans-unit id="NXMykGq">
+                <source>label.pilot_open_scheme</source>
+                <target>File opening scheme</target>
             </trans-unit>
         </body>
     </file>

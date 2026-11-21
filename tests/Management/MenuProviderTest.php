@@ -27,13 +27,13 @@ class MenuProviderTest extends TestCase
         $this->assertSame([], $this->provider()->getMenus());
     }
 
-    // The piloting pages, outside the back office, opened by a link of its section
+    // The piloting pages, outside the back office, opened from the shared links in their own tab
     public function testThePlanningIsALink(): void
     {
         $links = $this->provider()->getLinks();
 
         $this->assertSame(['pilot_dashboard'], array_keys($links));
         $this->assertSame(PilotController::DASHBOARD_ROUTE, $links['pilot_dashboard']['name']);
-        $this->assertArrayNotHasKey('target', $links['pilot_dashboard']);
+        $this->assertSame('_blank', $links['pilot_dashboard']['target']);
     }
 }

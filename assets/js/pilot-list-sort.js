@@ -25,7 +25,7 @@ export default class extends Controller {
 
     pickUp(item) {
         this.origin = item.nextElementSibling;
-        item.classList.add("opacity-50");
+        item.classList.add("pilot-faded");
     }
 
     // The item goes before the first one whose middle is below the pointer
@@ -42,12 +42,12 @@ export default class extends Controller {
 
     // An item put back where it was picked up saves nothing
     drop(item) {
-        item.classList.remove("opacity-50");
+        item.classList.remove("pilot-faded");
         if (item.nextElementSibling !== this.origin) this.save();
     }
 
     revert(item) {
-        item.classList.remove("opacity-50");
+        item.classList.remove("pilot-faded");
         this.listTarget.insertBefore(item, this.origin);
     }
 

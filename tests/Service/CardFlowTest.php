@@ -32,6 +32,16 @@ class CardFlowTest extends TestCase
         $this->card = new Card(new Project('catalog', 'Catalog'), 'item-1');
     }
 
+    // Initials come from the name part of an identifier: two words give their first letters, one word its first two letters, nothing gives none
+    public function testInitials(): void
+    {
+        $this->assertSame('IO', CardFlow::initials('item.one@example.com'));
+        $this->assertSame('IT', CardFlow::initials('item@example.com'));
+        $this->assertSame('ÉT', CardFlow::initials('élan-two'));
+        $this->assertNull(CardFlow::initials(null));
+        $this->assertNull(CardFlow::initials('@example.com'));
+    }
+
     // Handing a card to a machine makes it a runner card with its action and a queued run
     public function testEntrustQueuesARun(): void
     {
@@ -109,17 +119,20 @@ class CardFlowTest extends TestCase
         $this->assertSame(CardStatus::Done, $this->card->getStatus());
     }
 
-    // Validating closes the card on the day; sending back needs a comment and relaunches with it
-    public function testValidateAndSendBack(): void
+    // Validating closes the card on the day; the open feedback handed back relaunches the card's own action with it as the comment
+    public function testValidateAndTreatFeedback(): void
     {
         $this->review();
-        $second = $this->flow->sendBack($this->card, ' Shorter ');
-        $this->assertSame('Shorter', $this->card->getComment());
+        $this->card->addFeedback('Shorter')->setStatus(CardStatus::Review);
+        $second = $this->flow->treatFeedback($this->card);
+        $this->assertSame('1. Shorter', $this->card->getComment());
         $this->assertSame(CardStatus::Running, $this->card->getStatus());
         $this->assertCount(2, $this->card->getRuns());
 
         $this->finish($second, RunStatus::Done);
+        $this->flow->feedbackSettled($second, []);
         $this->flow->runFinished($second);
+        $this->assertTrue(array_values($this->card->getFeedback())[0]['done'] ?? false);
         $this->flow->validate($this->card);
         $this->assertSame(CardStatus::Done, $this->card->getStatus());
         $this->assertNull($this->card->getComment());
@@ -182,19 +195,45 @@ class CardFlowTest extends TestCase
         $this->assertSame(CardStatus::Running, $this->card->getStatus());
     }
 
-    // A step's run done is sent back with a comment: the step unticked and queued again with it
-    public function testSendBackAStepsRun(): void
+    // The open feedback after a step's run: its action queued again on the step, numbered as the comment, the step left ticked
+    public function testTreatFeedbackAfterAStepsRun(): void
     {
         $this->card->setChecklist([['t' => 'first', 'action' => 'hello', 'params' => ['story' => '025']]]);
         $run = $this->flow->runStep($this->card, 0);
         $this->finish($run, RunStatus::Done);
         $this->flow->runFinished($run);
+        $this->card->addFeedback('Image 3')->addFeedback('Done already')->addFeedback("Text\nof case 2");
+        $this->card->toggleStep(2, new \DateTimeImmutable('2026-11-17'));
 
-        $again = $this->flow->sendBack($this->card, 'Image 3');
-        $this->assertFalse($this->card->getChecklist()[0]['done'] ?? false);
-        $this->assertSame(['comment' => 'Image 3', 'story' => '025'], $again->getParams());
+        $again = $this->flow->treatFeedback($this->card);
+        $this->assertTrue($this->card->getChecklist()[0]['done'] ?? false);
+        $this->assertSame(['comment' => "1. Image 3\n2. Text of case 2", 'story' => '025'], $again->getParams());
         $this->assertSame(0, $again->getStep());
         $this->assertSame(CardStatus::Running, $this->card->getStatus());
+    }
+
+    // A finished run ticks the feedback it was handed, found by its text though it moved, and keeps the one it left open with the reason
+    public function testFeedbackSettled(): void
+    {
+        $run = $this->feedbackAfterAStepsRun('Image 3', 'Case 2');
+        $this->card->addStep('inserted');
+        $this->finish($run, RunStatus::Done);
+        $this->flow->feedbackSettled($run, [2 => 'To decide']);
+
+        $feedback = array_values($this->card->getFeedback());
+        $this->assertTrue($feedback[0]['done'] ?? false);
+        $this->assertFalse($feedback[1]['done'] ?? false);
+        $this->assertSame('To decide', $feedback[1]['r'] ?? null);
+    }
+
+    // A failed run ticks nothing of the feedback it was handed
+    public function testFeedbackSettledByAFailedRun(): void
+    {
+        $run = $this->feedbackAfterAStepsRun('Image 3');
+        $this->finish($run, RunStatus::Failed);
+        $this->flow->feedbackSettled($run, []);
+
+        $this->assertFalse(array_values($this->card->getFeedback())[0]['done'] ?? false);
     }
 
     // A step naming an action is run by hand, never one done, one without action, or one already under way
@@ -217,17 +256,19 @@ class CardFlowTest extends TestCase
         $this->flow->runStep($this->card, 2);
     }
 
-    // An empty comment or one read as an option is refused
-    public function testSendBackRefusesEmptyOrDashComment(): void
+    // No open feedback, or no run to take up again, nothing is handed to the machine
+    public function testTreatFeedbackRefusedWithoutFeedbackOrRun(): void
     {
-        $this->review();
-        foreach (['  ', '-rf'] as $comment) {
+        $this->card->addFeedback('Image 3');
+        foreach (['no run', 'no feedback'] as $case) {
             try {
-                $this->flow->sendBack($this->card, $comment);
-                $this->fail('Comment accepted: ' . $comment);
+                $this->flow->treatFeedback($this->card);
+                $this->fail('Feedback handed: ' . $case);
             } catch (FlowException $exception) {
                 $this->assertStringStartsWith('flow.', $exception->getMessage());
             }
+            $this->review();
+            $this->card->toggleStep(0, new \DateTimeImmutable('2026-11-17'));
         }
     }
 
@@ -249,17 +290,18 @@ class CardFlowTest extends TestCase
         $this->assertFirstTickedAndIdle();
     }
 
-    // The last run done on a step that left the checklist is sent back like the card's own: refused outside review
-    public function testSendBackARunWhoseStepLeft(): void
+    // The last run done on a step that left the checklist takes no feedback outside review
+    public function testTreatFeedbackOnARunWhoseStepLeft(): void
     {
         $this->card->setChecklist([['t' => 'first', 'action' => 'hello'], ['t' => 'second']]);
         $run = $this->flow->runStep($this->card, 0);
         $this->finish($run, RunStatus::Done);
         $this->flow->runFinished($run);
         $this->card->renameStep(0, '', new \DateTimeImmutable('2026-11-17 11:00'));
+        $this->card->addFeedback('Again');
 
         $this->expectException(FlowException::class);
-        $this->flow->sendBack($this->card, 'Again');
+        $this->flow->treatFeedback($this->card);
     }
 
     // A step whose previous step is still to tick cannot be launched, and can be once that step is ticked
@@ -319,10 +361,23 @@ class CardFlowTest extends TestCase
         $this->assertSame(CardStatus::Ready, $this->card->getStatus());
     }
 
+    // The feedback given handed to the machine after the run of the card's only step
+    private function feedbackAfterAStepsRun(string ...$feedback): Run
+    {
+        $this->card->setChecklist([['t' => 'first', 'action' => 'hello']]);
+        $this->finish($this->flow->runStep($this->card, 0), RunStatus::Done);
+        $this->flow->runFinished($this->card->lastRun());
+        foreach ($feedback as $text) {
+            $this->card->addFeedback($text);
+        }
+
+        return $this->flow->treatFeedback($this->card);
+    }
+
     // A run claimed by a machine and finished with a status
     private function finish(Run $run, RunStatus $status): void
     {
         $now = new \DateTimeImmutable('2026-11-17 10:00');
-        $run->claim(new Machine('machine-1', str_repeat('a', 64)), $now)->finish($status, null, [], null, $now);
+        $run->claim(new Machine('machine-1', str_repeat('a', 64)), $now)->finish($status, null, [], $now);
     }
 }

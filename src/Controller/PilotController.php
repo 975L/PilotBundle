@@ -36,6 +36,8 @@ use c975L\PilotBundle\Service\CardFiller;
 use c975L\PilotBundle\Service\CardFlow;
 use c975L\PilotBundle\Service\CardImages;
 use c975L\PilotBundle\Service\CardMarkdown;
+use c975L\PilotBundle\Service\CardRemoval;
+use c975L\PilotBundle\Service\CreditRefresher;
 use c975L\PilotBundle\Service\PilotUrls;
 use c975L\PilotBundle\Service\PlanFactory;
 use c975L\PilotBundle\Service\Planning;
@@ -91,7 +93,7 @@ class PilotController extends AbstractController
         'launch' => PilotAccess::RUN,
         'cancel' => PilotAccess::RUN,
         'validate' => PilotAccess::RUN,
-        'sendback' => PilotAccess::RUN,
+        'feedbackrun' => PilotAccess::RUN,
         'lend' => PilotAccess::RUN,
         'unlend' => PilotAccess::RUN,
     ];
@@ -129,6 +131,21 @@ class PilotController extends AbstractController
             'reports' => $this->reportRepository->findShownOn(null, $scope),
             'waiting' => $this->cardRepository->findWaiting($scope),
         ]);
+    }
+
+    // The balances of the services read again from the dashboard, the ones that could not be read said so
+    #[Route('/pilot/credit/refresh', name: 'pilot_credits_refresh', methods: ['POST'])]
+    public function creditsRefresh(Request $request, CreditRefresher $creditRefresher): RedirectResponse
+    {
+        $this->denyUnlessAdmin();
+        if ($this->isCsrfTokenValid('pilot_credits_refresh', $request->request->getString('_token'))) {
+            if ([] !== $creditRefresher->refreshAll()) {
+                $this->addFlash('danger', $this->translator->trans('flash.credit_unread', [], 'pilot'));
+            }
+            $this->entityManager->flush();
+        }
+
+        return $this->redirectToRoute(self::DASHBOARD_ROUTE);
     }
 
     // The balance of a service typed in by hand, from the dashboard
@@ -398,6 +415,7 @@ class PilotController extends AbstractController
             'card' => $card,
             'run' => $run,
             'outputs' => null === $run ? [] : $runOutputs->previews($run),
+            'step_files' => $runOutputs->ofSteps($card),
             'actions' => $can[PilotAccess::RUN] ? $actionOffer->on($card->getProject()) : [],
             'action_labels' => $actionOffer->labels(),
             'docs' => $can[PilotAccess::EDIT] ? $this->docRepository->findFiles($card->getProject()) : [],
@@ -525,7 +543,7 @@ class PilotController extends AbstractController
     }
 
     // Done, back to do, a date (empty sends it back to the backlog), another space, its title and note, a feedback added (with its screenshot), its screenshot set or removed, its steps reordered, shared or given to edit or no longer, a step ticked or run, or a machine gesture; then back where the gesture came from
-    #[Route('/pilot/card/{id}/{gesture}', name: 'pilot_card_gesture', requirements: ['id' => '\d+', 'gesture' => 'done|reopen|schedule|move|edit|assign|unassign|stepadd|feedbackadd|feedbackimage|stepdue|stepedit|steporder|share|unshare|lend|unlend|step|runstep|entrust|launch|cancel|validate|sendback'], methods: ['POST'])]
+    #[Route('/pilot/card/{id}/{gesture}', name: 'pilot_card_gesture', requirements: ['id' => '\d+', 'gesture' => 'done|reopen|schedule|move|edit|assign|unassign|stepadd|feedbackadd|feedbackimage|stepedit|steporder|share|unshare|lend|unlend|step|runstep|entrust|launch|cancel|validate|feedbackrun'], methods: ['POST'])]
     public function gesture(Card $card, string $gesture, Request $request): Response
     {
         $this->guard($card, PilotAccess::VIEW);
@@ -601,17 +619,17 @@ class PilotController extends AbstractController
 
     // A card deleted for good with its picture, its runs and the files they kept, refused while a machine works on it; then back to its space, the dialog closing
     #[Route('/pilot/card/{id}/delete', name: 'pilot_card_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
-    public function delete(Card $card, Request $request, RunOutputs $runOutputs): Response
+    public function delete(Card $card, Request $request, CardRemoval $cardRemoval): Response
     {
         $this->guard($card, PilotAccess::DELETE);
         $project = $card->getProject();
-        $refusal = match (true) {
-            !$this->isCsrfTokenValid(self::GESTURE_ROUTE . $card->getId(), $request->request->getString('_token')) => $this->translator->trans('label.gesture_expired', [], 'pilot'),
-            [] !== $card->activeRuns() => $this->translator->trans('flow.not_now', [], 'pilot'),
-            default => null,
-        };
-        if (null === $refusal) {
-            $this->erase($card, $runOutputs);
+        $refusal = $this->isCsrfTokenValid(self::GESTURE_ROUTE . $card->getId(), $request->request->getString('_token')) ? null : $this->translator->trans('label.gesture_expired', [], 'pilot');
+        try {
+            if (null === $refusal) {
+                $cardRemoval->remove($card);
+            }
+        } catch (FlowException $exception) {
+            $refusal = $exception->reason->trans($this->translator);
         }
         if ($request->headers->has(self::DIALOG_HEADER)) {
             return null === $refusal ? new Response(null, Response::HTTP_NO_CONTENT, [self::GONE_HEADER => '1']) : new Response($refusal, Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -621,24 +639,6 @@ class PilotController extends AbstractController
         }
 
         return $this->redirectToRoute(self::PROJECT_ROUTE, ['slug' => $project->getSlug()]);
-    }
-
-    // The card removed, the files its runs kept, its picture and its screenshots deleted once the removal is written, so a failed flush loses nothing
-    private function erase(Card $card, RunOutputs $runOutputs): void
-    {
-        // Read before the flush, which sets the removed runs' ids back to null
-        $folders = array_map($runOutputs->folder(...), $card->getRuns()->toArray());
-        $image = $this->cardImages->path($card);
-        $screenshots = $card->getFeedbackImages();
-        $this->entityManager->remove($card);
-        $this->entityManager->flush();
-        $this->cardImages->forget($screenshots);
-        foreach ($folders as $folder) {
-            $runOutputs->forget($folder);
-        }
-        if (null !== $image) {
-            unlink($image);
-        }
     }
 
     // The link a share or a lend gave, sent back for the page to copy it
@@ -664,11 +664,10 @@ class PilotController extends AbstractController
             'move' => $this->move($card, $request->request->getInt('project')),
             'edit' => $this->edit($card, $request),
             'assign', 'unassign' => $this->assignee($card, $request->request->getInt('member'), 'assign' === $gesture),
-            'stepadd' => $card->addStep($request->request->getString('text')),
+            'stepadd' => $this->addStep($card, $request->request->getString('text')),
             'feedbackadd' => $this->feedbackAdd($card, $request),
             'feedbackimage' => $this->feedbackImage($card, $request),
             'stepedit' => $this->stepEdit($card, $request),
-            'stepdue' => $card->setStepDue($request->request->getInt('index', -1), $this->day($request->request->getString('due'))),
             'steporder' => $this->stepOrder->reorder($card, array_values(array_map(intval(...), array_filter($request->request->all('order'), is_numeric(...))))),
             'share' => $card->share(),
             'unshare' => $card->unshare(),
@@ -680,7 +679,7 @@ class PilotController extends AbstractController
             'launch' => $this->cardFlow->launch($card),
             'cancel' => $this->cardFlow->cancel($card, $request->request->has('run') ? $request->request->getInt('run') : null),
             'validate' => $this->cardFlow->validate($card),
-            default => $this->cardFlow->sendBack($card, $request->request->getString('comment')),
+            default => $this->cardFlow->treatFeedback($card),
         };
         if ($run instanceof Run) {
             $this->entityManager->persist($run);
@@ -696,6 +695,16 @@ class PilotController extends AbstractController
         }
 
         return $given ? $card->addAssignee($member->getUser()) : $card->removeAssignee($member->getUser());
+    }
+
+    // A step added by hand, never on a card following a checklist template, which takes its steps from it alone
+    private function addStep(Card $card, string $text): Card
+    {
+        if (!$card->takesStepsByHand()) {
+            throw new FlowException(t('flow.template_steps', [], 'pilot'));
+        }
+
+        return $card->addStep($text);
     }
 
     // The card moved to another space the account may write to, a card of a plan staying with its plan

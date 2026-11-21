@@ -10,7 +10,9 @@
 
 namespace c975L\PilotBundle\Service;
 
+use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Run;
+use c975L\PilotBundle\Enum\RunStatus;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -68,19 +70,42 @@ class RunOutputs
     /** @return list<array{name: string, kind: string, text: ?string}> */
     public function previews(Run $run): array
     {
-        $previews = [];
+        return $this->entries($run, true);
+    }
+
+    // Files of each step from its last run that produced any, a failed or withdrawn one or one whose step left the checklist left aside, with the run they belong to, by name and kind without reading them; a markdown answer is the machine's account of its work, not a file it made, and is left out
+    /** @return array<int, array{run: Run, files: list<array{name: string, kind: string, text: ?string}>}> */
+    public function ofSteps(Card $card): array
+    {
+        $steps = [];
+        foreach ($card->getRuns() as $run) {
+            $step = $run->getStep();
+            $made = array_filter($run->getOutputs(), static fn (string $path): bool => 'md' !== strtolower(pathinfo($path, \PATHINFO_EXTENSION)));
+            if (null !== $step && Run::LEFT_STEP !== $step && [] !== $made && \in_array($run->getStatus(), [RunStatus::Done, RunStatus::Blocked], true)) {
+                $steps[$step] = ['run' => $run, 'files' => array_values(array_filter($this->entries($run, false), static fn (array $file): bool => 'md' !== strtolower(pathinfo($file['name'], \PATHINFO_EXTENSION))))];
+            }
+        }
+
+        return $steps;
+    }
+
+    // Name and kind of every output of a run, the start of a text one read only when asked
+    /** @return list<array{name: string, kind: string, text: ?string}> */
+    private function entries(Run $run, bool $read): array
+    {
+        $entries = [];
         foreach ($run->getOutputs() as $output) {
             $name = $this->safeName($output);
             $path = $this->path($run, $name);
             $kind = null === $path ? 'elsewhere' : $this->kind($path);
-            $previews[] = [
+            $entries[] = [
                 'name' => null === $path ? $output : $name,
                 'kind' => $kind,
-                'text' => 'text' === $kind ? (string) file_get_contents($path, false, null, 0, 4000) : null,
+                'text' => $read && 'text' === $kind ? (string) file_get_contents($path, false, null, 0, 4000) : null,
             ];
         }
 
-        return $previews;
+        return $entries;
     }
 
     // Folder of a run

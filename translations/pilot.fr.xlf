@@ -2,17 +2,225 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="fr" datatype="plaintext" original="pilot.en.xlf">
         <body>
+            <trans-unit id="FKn3gOj">
+                <source>description.guided_project_pilot_card</source>
+                <target>Une carte est une chose à faire dans un espace : un titre d'abord, ses étapes et son jour ensuite.</target>
+            </trans-unit>
+            <trans-unit id="DyncFgU">
+                <source>description.guided_project_pilot_credits</source>
+                <target>Un crédit suit le solde d'un service payant, sur le tableau de bord.</target>
+            </trans-unit>
+            <trans-unit id="cNjx5cn">
+                <source>description.guided_project_pilot_machine</source>
+                <target>Une machine exécute les actions que nomment les étapes des cartes, pour les espaces qu'elle sert.</target>
+            </trans-unit>
+            <trans-unit id="p5i8ubY">
+                <source>description.guided_project_pilot_run</source>
+                <target>Une étape qui nomme une action se lance sur une machine, puis les retours lui sont confiés.</target>
+            </trans-unit>
+            <trans-unit id="I01Y.bj">
+                <source>description.guided_project_pilot_share</source>
+                <target>Un lien secret montre la carte à quelqu'un sans compte, jusqu'à ce qu'on l'arrête.</target>
+            </trans-unit>
+            <trans-unit id="SzPLCOQ">
+                <source>description.guided_project_pilot_space</source>
+                <target>Un espace réunit les cartes d'un projet, partagées entre ses membres.</target>
+            </trans-unit>
+            <trans-unit id="oh5KOzI">
+                <source>description.guided_project_pilot_steps</source>
+                <target>Les étapes se cochent l'une après l'autre, les retours se notent après elles.</target>
+            </trans-unit>
+            <trans-unit id="h3w1C7_">
+                <source>description.guided_project_pilot_template</source>
+                <target>Un modèle de plan donne d'un coup ses étapes à une carte, ou une carte par étape, dans les espaces qui le proposent.</target>
+            </trans-unit>
+            <trans-unit id="LDz0SQV">
+                <source>description.guided_step_pilot_card_new</source>
+                <target>Le + d'un onglet ajoute une carte à cette collection.</target>
+            </trans-unit>
+            <trans-unit id="z5wlNJ.">
+                <source>description.guided_step_pilot_card_open</source>
+                <target>Le tableau de bord : les cartes en retard, puis les jours qui viennent.</target>
+            </trans-unit>
+            <trans-unit id="6nVVwTf">
+                <source>description.guided_step_pilot_card_space</source>
+                <target>Cliquez sur l'espace auquel la carte appartient, dans la colonne de gauche.</target>
+            </trans-unit>
+            <trans-unit id="J.F6Dq_">
+                <source>description.guided_step_pilot_card_title</source>
+                <target>Une ligne fait une carte ; une liste collée fait une carte par ligne.</target>
+            </trans-unit>
+            <trans-unit id="sGtWI89">
+                <source>description.guided_step_pilot_credits_api_key</source>
+                <target>La clé de votre compte sur ce service, gardée chiffrée et jamais réaffichée ; laissée vide, celle enregistrée reste. Expo demande aussi le nom du compte.</target>
+            </trans-unit>
+            <trans-unit id="G20BlDr">
+                <source>description.guided_step_pilot_credits_dashboard</source>
+                <target>Le nom du pilotage, en haut à gauche, y ramène.</target>
+            </trans-unit>
+            <trans-unit id="lGuPaul">
+                <source>description.guided_step_pilot_credits_done</source>
+                <target>Le crédit s'ajoute en tête du tableau de bord.</target>
+            </trans-unit>
+            <trans-unit id="N85NjXI">
+                <source>description.guided_step_pilot_credits_key</source>
+                <target>Minuscules, chiffres et tirets ; celle que cite le coût d'une étape.</target>
+            </trans-unit>
+            <trans-unit id="UmjuWy0">
+                <source>description.guided_step_pilot_credits_label</source>
+                <target>Le nom que montre le tableau de bord : « Hébergement ».</target>
+            </trans-unit>
+            <trans-unit id="6ccgsB6">
+                <source>description.guided_step_pilot_credits_open</source>
+                <target>Parmi les réglages, les crédits.</target>
+            </trans-unit>
+            <trans-unit id="ISH1E0_">
+                <source>description.guided_step_pilot_credits_provider</source>
+                <target>Un service lu donne son solde par son API, avec la clé de votre compte ; vide, le solde se saisit à la main.</target>
+            </trans-unit>
+            <trans-unit id="lrsQc8u">
+                <source>description.guided_step_pilot_credits_refresh</source>
+                <target>Relit tout de suite les services lus ; ceux saisis à la main se corrigent dans leur case.</target>
+            </trans-unit>
+            <trans-unit id="mcIQbDd">
+                <source>description.guided_step_pilot_credits_remaining</source>
+                <target>Ce qui reste ; un service lu le remplace à chaque lecture.</target>
+            </trans-unit>
+            <trans-unit id="DE9JdQx">
+                <source>description.guided_step_pilot_machine_done</source>
+                <target>Son jeton s'affiche une seule fois : écrivez-le dans le runner.yaml du runner, sur la machine.</target>
+            </trans-unit>
+            <trans-unit id="pdfYjbv">
+                <source>description.guided_step_pilot_machine_name</source>
+                <target>L'ordinateur ou le serveur où elle tourne : « poste-1 ».</target>
+            </trans-unit>
+            <trans-unit id="BO4vLYX">
+                <source>description.guided_step_pilot_machine_open</source>
+                <target>Parmi les réglages, les machines.</target>
+            </trans-unit>
+            <trans-unit id="Mg.voMB">
+                <source>description.guided_step_pilot_machine_parallel</source>
+                <target>Combien d'exécutions elle prend en même temps, 1 par défaut.</target>
+            </trans-unit>
+            <trans-unit id="zmGlAvo">
+                <source>description.guided_step_pilot_machine_projects</source>
+                <target>Elle ne prend que les cartes des espaces cochés ici.</target>
+            </trans-unit>
+            <trans-unit id="TdWIM_A">
+                <source>description.guided_step_pilot_run_card</source>
+                <target>Une carte dont une étape nomme une action de machine.</target>
+            </trans-unit>
+            <trans-unit id="4ls75K7">
+                <source>description.guided_step_pilot_run_feedback</source>
+                <target>Après l'exécution, les retours ouverts repartent à la machine, qui coche ceux qu'elle a traités.</target>
+            </trans-unit>
+            <trans-unit id="L1DCfzO">
+                <source>description.guided_step_pilot_run_open</source>
+                <target>Le tableau de bord : les exécutions en cours d'abord.</target>
+            </trans-unit>
+            <trans-unit id="N5bCdjQ">
+                <source>description.guided_step_pilot_run_run</source>
+                <target>Le bouton ▶ porte le nom de l'action ; il attend que les étapes dont elle dépend soient cochées.</target>
+            </trans-unit>
+            <trans-unit id="h1b53wk">
+                <source>description.guided_step_pilot_run_space</source>
+                <target>Cliquez sur l'espace de la carte, dans la colonne de gauche.</target>
+            </trans-unit>
+            <trans-unit id="xaYaTvp">
+                <source>description.guided_step_pilot_share_card</source>
+                <target>Un clic sur sa tuile l'ouvre par-dessus la page.</target>
+            </trans-unit>
+            <trans-unit id="jawCk_I">
+                <source>description.guided_step_pilot_share_link</source>
+                <target>Un clic copie le lien ; la croix à côté l'arrête. Le crayon voisin prête un lien qui modifie la carte.</target>
+            </trans-unit>
+            <trans-unit id="B0wrj0o">
+                <source>description.guided_step_pilot_share_open</source>
+                <target>Le tableau de bord : les cartes en retard, puis les jours qui viennent.</target>
+            </trans-unit>
+            <trans-unit id="LBsthQk">
+                <source>description.guided_step_pilot_share_space</source>
+                <target>Cliquez sur l'espace de la carte, dans la colonne de gauche.</target>
+            </trans-unit>
+            <trans-unit id="oP7XhMF">
+                <source>description.guided_step_pilot_space_color</source>
+                <target>Ses cartes en prennent la teinte, pour reconnaître chaque espace d'un coup d'œil.</target>
+            </trans-unit>
+            <trans-unit id="iRbF2W8">
+                <source>description.guided_step_pilot_space_done</source>
+                <target>Il apparaît dans la colonne des espaces, prêt pour ses premières cartes et ses membres.</target>
+            </trans-unit>
+            <trans-unit id="MpXvr8p">
+                <source>description.guided_step_pilot_space_name</source>
+                <target>Le nom affiché dans la colonne des espaces : « Catalogue ».</target>
+            </trans-unit>
+            <trans-unit id="wEhQKhE">
+                <source>description.guided_step_pilot_space_open</source>
+                <target>Le formulaire d'où part un nouvel espace, ouvert par le + à côté des espaces.</target>
+            </trans-unit>
+            <trans-unit id="wHq9086">
+                <source>description.guided_step_pilot_space_slug</source>
+                <target>Le dernier mot de l'adresse de l'espace, en minuscules, chiffres et tirets : « catalogue ».</target>
+            </trans-unit>
+            <trans-unit id="OVIWmy1">
+                <source>description.guided_step_pilot_steps_card</source>
+                <target>Un clic sur sa tuile l'ouvre par-dessus la page.</target>
+            </trans-unit>
+            <trans-unit id="rlwMvLX">
+                <source>description.guided_step_pilot_steps_feedback</source>
+                <target>Une correction ou une idée après les étapes, une capture collée sur le champ au besoin.</target>
+            </trans-unit>
+            <trans-unit id="0QvzaYX">
+                <source>description.guided_step_pilot_steps_fold</source>
+                <target>Quand les étapes forment plusieurs groupes, un clic les plie ou les déplie tous à la fois.</target>
+            </trans-unit>
+            <trans-unit id="kXHyi5f">
+                <source>description.guided_step_pilot_steps_open</source>
+                <target>Le tableau de bord : les cartes en retard, puis les jours qui viennent.</target>
+            </trans-unit>
+            <trans-unit id="ARWAGGA">
+                <source>description.guided_step_pilot_steps_space</source>
+                <target>Cliquez sur l'espace de la carte, dans la colonne de gauche.</target>
+            </trans-unit>
+            <trans-unit id="_D0Y6Dk">
+                <source>description.guided_step_pilot_steps_step</source>
+                <target>Une ligne par étape ; une étape peut nommer une action de machine, lancée par son bouton. Sur une carte qui suit un modèle, les étapes viennent du modèle.</target>
+            </trans-unit>
+            <trans-unit id="kOA145w">
+                <source>description.guided_step_pilot_template_checklist</source>
+                <target>Coché, le plan est une seule carte dont les étapes se cochent ; sinon, une carte par étape.</target>
+            </trans-unit>
+            <trans-unit id="IIwzwob">
+                <source>description.guided_step_pilot_template_done</source>
+                <target>Les espaces cochés le proposent dès l'enregistrement.</target>
+            </trans-unit>
+            <trans-unit id="XA3m7pk">
+                <source>description.guided_step_pilot_template_name</source>
+                <target>Le nom que montre la page des espaces : « Mise en ligne ».</target>
+            </trans-unit>
+            <trans-unit id="rxxfXr_">
+                <source>description.guided_step_pilot_template_open</source>
+                <target>Parmi les réglages, les modèles de plan.</target>
+            </trans-unit>
+            <trans-unit id="eBCo4zE">
+                <source>description.guided_step_pilot_template_projects</source>
+                <target>La page des espaces cochés propose ce modèle.</target>
+            </trans-unit>
+            <trans-unit id="VGb7YMw">
+                <source>description.guided_step_pilot_template_steps</source>
+                <target>Une ligne par étape, retirée ou déplacée sur place.</target>
+            </trans-unit>
+            <trans-unit id="PJqu.Nl">
+                <source>flash.credit_unread</source>
+                <target>Le solde n'a pas pu être lu : vérifiez la clé API et le compte, la raison est dans le journal.</target>
+            </trans-unit>
             <trans-unit id="Eah7mrY">
                 <source>flash.machine_created</source>
                 <target>Machine ajoutée. Son jeton, affiché cette seule fois : %token%</target>
             </trans-unit>
-            <trans-unit id="vby6Ztt">
-                <source>flow.comment_dash</source>
-                <target>Le commentaire ne peut pas commencer par un tiret, la machine le refuserait.</target>
-            </trans-unit>
-            <trans-unit id="uKJGNhQ">
-                <source>flow.comment_needed</source>
-                <target>Un commentaire est nécessaire pour renvoyer.</target>
+            <trans-unit id="fTDLbj6">
+                <source>flow.feedback_none</source>
+                <target>Aucun commentaire ouvert à confier à la machine.</target>
             </trans-unit>
             <trans-unit id="Kkrj897">
                 <source>flow.file_refused</source>
@@ -25,6 +233,10 @@
             <trans-unit id="xUcdrDB">
                 <source>flow.not_now</source>
                 <target>Ce geste ne vaut pas pour cette carte maintenant.</target>
+            </trans-unit>
+            <trans-unit id="twd7VSI">
+                <source>flow.template_steps</source>
+                <target>Les étapes de cette carte viennent de son modèle : ajoutez-les au modèle.</target>
             </trans-unit>
             <trans-unit id="Kf88JWX">
                 <source>flow.unknown_status</source>
@@ -246,14 +458,6 @@
                 <source>label.collection_sheets</source>
                 <target>Cartes en fiches</target>
             </trans-unit>
-            <trans-unit id="67KQhUC">
-                <source>label.collections</source>
-                <target>Collections</target>
-            </trans-unit>
-            <trans-unit id="L2R_cZ8">
-                <source>label.comment</source>
-                <target>Commentaire</target>
-            </trans-unit>
             <trans-unit id="VOWzvE_">
                 <source>label.confirm_cancel</source>
                 <target>Annuler</target>
@@ -270,6 +474,18 @@
                 <source>label.credit</source>
                 <target>Crédit</target>
             </trans-unit>
+            <trans-unit id="RUFtIep">
+                <source>label.credit_account</source>
+                <target>Compte</target>
+            </trans-unit>
+            <trans-unit id="W6sEXrP">
+                <source>label.credit_api_key</source>
+                <target>Clé API</target>
+            </trans-unit>
+            <trans-unit id="d0bfqTK">
+                <source>label.credit_by_hand</source>
+                <target>Saisi à la main</target>
+            </trans-unit>
             <trans-unit id="TIK_l8.">
                 <source>label.credit_key</source>
                 <target>Clé</target>
@@ -282,10 +498,6 @@
                 <source>label.credit_left</source>
                 <target>reste %left%</target>
             </trans-unit>
-            <trans-unit id="tIm7yV.">
-                <source>label.credit_manual</source>
-                <target>Saisi à la main</target>
-            </trans-unit>
             <trans-unit id="qXkHHzi">
                 <source>label.credit_monthly</source>
                 <target>Budget mensuel</target>
@@ -293,6 +505,10 @@
             <trans-unit id="PuOgz_o">
                 <source>label.credit_note</source>
                 <target>Note</target>
+            </trans-unit>
+            <trans-unit id="uFY41LC">
+                <source>label.credit_provider</source>
+                <target>Service lu</target>
             </trans-unit>
             <trans-unit id="jb3aExt">
                 <source>label.credit_remaining</source>
@@ -330,9 +546,101 @@
                 <source>label.credits</source>
                 <target>Crédits</target>
             </trans-unit>
+            <trans-unit id="Y8lj63W">
+                <source>label.credits_refresh</source>
+                <target>Mettre à jour les soldes</target>
+            </trans-unit>
             <trans-unit id="id1d4o4">
                 <source>label.dashboard</source>
                 <target>Tableau de bord</target>
+            </trans-unit>
+            <trans-unit id="w8P9WZl">
+                <source>label.demo_card_contact</source>
+                <target>Mettre en ligne le formulaire de contact</target>
+            </trans-unit>
+            <trans-unit id="wgRNw9b">
+                <source>label.demo_card_domain</source>
+                <target>Renouveler le nom de domaine</target>
+            </trans-unit>
+            <trans-unit id="K.EPILm">
+                <source>label.demo_card_home</source>
+                <target>Rédiger la page d'accueil</target>
+            </trans-unit>
+            <trans-unit id="GWxgQ2q">
+                <source>label.demo_card_item_1</source>
+                <target>Rédiger la fiche item-1</target>
+            </trans-unit>
+            <trans-unit id="6aWWc0a">
+                <source>label.demo_card_item_2</source>
+                <target>Rédiger la fiche item-2</target>
+            </trans-unit>
+            <trans-unit id="HKTSbnB">
+                <source>label.demo_card_launch</source>
+                <target>Annoncer la mise en ligne</target>
+            </trans-unit>
+            <trans-unit id="CMVRo5C">
+                <source>label.demo_card_theme</source>
+                <target>Choisir les couleurs du thème</target>
+            </trans-unit>
+            <trans-unit id="S_enGLm">
+                <source>label.demo_collection_items</source>
+                <target>Fiches</target>
+            </trans-unit>
+            <trans-unit id="HW0YDVO">
+                <source>label.demo_collection_tasks</source>
+                <target>Tâches</target>
+            </trans-unit>
+            <trans-unit id="4OICjkr">
+                <source>label.demo_feedback_photo</source>
+                <target>Ajouter une photo d'équipe</target>
+            </trans-unit>
+            <trans-unit id="dN_zcUK">
+                <source>label.demo_space_catalog</source>
+                <target>Catalogue</target>
+            </trans-unit>
+            <trans-unit id="QeDMfOe">
+                <source>label.demo_space_site</source>
+                <target>Site vitrine</target>
+            </trans-unit>
+            <trans-unit id="5aLrj9y">
+                <source>label.demo_step_description</source>
+                <target>Description</target>
+            </trans-unit>
+            <trans-unit id="q3gGEuQ">
+                <source>label.demo_step_fields</source>
+                <target>Choisir les champs</target>
+            </trans-unit>
+            <trans-unit id="WVqhQRz">
+                <source>label.demo_step_outline</source>
+                <target>Faire le plan de la page</target>
+            </trans-unit>
+            <trans-unit id="czNepWK">
+                <source>label.demo_step_palette</source>
+                <target>Proposer une palette</target>
+            </trans-unit>
+            <trans-unit id="wWprWhi">
+                <source>label.demo_step_photos</source>
+                <target>Photos</target>
+            </trans-unit>
+            <trans-unit id="ORWUYAm">
+                <source>label.demo_step_price</source>
+                <target>Prix</target>
+            </trans-unit>
+            <trans-unit id="jMR3.de">
+                <source>label.demo_step_review</source>
+                <target>Relire</target>
+            </trans-unit>
+            <trans-unit id="KV0bqiF">
+                <source>label.demo_step_test</source>
+                <target>Envoyer un message d'essai</target>
+            </trans-unit>
+            <trans-unit id="e6XfVjR">
+                <source>label.demo_step_texts</source>
+                <target>Écrire les textes</target>
+            </trans-unit>
+            <trans-unit id="8KdIXb_">
+                <source>label.demo_waiting_designer</source>
+                <target>Le graphiste</target>
             </trans-unit>
             <trans-unit id="11I2KVA">
                 <source>label.doc_delete</source>
@@ -402,6 +710,10 @@
                 <source>label.feedback_add</source>
                 <target>Ajouter un commentaire</target>
             </trans-unit>
+            <trans-unit id="4.ahAWZ">
+                <source>label.feedback_held_over</source>
+                <target>Trop longs pour ce passage, %count% commentaires partiront au suivant</target>
+            </trans-unit>
             <trans-unit id="ak7s6JW">
                 <source>label.feedback_image</source>
                 <target>Joindre une capture</target>
@@ -414,6 +726,10 @@
                 <source>label.feedback_image_view</source>
                 <target>Capture</target>
             </trans-unit>
+            <trans-unit id="xnLpcyM">
+                <source>label.feedback_run</source>
+                <target>Confier à la machine</target>
+            </trans-unit>
             <trans-unit id="_J1nX.h">
                 <source>label.gesture_expired</source>
                 <target>Le formulaire a expiré, recharge la page.</target>
@@ -421,6 +737,214 @@
             <trans-unit id="b0BVUFD">
                 <source>label.gesture_forbidden</source>
                 <target>Votre rôle dans cet espace ne le permet pas.</target>
+            </trans-unit>
+            <trans-unit id="TfNuaia">
+                <source>label.guided_project_pilot_card</source>
+                <target>Ajouter une carte</target>
+            </trans-unit>
+            <trans-unit id="E3O2vY_">
+                <source>label.guided_project_pilot_credits</source>
+                <target>Suivre un crédit</target>
+            </trans-unit>
+            <trans-unit id="jdyjshO">
+                <source>label.guided_project_pilot_machine</source>
+                <target>Ajouter une machine d'exécution</target>
+            </trans-unit>
+            <trans-unit id="WxFxGBi">
+                <source>label.guided_project_pilot_run</source>
+                <target>Lancer une étape sur une machine</target>
+            </trans-unit>
+            <trans-unit id="wSeJxj5">
+                <source>label.guided_project_pilot_share</source>
+                <target>Partager une carte par un lien</target>
+            </trans-unit>
+            <trans-unit id="dLVFU5P">
+                <source>label.guided_project_pilot_space</source>
+                <target>Créer un espace</target>
+            </trans-unit>
+            <trans-unit id="9BlQfkH">
+                <source>label.guided_project_pilot_steps</source>
+                <target>Donner ses étapes à une carte</target>
+            </trans-unit>
+            <trans-unit id="3jFb7Bs">
+                <source>label.guided_project_pilot_template</source>
+                <target>Créer un modèle de plan</target>
+            </trans-unit>
+            <trans-unit id="oJy6EmI">
+                <source>label.guided_step_pilot_card_new</source>
+                <target>Cliquez sur le +</target>
+            </trans-unit>
+            <trans-unit id="wSkfhlL">
+                <source>label.guided_step_pilot_card_open</source>
+                <target>Ouvrez le pilotage</target>
+            </trans-unit>
+            <trans-unit id="V0FO8RJ">
+                <source>label.guided_step_pilot_card_space</source>
+                <target>Ouvrez un espace</target>
+            </trans-unit>
+            <trans-unit id="xxuzKPq">
+                <source>label.guided_step_pilot_card_title</source>
+                <target>Tapez son titre, puis Entrée</target>
+            </trans-unit>
+            <trans-unit id="yGuSQOz">
+                <source>label.guided_step_pilot_credits_api_key</source>
+                <target>Donnez sa clé d'API</target>
+            </trans-unit>
+            <trans-unit id="lI0_eXE">
+                <source>label.guided_step_pilot_credits_dashboard</source>
+                <target>Revenez au tableau de bord</target>
+            </trans-unit>
+            <trans-unit id="bCOMSzQ">
+                <source>label.guided_step_pilot_credits_done</source>
+                <target>Enregistrez le crédit</target>
+            </trans-unit>
+            <trans-unit id="VOUteJr">
+                <source>label.guided_step_pilot_credits_key</source>
+                <target>Donnez sa clé</target>
+            </trans-unit>
+            <trans-unit id="EP_kcve">
+                <source>label.guided_step_pilot_credits_label</source>
+                <target>Nommez le service</target>
+            </trans-unit>
+            <trans-unit id="DZ2srEb">
+                <source>label.guided_step_pilot_credits_open</source>
+                <target>Ouvrez le formulaire d'un nouveau crédit</target>
+            </trans-unit>
+            <trans-unit id="zde.F46">
+                <source>label.guided_step_pilot_credits_provider</source>
+                <target>Service lu ou saisi à la main</target>
+            </trans-unit>
+            <trans-unit id="XjPPeYl">
+                <source>label.guided_step_pilot_credits_refresh</source>
+                <target>Mettez à jour les soldes</target>
+            </trans-unit>
+            <trans-unit id="_iiEkSH">
+                <source>label.guided_step_pilot_credits_remaining</source>
+                <target>Indiquez le solde</target>
+            </trans-unit>
+            <trans-unit id="OPCSxpS">
+                <source>label.guided_step_pilot_machine_done</source>
+                <target>Enregistrez et gardez son jeton</target>
+            </trans-unit>
+            <trans-unit id="Q5DNGFP">
+                <source>label.guided_step_pilot_machine_name</source>
+                <target>Nommez la machine</target>
+            </trans-unit>
+            <trans-unit id="4QNVUGm">
+                <source>label.guided_step_pilot_machine_open</source>
+                <target>Ouvrez le formulaire d'une nouvelle machine</target>
+            </trans-unit>
+            <trans-unit id="f0xYLAF">
+                <source>label.guided_step_pilot_machine_parallel</source>
+                <target>Exécutions simultanées</target>
+            </trans-unit>
+            <trans-unit id="4i09Gyy">
+                <source>label.guided_step_pilot_machine_projects</source>
+                <target>Choisissez ses espaces</target>
+            </trans-unit>
+            <trans-unit id="JXtBKoa">
+                <source>label.guided_step_pilot_run_card</source>
+                <target>Ouvrez une carte</target>
+            </trans-unit>
+            <trans-unit id="yY9YpxW">
+                <source>label.guided_step_pilot_run_feedback</source>
+                <target>Confiez les retours à la machine</target>
+            </trans-unit>
+            <trans-unit id="yFxfbSD">
+                <source>label.guided_step_pilot_run_open</source>
+                <target>Ouvrez le pilotage</target>
+            </trans-unit>
+            <trans-unit id="XLafpuG">
+                <source>label.guided_step_pilot_run_run</source>
+                <target>Lancez l'étape</target>
+            </trans-unit>
+            <trans-unit id="D1QjGMK">
+                <source>label.guided_step_pilot_run_space</source>
+                <target>Ouvrez un espace</target>
+            </trans-unit>
+            <trans-unit id="NbH9.zS">
+                <source>label.guided_step_pilot_share_card</source>
+                <target>Ouvrez une carte</target>
+            </trans-unit>
+            <trans-unit id="BtBhkC0">
+                <source>label.guided_step_pilot_share_link</source>
+                <target>Copiez son lien de lecture</target>
+            </trans-unit>
+            <trans-unit id="xZ9FP7Z">
+                <source>label.guided_step_pilot_share_open</source>
+                <target>Ouvrez le pilotage</target>
+            </trans-unit>
+            <trans-unit id="wSPArXM">
+                <source>label.guided_step_pilot_share_space</source>
+                <target>Ouvrez un espace</target>
+            </trans-unit>
+            <trans-unit id="FTS1fZ3">
+                <source>label.guided_step_pilot_space_color</source>
+                <target>Choisissez sa couleur</target>
+            </trans-unit>
+            <trans-unit id="6q_cHX8">
+                <source>label.guided_step_pilot_space_done</source>
+                <target>Enregistrez l'espace</target>
+            </trans-unit>
+            <trans-unit id="BaevTq8">
+                <source>label.guided_step_pilot_space_name</source>
+                <target>Nommez l'espace</target>
+            </trans-unit>
+            <trans-unit id="aM8sq9P">
+                <source>label.guided_step_pilot_space_open</source>
+                <target>Ouvrez le formulaire d'un nouvel espace</target>
+            </trans-unit>
+            <trans-unit id="VjvBuWp">
+                <source>label.guided_step_pilot_space_slug</source>
+                <target>Choisissez son adresse</target>
+            </trans-unit>
+            <trans-unit id="Gu101Sz">
+                <source>label.guided_step_pilot_steps_card</source>
+                <target>Ouvrez une carte</target>
+            </trans-unit>
+            <trans-unit id="QtXE0Ao">
+                <source>label.guided_step_pilot_steps_feedback</source>
+                <target>Notez un retour</target>
+            </trans-unit>
+            <trans-unit id="_PquOIY">
+                <source>label.guided_step_pilot_steps_fold</source>
+                <target>Tout plier</target>
+            </trans-unit>
+            <trans-unit id="dYS52x0">
+                <source>label.guided_step_pilot_steps_open</source>
+                <target>Ouvrez le pilotage</target>
+            </trans-unit>
+            <trans-unit id="BP1WJOd">
+                <source>label.guided_step_pilot_steps_space</source>
+                <target>Ouvrez un espace</target>
+            </trans-unit>
+            <trans-unit id="m9b_wPP">
+                <source>label.guided_step_pilot_steps_step</source>
+                <target>Ajoutez une étape</target>
+            </trans-unit>
+            <trans-unit id="VbCubkT">
+                <source>label.guided_step_pilot_template_checklist</source>
+                <target>Une carte ou plusieurs</target>
+            </trans-unit>
+            <trans-unit id="_OHs855">
+                <source>label.guided_step_pilot_template_done</source>
+                <target>Enregistrez le modèle</target>
+            </trans-unit>
+            <trans-unit id="MUBIxFr">
+                <source>label.guided_step_pilot_template_name</source>
+                <target>Nommez le modèle</target>
+            </trans-unit>
+            <trans-unit id="yqzSOPF">
+                <source>label.guided_step_pilot_template_open</source>
+                <target>Ouvrez le formulaire d'un nouveau modèle</target>
+            </trans-unit>
+            <trans-unit id="Sug4Zz6">
+                <source>label.guided_step_pilot_template_projects</source>
+                <target>Choisissez ses espaces</target>
+            </trans-unit>
+            <trans-unit id="Goajtt1">
+                <source>label.guided_step_pilot_template_steps</source>
+                <target>Ajoutez ses étapes</target>
             </trans-unit>
             <trans-unit id="Oek4bfM">
                 <source>label.info_action_projects</source>
@@ -458,37 +982,33 @@
                 <source>label.info_collection_delete</source>
                 <target>La collection est supprimée, ses cartes restent dans l'espace.</target>
             </trans-unit>
-            <trans-unit id="y8iPYOc">
-                <source>label.info_collection_item</source>
-                <target>Au singulier, en minuscules : histoire, tribu, appli.</target>
-            </trans-unit>
             <trans-unit id="aYuNaN1">
                 <source>label.info_collection_sheets</source>
                 <target>Ses cartes s'affichent en vignettes avec une image, sans étapes ni statut (personnages, lieux, applis)</target>
             </trans-unit>
-            <trans-unit id="4n9TwkU">
-                <source>label.info_collection_template</source>
-                <target>Un modèle à cocher : chaque carte ajoutée à la collection reçoit ses étapes, ses {variables} remplies par le titre de la carte, et le suit quand il est enregistré.</target>
+            <trans-unit id="HhWViaG">
+                <source>label.info_credit_account</source>
+                <target>Le nom du compte lu, pour un service dont la clé en ouvre plusieurs (le compte Expo).</target>
             </trans-unit>
-            <trans-unit id="TatvdGm">
-                <source>label.info_collections</source>
-                <target>Les cartes d'un même genre regroupées dans un espace (les histoires, les répliques), avec leur mot et leur modèle. Une collection se crée sur la page de son espace.</target>
+            <trans-unit id="y_nLiIu">
+                <source>label.info_credit_api_key</source>
+                <target>La clé de votre compte sur ce service (un jeton d'accès pour Expo), gardée chiffrée. Laissez vide pour garder la clé enregistrée.</target>
             </trans-unit>
             <trans-unit id="ZENpb63">
                 <source>label.info_credit_key</source>
-                <target>Minuscules, chiffres et tirets ; celle qu'une machine utilise pour ce service.</target>
-            </trans-unit>
-            <trans-unit id="d4pk8IV">
-                <source>label.info_credit_manual</source>
-                <target>Coché, le solde se saisit sur le tableau de bord et aucune machine ne l'écrase.</target>
+                <target>Minuscules, chiffres et tirets ; celle que cite le coût d'une étape.</target>
             </trans-unit>
             <trans-unit id="ZIDm2rX">
                 <source>label.info_credit_monthly</source>
                 <target>Ce que les étapes prévues peuvent dépenser par mois, comparé sur le tableau de bord (vide : pas de budget)</target>
             </trans-unit>
+            <trans-unit id="1JkEYYU">
+                <source>label.info_credit_provider</source>
+                <target>Le service dont l'API donne le solde, relu chaque matin, après une exécution qui l'a dépensé et par « Mettre à jour les soldes », avec la clé de votre compte ; vide, le solde se saisit sur le tableau de bord et une exécution en déduit ce qu'elle a dépensé.</target>
+            </trans-unit>
             <trans-unit id="FiOXjyB">
                 <source>label.info_credits</source>
-                <target>Les soldes des services payants, montrés sur le tableau de bord. Ceux qu'une machine relève apparaissent seuls ; ajoutez ici un service sans API et saisissez son solde sur le tableau de bord.</target>
+                <target>Les soldes des services payants, montrés sur le tableau de bord : un service à API relu avec la clé de votre compte, les autres saisis sur le tableau de bord puis diminués de ce que les exécutions dépensent.</target>
             </trans-unit>
             <trans-unit id="4BsAj9K">
                 <source>label.info_doc_delete</source>
@@ -496,15 +1016,23 @@
             </trans-unit>
             <trans-unit id="FxX95j_">
                 <source>label.info_entrust</source>
-                <target>Une machine (le runner sur ton poste) exécute pour cette carte une action de sa liste, par exemple un script, puis montre son résultat à valider ou à renvoyer avec un commentaire.</target>
+                <target>Une machine (le runner sur ton poste) exécute pour cette carte une action de sa liste, par exemple un script, puis montre son résultat à valider, ou traite les commentaires ouverts de la carte.</target>
             </trans-unit>
             <trans-unit id="Qjf4vqF">
                 <source>label.info_feedback_add</source>
                 <target>Une correction ou une idée ; une capture se colle ici</target>
             </trans-unit>
+            <trans-unit id="vULSJYl">
+                <source>label.info_feedback_run</source>
+                <target>La machine reprend la dernière action de la carte en ne faisant que ce que demandent les commentaires ouverts, coche ceux qu'elle a traités et dit pourquoi elle laisse les autres</target>
+            </trans-unit>
+            <trans-unit id="k5Ah_0s">
+                <source>label.info_machine_parallel</source>
+                <target>Combien d'exécutions la machine mène à la fois, selon ce qu'elle supporte. Une action marquée exclusive dans son actions.yaml tourne toujours seule.</target>
+            </trans-unit>
             <trans-unit id="vUIKvYe">
                 <source>label.info_machine_projects</source>
-                <target>Les espaces dont elle prend les cartes, remplit les rapports et écrit les dossiers ; sans espace choisi, elle les sert tous et peut relever les soldes.</target>
+                <target>Les espaces dont elle prend les cartes, remplit les rapports et écrit les dossiers ; sans espace choisi, elle les sert tous.</target>
             </trans-unit>
             <trans-unit id="tda0gjO">
                 <source>label.info_machines</source>
@@ -550,6 +1078,10 @@
                 <source>label.info_step_after</source>
                 <target>Numéros des étapes à cocher avant de lancer celle-ci, séparés par des virgules ; vide : l'étape précédente ; « - » : aucune.</target>
             </trans-unit>
+            <trans-unit id="oMrXH3_">
+                <source>label.info_step_delete</source>
+                <target>La ligne et sa capture sont supprimées, sans retour possible.</target>
+            </trans-unit>
             <trans-unit id="dUHOSNA">
                 <source>label.info_step_edit</source>
                 <target>Vide : l'étape est retirée</target>
@@ -561,6 +1093,10 @@
             <trans-unit id="nkRHf1s">
                 <source>label.info_step_params</source>
                 <target>Un « nom=valeur » par ligne.</target>
+            </trans-unit>
+            <trans-unit id="bo1fgQe">
+                <source>label.info_step_stale</source>
+                <target>Une étape précédente a été refaite après ce rendu, il sera remplacé</target>
             </trans-unit>
             <trans-unit id="YERdGS1">
                 <source>label.info_template_checklist</source>
@@ -586,10 +1122,6 @@
                 <source>label.launch</source>
                 <target>Relancer</target>
             </trans-unit>
-            <trans-unit id="IFUxhVi">
-                <source>label.log</source>
-                <target>Journal</target>
-            </trans-unit>
             <trans-unit id="VCOHhjm">
                 <source>label.machine</source>
                 <target>Machine</target>
@@ -597,6 +1129,10 @@
             <trans-unit id="ATUEV3C">
                 <source>label.machine_name</source>
                 <target>Nom</target>
+            </trans-unit>
+            <trans-unit id="_A.dxmP">
+                <source>label.machine_parallel</source>
+                <target>Tâches en parallèle</target>
             </trans-unit>
             <trans-unit id="RB30CoG">
                 <source>label.machine_seen</source>
@@ -633,6 +1169,10 @@
             <trans-unit id="C3_wmt4">
                 <source>label.members_empty</source>
                 <target>Aucun membre pour l'instant : seul l'admin travaille ici.</target>
+            </trans-unit>
+            <trans-unit id="lvuwXKG">
+                <source>label.menu</source>
+                <target>Menu</target>
             </trans-unit>
             <trans-unit id="C62419s">
                 <source>label.next</source>
@@ -690,13 +1230,25 @@
                 <source>label.project_color</source>
                 <target>Couleur</target>
             </trans-unit>
+            <trans-unit id="olE6tUT">
+                <source>label.project_delete_warning</source>
+                <target>Ses collections, cartes, dossiers et rapports partent avec lui.</target>
+            </trans-unit>
             <trans-unit id="y6Vndkw">
                 <source>label.project_name</source>
                 <target>Nom</target>
             </trans-unit>
+            <trans-unit id="uQRuAjW">
+                <source>label.project_new</source>
+                <target>Nouvel espace</target>
+            </trans-unit>
             <trans-unit id="gD5I_dt">
                 <source>label.project_position</source>
                 <target>Ordre</target>
+            </trans-unit>
+            <trans-unit id="Rq4IeoH">
+                <source>label.project_settings</source>
+                <target>Réglages de l'espace</target>
             </trans-unit>
             <trans-unit id="y19Qah8">
                 <source>label.project_sites</source>
@@ -709,6 +1261,22 @@
             <trans-unit id="v68JX1X">
                 <source>label.projects</source>
                 <target>Espaces</target>
+            </trans-unit>
+            <trans-unit id="FbRSeIr">
+                <source>label.provider_d_id</source>
+                <target>D-ID</target>
+            </trans-unit>
+            <trans-unit id="x8oBfR9">
+                <source>label.provider_elevenlabs</source>
+                <target>ElevenLabs</target>
+            </trans-unit>
+            <trans-unit id="DF5IOLN">
+                <source>label.provider_expo_android</source>
+                <target>Expo, builds Android</target>
+            </trans-unit>
+            <trans-unit id="D18JlIv">
+                <source>label.provider_expo_ios</source>
+                <target>Expo, builds iOS</target>
             </trans-unit>
             <trans-unit id="xLyncAl">
                 <source>label.reopen</source>
@@ -789,10 +1357,6 @@
             <trans-unit id="wuLVBeQ">
                 <source>label.search_placeholder</source>
                 <target>Une carte, une référence…</target>
-            </trans-unit>
-            <trans-unit id="qwwpZOD">
-                <source>label.send_back</source>
-                <target>Renvoyer</target>
             </trans-unit>
             <trans-unit id="sKwVoqy">
                 <source>label.settings</source>
@@ -890,9 +1454,9 @@
                 <source>label.step_after</source>
                 <target>Après les étapes</target>
             </trans-unit>
-            <trans-unit id="XAAV3Ex">
-                <source>label.step_due</source>
-                <target>Date prévue de l'étape</target>
+            <trans-unit id="dc7jSBS">
+                <source>label.step_delete</source>
+                <target>Supprimer la ligne</target>
             </trans-unit>
             <trans-unit id="1CiY47b">
                 <source>label.step_edit</source>
@@ -930,6 +1494,10 @@
                 <source>label.step_run</source>
                 <target>Lancer cette étape</target>
             </trans-unit>
+            <trans-unit id="HDohooC">
+                <source>label.step_stale</source>
+                <target>À refaire</target>
+            </trans-unit>
             <trans-unit id="uYvwX94">
                 <source>label.step_title</source>
                 <target>Titre</target>
@@ -946,9 +1514,17 @@
                 <source>label.steps_done</source>
                 <target>Étapes faites</target>
             </trans-unit>
+            <trans-unit id="eK00NQH">
+                <source>label.steps_fold_all</source>
+                <target>Tout plier</target>
+            </trans-unit>
             <trans-unit id="rQqMKKR">
                 <source>label.steps_ticked</source>
                 <target>Terminées (%count%)</target>
+            </trans-unit>
+            <trans-unit id="31pCLFf">
+                <source>label.steps_unfold_all</source>
+                <target>Tout déplier</target>
             </trans-unit>
             <trans-unit id="3C4wOwQ">
                 <source>label.template</source>

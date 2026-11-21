@@ -24,7 +24,7 @@ export default class extends PilotListSort {
     }
 
     revert(item) {
-        item.classList.remove("opacity-50");
+        item.classList.remove("pilot-faded");
         if (this.origin) item.parentNode.insertBefore(item, this.origin);
         else item.parentNode.appendChild(item);
     }

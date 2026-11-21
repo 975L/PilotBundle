@@ -2,39 +2,39 @@
 
 {# The members of a space with their role, changed or taken out on their line, a new one added by the email of its account #}
 {% block pilot %}
-    <p class="small mb-1"><a href="{{ path('pilot_project', {slug: project.slug}) }}" class="text-decoration-none"><span class="rounded-circle d-inline-block me-1 pilot-dot pilot-color-{{ project.slug }}"></span>{{ project.name }}</a></p>
+    <p class="pilot-small pilot-mb-xs"><a href="{{ path('pilot_project', {slug: project.slug}) }}" class="pilot-row pilot-row-tight pilot-inline"><span class="pilot-dot pilot-color-{{ project.slug }}"></span>{{ project.name }}</a></p>
     <h1>{{ 'label.members'|trans({}, 'pilot') }}</h1>
-    <p class="text-body-secondary">{{ 'label.info_members'|trans({}, 'pilot') }}</p>
+    <p class="pilot-muted">{{ 'label.info_members'|trans({}, 'pilot') }}</p>
     {% set token = csrf_token('pilot_members' ~ project.id) %}
     {% if members is empty %}
-        <p class="text-body-secondary">{{ 'label.members_empty'|trans({}, 'pilot') }}</p>
+        <p class="pilot-muted">{{ 'label.members_empty'|trans({}, 'pilot') }}</p>
     {% else %}
-        <ul class="list-group mb-4 pilot-members">
+        <ul class="pilot-list pilot-mb-lg pilot-members">
             {% for member in members %}
-                <li class="list-group-item d-flex flex-wrap align-items-center gap-2">
-                    <span class="flex-grow-1">{{ member.user.userIdentifier }}</span>
-                    <form method="post" action="{{ path('pilot_members_edit', {slug: project.slug, id: member.id}) }}" class="d-flex gap-2">
+                <li class="pilot-list-item pilot-row">
+                    <span class="pilot-grow">{{ member.user.userIdentifier }}</span>
+                    <form method="post" action="{{ path('pilot_members_edit', {slug: project.slug, id: member.id}) }}" class="pilot-row">
                         <input type="hidden" name="_token" value="{{ token }}">
-                        <select name="role" class="form-select form-select-sm w-auto" data-pilot-autosubmit aria-label="{{ 'label.member_role'|trans({}, 'pilot') }}">
+                        <select name="role" class="pilot-auto" data-pilot-autosubmit aria-label="{{ 'label.member_role'|trans({}, 'pilot') }}">
                             {% for role in roles %}<option value="{{ role.value }}"{{ role == member.role ? ' selected' }}>{{ role.label|trans }}</option>{% endfor %}
                             <option value="remove">{{ 'label.member_remove'|trans({}, 'pilot') }}</option>
                         </select>
-                        <noscript><button class="btn btn-sm btn-outline-primary">{{ 'label.settings_save'|trans({}, 'pilot') }}</button></noscript>
+                        <noscript><button class="pilot-btn pilot-btn-outline-primary">{{ 'label.settings_save'|trans({}, 'pilot') }}</button></noscript>
                     </form>
                 </li>
             {% endfor %}
         </ul>
     {% endif %}
-    <form method="post" action="{{ path('pilot_members_add', {slug: project.slug}) }}" class="d-flex flex-wrap gap-2 align-items-end pilot-member-add">
+    <form method="post" action="{{ path('pilot_members_add', {slug: project.slug}) }}" class="pilot-row pilot-row-bottom pilot-member-add">
         <input type="hidden" name="_token" value="{{ token }}">
-        <label class="form-label mb-0 flex-grow-1">{{ 'label.member_email'|trans({}, 'pilot') }}
-            <input type="email" name="email" required maxlength="180" class="form-control form-control-sm">
+        <label class="pilot-label pilot-m0 pilot-grow">{{ 'label.member_email'|trans({}, 'pilot') }}
+            <input type="email" name="email" required maxlength="180">
         </label>
-        <label class="form-label mb-0">{{ 'label.member_role'|trans({}, 'pilot') }}
-            <select name="role" class="form-select form-select-sm">
+        <label class="pilot-label pilot-m0">{{ 'label.member_role'|trans({}, 'pilot') }}
+            <select name="role">
                 {% for role in roles %}<option value="{{ role.value }}"{{ role.value == 'contributor' ? ' selected' }}>{{ role.label|trans }}</option>{% endfor %}
             </select>
         </label>
-        <button class="btn btn-sm btn-primary">{{ 'label.member_add'|trans({}, 'pilot') }}</button>
+        <button class="pilot-btn pilot-btn-primary pilot-btn-lg">{{ 'label.member_add'|trans({}, 'pilot') }}</button>
     </form>
 {% endblock %}

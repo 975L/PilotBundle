@@ -31,7 +31,6 @@ use c975L\PilotBundle\Service\CardFiller;
 use c975L\PilotBundle\Service\CardFlow;
 use c975L\PilotBundle\Service\CardImages;
 use c975L\PilotBundle\Service\CardMarkdown;
-use c975L\PilotBundle\Service\RunOutputs;
 use c975L\PilotBundle\Service\StepOrder;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -130,6 +129,21 @@ class PilotControllerEditTest extends TestCase
         $this->assertSame(2, $refused);
     }
 
+    // A step is added by hand to a card of its own, never to one following a checklist template
+    public function testStepAddedOnlyWithoutTemplate(): void
+    {
+        $controller = $this->controller($this->createStub(ProjectRepository::class), $this->createStub(PilotAccess::class));
+        $add = new \ReflectionMethod($controller, 'addStep');
+        $card = $this->card();
+
+        $add->invoke($controller, $card, 'step-1');
+        $this->assertSame('step-1', $card->getChecklist()[0]['t']);
+
+        $card->follow(new PlanTemplate('catalog', [])->setChecklist(true));
+        $this->expectException(FlowException::class);
+        $add->invoke($controller, $card, 'step-2');
+    }
+
     // The editing link lets its holder hand the card to a machine, so lending it asks as much; the read-only link asks writing the card
     public function testLendAsksRun(): void
     {
@@ -155,50 +169,6 @@ class PilotControllerEditTest extends TestCase
         $this->assertSame($own, $method->invoke($controller, $this->report($own, ['site-2', 'site-1']), $request, 0));
         $this->assertSame($page, $method->invoke($controller, $this->report($own, ['site-2', 'site-1']), $request, null));
         $this->assertSame($own, $method->invoke($controller, $this->report($own, ['site-2']), $request, null));
-    }
-
-    // A card's run files, picture and screenshots are deleted once its removal is written, kept when the flush fails
-    public function testFilesDeletedAfterTheFlush(): void
-    {
-        $root = sys_get_temp_dir() . '/pilot-erase-' . bin2hex(random_bytes(4));
-        $outputs = new RunOutputs($root);
-        $images = new CardImages($root);
-        $shot = str_repeat('a', 32) . '.png';
-        $card = $this->card()->setImage('card-7-a.png')->addFeedback('feedback-1');
-        $card->setFeedbackImage(0, $shot);
-        $run = new Run($card);
-        new \ReflectionProperty(Run::class, 'id')->setValue($run, 7);
-        $output = $outputs->folder($run) . '/item-1.txt';
-        $image = $root . '/' . Card::IMAGE_DIRECTORY . '/card-7-a.png';
-        new Filesystem()->dumpFile($output, 'catalog');
-        new Filesystem()->dumpFile($image, 'catalog');
-        $screenshot = $root . '/' . Card::FEEDBACK_IMAGE_DIRECTORY . '/' . $shot;
-        new Filesystem()->dumpFile($screenshot, 'catalog');
-        $failing = $this->createStub(EntityManagerInterface::class);
-        $failing->method('flush')->willThrowException(new \RuntimeException());
-
-        $refused = false;
-        try {
-            $this->erase($this->controller(entityManager: $failing, images: $images), $card, $outputs);
-        } catch (\RuntimeException) {
-            $refused = true;
-        }
-        $this->assertTrue($refused);
-        $this->assertFileExists($output);
-        $this->assertFileExists($image);
-        $this->assertFileExists($screenshot);
-
-        $this->erase($this->controller(images: $images), $card, $outputs);
-        $this->assertDirectoryDoesNotExist(\dirname($output));
-        $this->assertFileDoesNotExist($image);
-        $this->assertFileDoesNotExist($screenshot);
-        new Filesystem()->remove($root);
-    }
-
-    // The private removal run on a card
-    private function erase(PilotController $controller, Card $card, RunOutputs $outputs): void
-    {
-        new \ReflectionMethod($controller, 'erase')->invoke($controller, $card, $outputs);
     }
 
     // A feedback added with its screenshot keeps it under a random name; a picture refused adds nothing, an empty text keeps no file

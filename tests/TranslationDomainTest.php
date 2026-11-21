@@ -10,11 +10,14 @@
 
 namespace c975L\PilotBundle\Tests;
 
+use c975L\PilotBundle\Tests\Fixtures\PilotTestStubs;
 use PHPUnit\Framework\TestCase;
 
 // Every key this bundle names is one its catalogue ships, in the three locales - the fields UiBundle's traits add included, whose labels are looked up in this bundle's domain without any of its files spelling them out
 class TranslationDomainTest extends TestCase
 {
+    use PilotTestStubs;
+
     private const array LOCALES = ['en', 'fr', 'es'];
 
     // "payment" is this bundle's own dependency and stays legitimate; the other satellites may simply not be installed
@@ -84,6 +87,32 @@ class TranslationDomainTest extends TestCase
         }
     }
 
+    // The narrations live in "pilot_narration", spoken and never drawn: every step's is shipped there in the three locales, and nothing else
+    public function testEveryNarrationIsShipped(): void
+    {
+        $narrations = $this->guidedProjectKeys('narration');
+        $this->assertNotEmpty($narrations);
+        foreach (self::LOCALES as $locale) {
+            $catalogue = array_keys($this->catalogue(__DIR__ . '/../translations/pilot_narration.' . $locale . '.xlf'));
+            sort($catalogue);
+            $this->assertSame($narrations, $catalogue, sprintf('"pilot_narration.%s.xlf" does not ship exactly the steps\' narrations.', $locale));
+        }
+    }
+
+    // The keys the guided projects name under one field ("label", "description" or "narration"), the projects' own and their steps', sorted
+    /** @return list<string> */
+    private function guidedProjectKeys(string $field): array
+    {
+        $keys = [];
+        foreach ($this->guidedProjects() as $project) {
+            $keys = array_merge($keys, array_filter([$project[$field] ?? null]), array_column($project['steps'], $field));
+        }
+        $keys = array_values(array_unique($keys));
+        sort($keys);
+
+        return $keys;
+    }
+
     // Every key this bundle resolves in its own domain, keyed by the file naming it
     /** @return array<string, string> */
     private function usedKeys(): array
@@ -110,9 +139,26 @@ class TranslationDomainTest extends TestCase
             $keys = array_merge($keys, $this->yamlKeys($contents));
         }
 
+        // The guided projects build their keys from each project and step, read off what the provider returns rather than its source
+        if (str_ends_with($file, 'PilotGuidedProjectProvider.php')) {
+            return array_merge($keys, $this->guidedProjectKeys('label'), $this->guidedProjectKeys('description'));
+        }
+
         // A form type and the menu provider name their labels as plain array values, resolved in the domain the class itself names
         if (str_contains($contents, "'translation_domain' => 'pilot'")) {
             $keys = array_merge($keys, $this->declaredLabelKeys($contents), $this->traitLabelKeys($contents));
+        }
+
+        // The demo dataset names its texts as the values of its rows, said in the site's locale through the pilot domain
+        if (str_contains($contents, 'implements DemoFixtureProviderInterface')) {
+            preg_match_all("/'(label\\.demo_[a-z0-9_]+)'/", $contents, $demo);
+            $keys = array_merge($keys, $demo[1]);
+        }
+
+        // A credit reader names the labels of its services as the values of providers(), shown in the pilot domain by CreditType
+        if (str_contains($contents, 'implements CreditReaderInterface')) {
+            preg_match_all("/=> '(label\\.provider_[a-z0-9_]+)'/", $contents, $providers);
+            $keys = array_merge($keys, $providers[1]);
         }
 
         return $keys;
@@ -166,7 +212,7 @@ class TranslationDomainTest extends TestCase
     /** @return list<string> */
     private function declaredLabelKeys(string $contents): array
     {
-        preg_match_all("/'(?:label|help|description|title)' => '([a-z][a-zA-Z0-9_]*\\.[a-zA-Z0-9_.]+)'/", $contents, $matches);
+        preg_match_all("/'(?:label|help|description|title|placeholder)' => '([a-z][a-zA-Z0-9_]*\\.[a-zA-Z0-9_.]+)'/", $contents, $matches);
         preg_match_all("/'((?:label|text)\\.[a-zA-Z0-9_.]+)'\\s*=>/", $contents, $choices);
 
         return array_merge($matches[1], $choices[1]);

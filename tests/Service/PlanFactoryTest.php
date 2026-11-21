@@ -96,7 +96,7 @@ class PlanFactoryTest extends TestCase
 
         $run = $this->flow->launch($cards[1]);
 
-        $run->claim(new Machine('machine-1', ''), new \DateTimeImmutable())->finish(RunStatus::Done, null, [], null, new \DateTimeImmutable());
+        $run->claim(new Machine('machine-1', ''), new \DateTimeImmutable())->finish(RunStatus::Done, null, [], new \DateTimeImmutable());
         $this->flow->runFinished($run);
         $this->flow->validate($cards[1]);
         $this->assertSame(CardStatus::Ready, $cards[2]->getStatus());

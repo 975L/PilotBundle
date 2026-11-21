@@ -1,0 +1,674 @@
+// The piloting pages themselves: the shell, the spaces' menu, the cards and their dialog, the steps and the files they made
+.pilot-shell {
+    display: grid;
+    gap: 1rem;
+    padding: .5rem;
+}
+
+.pilot-brand {
+    color: var(--pilot-text);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.pilot-brand:hover {
+    text-decoration: none;
+}
+
+.pilot-nav-heading {
+    display: flex;
+    align-items: center;
+    margin: 1rem 0 .25rem;
+    padding: 0 .75rem;
+    color: var(--pilot-muted);
+    font-size: .875rem;
+    font-weight: 600;
+}
+
+.pilot-nav-pad {
+    padding: 0 .75rem;
+}
+
+// The spaces' menu folded behind its burger on a phone, shown as a column from a medium screen
+.pilot-menu {
+    display: none;
+}
+
+.pilot-menu-open .pilot-menu {
+    display: block;
+}
+
+.pilot-dot {
+    display: inline-block;
+    width: .6rem;
+    height: .6rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.pilot-note {
+    white-space: pre-line;
+}
+
+.pilot-dot, .pilot-badge {
+    background-color: var(--pilot-neutral);
+}
+
+.pilot-cards {
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+
+.pilot-reference {
+    --pilot-ink: var(--pilot-neutral);
+    border-left: 4px solid var(--pilot-ink);
+    border-style: dashed dashed dashed solid;
+}
+
+.pilot-card {
+    --pilot-ink: var(--pilot-neutral);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--pilot-border);
+    border-top: 4px solid var(--pilot-ink);
+    border-radius: var(--pilot-radius-lg);
+    background-color: color-mix(in srgb, var(--pilot-ink) 12%, var(--pilot-surface));
+    transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+
+.pilot-card:hover, .pilot-card:focus-within {
+    border-color: var(--pilot-ink);
+    box-shadow: var(--pilot-shadow);
+    transform: translateY(-2px);
+}
+
+.pilot-card-done {
+    background-color: color-mix(in srgb, var(--pilot-text) 18%, var(--pilot-surface));
+}
+
+.pilot-card .pilot-card-gesture {
+    position: relative;
+    z-index: 2;
+}
+
+// The card's title link covering the whole tile, its buttons kept above it
+.pilot-stretched::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.pilot-card-title {
+    font-size: 1.25rem;
+}
+
+.pilot-dialog {
+    width: min(48rem, calc(100vw - 1rem));
+    max-height: calc(100dvh - 1rem);
+    border: 0;
+    border-radius: var(--pilot-radius-lg);
+    padding: 0;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, .3);
+    background: var(--pilot-surface);
+    color: var(--pilot-text);
+}
+
+.pilot-dialog-body {
+    padding: .5rem 1rem 1rem;
+}
+
+// Once shown, the dialog keeps its top where it opened: a card growing or shrinking moves its bottom only
+.pilot-dialog-pinned {
+    margin-top: var(--pilot-dialog-top);
+    margin-bottom: auto;
+    max-height: calc(100dvh - var(--pilot-dialog-top) - .5rem);
+}
+
+.pilot-confirm {
+    width: min(32rem, calc(100vw - 2rem));
+    overflow: hidden;
+}
+
+.pilot-confirm-body {
+    padding: 1.25rem;
+}
+
+.pilot-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+    padding: .75rem 1.25rem;
+    border-top: 1px solid var(--pilot-border);
+    background: var(--pilot-surface-2);
+}
+
+.pilot-dialog::backdrop {
+    background: rgba(0, 0, 0, .45);
+}
+
+.pilot-zoom {
+    width: auto;
+    max-width: calc(100vw - 2rem);
+    cursor: zoom-out;
+}
+
+.pilot-zoom img {
+    display: block;
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 2rem);
+}
+
+.pilot-dialog-close {
+    position: sticky;
+    top: 0;
+    float: right;
+    z-index: 3;
+    padding: .5rem;
+    background: var(--pilot-surface);
+    border-radius: 0 0 0 .5rem;
+}
+
+.pilot-sort-handle {
+    color: var(--pilot-faint);
+    cursor: grab;
+}
+
+.pilot-fold-head {
+    cursor: pointer;
+}
+
+.pilot-fold-head::before {
+    content: "▾";
+    display: inline-block;
+    width: 1em;
+    transition: transform .15s;
+}
+
+.pilot-folded > .pilot-fold-head::before {
+    transform: rotate(-90deg);
+}
+
+.pilot-folded > :not(.pilot-fold-head) {
+    display: none;
+}
+
+.pilot-due-past {
+    background-color: var(--pilot-purple);
+    color: #fff;
+}
+
+.pilot-due-near {
+    background-color: var(--pilot-orange);
+    color: #fff;
+}
+
+.pilot-card-new {
+    position: relative;
+}
+
+.pilot-card-new > summary {
+    list-style: none;
+}
+
+.pilot-card-new > summary::-webkit-details-marker {
+    display: none;
+}
+
+.pilot-card-new-panel {
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + .25rem);
+    left: 0;
+    width: min(28rem, calc(100vw - 2rem));
+    padding: .75rem;
+    border: 1px solid var(--pilot-border);
+    border-radius: var(--pilot-radius);
+    background: var(--pilot-surface);
+    box-shadow: var(--pilot-shadow);
+    cursor: auto;
+}
+
+.pilot-inline-view {
+    cursor: text;
+    border-radius: .25rem;
+}
+
+.pilot-inline-view:hover, .pilot-inline-view:focus-visible {
+    outline: 1px dashed var(--pilot-muted);
+    outline-offset: 2px;
+}
+
+.pilot-inline-form:not([hidden]) {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+}
+
+// A long step wraps beside its box, its tags and buttons going down a line when the width runs short rather than squeezing it letter by letter
+.pilot-step-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: .5rem;
+    margin-bottom: .25rem;
+}
+
+.pilot-step-body {
+    flex: 1 1 10rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.pilot-step-line > :not(.pilot-step-body) {
+    min-height: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.pilot-step-line .pilot-btn {
+    min-height: 1.375rem;
+    padding-block: 0;
+}
+
+.pilot-step-line form {
+    margin: 0;
+}
+
+// A group of steps headed by its name over a line, its count of ticked steps beside it
+.pilot-step-group {
+    margin-top: .75rem;
+}
+
+.pilot-step-group-head {
+    margin-bottom: .35rem;
+    padding-bottom: .2rem;
+    border-bottom: 1px solid var(--pilot-border);
+    color: var(--pilot-text);
+    font-size: .8125rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.pilot-step-group-count {
+    margin-inline-start: .35rem;
+    color: var(--pilot-muted);
+    font-weight: 400;
+}
+
+// A step still to do written in the strongest ink, a ticked one crossed out and greyed
+.pilot-step-text {
+    color: var(--pilot-strong-text);
+}
+
+.pilot-step-done {
+    color: var(--pilot-muted);
+    text-decoration: line-through;
+}
+
+.pilot-step-waiting {
+    color: var(--pilot-muted);
+}
+
+.pilot-step-date {
+    margin-inline-start: .35rem;
+    color: var(--pilot-faint);
+    font-size: .8125rem;
+    white-space: nowrap;
+}
+
+// The files a step's run wrote, each kind its hue
+.pilot-step-files {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    margin-top: .15rem;
+    font-size: .8125rem;
+}
+
+.pilot-step-files a {
+    color: var(--pilot-primary);
+}
+
+.pilot-file-folder .pilot-icon {
+    color: var(--pilot-file-folder);
+}
+
+.pilot-file-pdf .pilot-icon {
+    color: var(--pilot-file-pdf);
+}
+
+.pilot-file-image .pilot-icon {
+    color: var(--pilot-file-image);
+}
+
+.pilot-file-video .pilot-icon {
+    color: var(--pilot-file-video);
+}
+
+.pilot-file-other .pilot-icon {
+    color: var(--pilot-file-other);
+}
+
+.pilot-file-folder {
+    font-weight: 600;
+}
+
+.pilot-drop {
+    min-height: 3.5rem;
+    border-radius: .5rem;
+}
+
+.pilot-cards.pilot-sheets {
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+}
+
+.pilot-sheet-image {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+.pilot-sheet-full {
+    max-height: 70vh;
+    border-radius: var(--pilot-radius);
+}
+
+.pilot-feedback-shot img {
+    max-width: 8rem;
+    max-height: 5rem;
+}
+
+.pilot-feedback-shot-preview {
+    max-height: 2rem;
+}
+
+.pilot-sheet-initial {
+    display: grid;
+    place-items: center;
+    font-size: 2.4rem;
+    background: var(--pilot-surface-2);
+}
+
+.pilot-progress {
+    height: .5rem;
+    border-radius: 1rem;
+    background: var(--pilot-surface-2);
+    overflow: hidden;
+}
+
+.pilot-progress > span {
+    display: block;
+    height: 100%;
+    background: var(--pilot-info);
+}
+
+.pilot-dragging .pilot-project-link.pilot-drop-over, .pilot-dragging .pilot-tabs-nav .pilot-tab.pilot-drop-over {
+    outline: 2px solid var(--pilot-primary);
+    outline-offset: -2px;
+}
+
+.pilot-dragging .pilot-collection-new summary.pilot-drop-over {
+    background: var(--pilot-primary);
+    border-color: var(--pilot-primary);
+    color: var(--pilot-on-primary);
+    transform: scale(1.15);
+}
+
+.pilot-dragging .pilot-drop {
+    outline: 2px dashed var(--pilot-border);
+    outline-offset: 4px;
+}
+
+// Headings written in a file's markdown kept to the size of its text
+.pilot-doc-body :is(h1, h2, h3, h4, h5, h6) {
+    font-size: 1em;
+    font-weight: 600;
+    margin: .75em 0 .25em;
+}
+
+// A run's text wrapped to the dialog's width, never scrolled sideways
+.pilot-run pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+// The guided-project panel and its highlight, as ConfigBundle's management.css draws them in the back office, whose stylesheet these pages do not load
+.guided-highlight {
+    position: relative;
+    z-index: 2001;
+    outline: 3px solid #ffc107;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.guided-project-panel {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1900;
+    width: calc(100% - 2rem);
+    max-width: 22rem;
+    padding: 1rem;
+    border: 1px solid var(--pilot-border);
+    border-radius: .5rem;
+    background: var(--pilot-surface);
+    color: var(--pilot-text);
+    box-shadow: 0 .5rem 1.5rem rgba(0, 0, 0, .3);
+}
+
+.guided-project-panel h3 {
+    margin: .25rem 0 .5rem;
+    font-size: 1.05rem;
+}
+
+.guided-project-panel p {
+    margin: 0 0 1rem;
+}
+
+.guided-project-progress {
+    font-size: .8rem;
+    opacity: .6;
+}
+
+.guided-project-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: .5rem;
+}
+
+.guided-project-actions button {
+    padding: .35rem .75rem;
+    border: 1px solid var(--pilot-border);
+    border-radius: .25rem;
+    background: var(--pilot-surface-2);
+    color: inherit;
+}
+
+.guided-project-actions button:disabled {
+    opacity: .4;
+}
+
+@media (min-width: 768px) {
+    .pilot-shell {
+        grid-template-columns: minmax(13rem, 1fr) 3fr;
+        padding: 1rem;
+    }
+
+    .pilot-menu {
+        display: block;
+    }
+
+    .pilot-card-title {
+        font-size: 1.5rem;
+    }
+
+    .pilot-dialog-body {
+        padding: .5rem 1.5rem 1.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .pilot-shell {
+        grid-template-columns: minmax(14rem, 1fr) 5fr;
+    }
+}
+
+// Printed: the card or the page alone, its dialog laid flat when it shows one, without the spaces, the buttons nor the fields
+@media print {
+    .pilot-projects, .pilot-dialog-close, .pilot-sort-handle, .pilot-btn, input:not([type="checkbox"]), select, textarea {
+        display: none !important;
+    }
+
+    .pilot-shell {
+        display: block;
+    }
+
+    body:has(.pilot-dialog[open]) .pilot-main {
+        display: none;
+    }
+
+    .pilot-dialog[open] {
+        position: static;
+        width: auto;
+        max-height: none;
+        margin: 0;
+        overflow: visible;
+        box-shadow: none;
+    }
+}
+
+// A copy that worked or failed, told for a moment by its button
+.pilot-copied {
+    border-color: var(--pilot-success);
+    background: var(--pilot-success-soft);
+    color: var(--pilot-success);
+}
+
+.pilot-copy-failed {
+    border-color: var(--pilot-danger);
+    background: var(--pilot-danger-soft);
+    color: var(--pilot-danger);
+}
+
+// A space's badge written white on its own colour
+.pilot-badge {
+    color: #fff;
+}
+
+a.pilot-badge:hover {
+    text-decoration: none;
+    filter: brightness(1.1);
+}
+
+.pilot-card-foot {
+    margin-top: auto;
+}
+
+.pilot-input-lg {
+    min-height: 2.5rem;
+    font-size: 1.25rem;
+}
+
+progress {
+    height: .6rem;
+    accent-color: var(--pilot-info);
+}
+
+.pilot-table-hover tbody tr:hover {
+    background: var(--pilot-surface-2);
+}
+
+// A table row opened by a click anywhere on it, its pen stretched over it, its other buttons kept above
+.pilot-row-link {
+    position: relative;
+}
+
+.pilot-row-link-target::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+
+.pilot-row-link-above {
+    position: relative;
+    z-index: 2;
+}
+
+.pilot-credits {
+    display: grid;
+    gap: .5rem;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.pilot-credit {
+    padding: .5rem;
+    border: 1px solid var(--pilot-border);
+    border-radius: var(--pilot-radius);
+    background: var(--pilot-surface);
+}
+
+.pilot-credit-empty {
+    border-color: var(--pilot-danger);
+}
+
+.pilot-credit-value {
+    font-size: 1.25rem;
+}
+
+.pilot-output-image {
+    border: 1px solid var(--pilot-border);
+    border-radius: var(--pilot-radius);
+}
+
+.pilot-feedback-shot img, .pilot-feedback-shot-preview {
+    border: 1px solid var(--pilot-border);
+    border-radius: var(--pilot-radius);
+}
+
+.pilot-site, .pilot-template-link {
+    margin-inline-end: .5rem;
+}
+
+.pilot-template-link {
+    margin-inline-start: .25rem;
+}
+
+.pilot-tab-add {
+    align-self: center;
+    margin-inline-start: .5rem;
+}
+
+.pilot-tab-pane {
+    padding-top: .75rem;
+}
+
+// The choices of a form ticked in a list, each box beside its name
+.pilot-form div:has(> input[type="checkbox"] + label) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .25rem .75rem;
+}
+
+.pilot-form input[type="checkbox"] + label {
+    margin: 0 .5rem 0 0;
+}
+
+@media (min-width: 768px) {
+    .pilot-credits {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .pilot-credits {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}

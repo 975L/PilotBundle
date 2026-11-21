@@ -6,9 +6,17 @@
                 <source>description.pilot_horizon_days</source>
                 <target>Días que el panel muestra uno a uno, antes de agrupar por mes</target>
             </trans-unit>
+            <trans-unit id="xjH3Gsq">
+                <source>description.pilot_open_scheme</source>
+                <target>Nombre del esquema de enlaces que abre en el ordenador un archivo o una carpeta nombrados bajo un paso, siendo el enlace ese nombre, :// y la ruta (por ejemplo pilot-open, servido por runner/pilot-open.py); vacío, las rutas quedan como texto</target>
+            </trans-unit>
             <trans-unit id="VdOkW5Q">
                 <source>label.pilot_horizon_days</source>
                 <target>Horizonte del panel (días)</target>
+            </trans-unit>
+            <trans-unit id="NXMykGq">
+                <source>label.pilot_open_scheme</source>
+                <target>Esquema de apertura de archivos</target>
             </trans-unit>
         </body>
     </file>

@@ -112,4 +112,24 @@ class RunRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
     }
+
+    // How long the action usually lasts, in seconds: the median of its last runs a machine did, null before any; a run recorded without a machine (files found again) has no duration
+    public function typicalSeconds(string $action, int $last = 7): ?int
+    {
+        $runs = $this->createQueryBuilder('r')
+            ->where('r.action = :action')
+            ->andWhere('r.status = :done')
+            ->andWhere('r.finishedAt IS NOT NULL')
+            ->andWhere('r.machine IS NOT NULL')
+            ->setParameter('action', $action)
+            ->setParameter('done', RunStatus::Done)
+            ->orderBy('r.id', \SortDirection::Descending)
+            ->setMaxResults($last)
+            ->getQuery()
+            ->getResult();
+        $seconds = array_map(static fn (Run $run): int => (int) $run->getFinishedAt()?->getTimestamp() - $run->getStartedAt()->getTimestamp(), $runs);
+        sort($seconds);
+
+        return [] === $seconds ? null : max(1, $seconds[intdiv(\count($seconds), 2)]);
+    }
 }

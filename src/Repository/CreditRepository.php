@@ -31,21 +31,16 @@ class CreditRepository extends ServiceEntityRepository
         return $this->findBy([], ['position' => 'ASC', 'label' => 'ASC']);
     }
 
-    // Records the balances a machine reports, a new account appearing at the end; a balance typed in by hand is never overwritten
-    /** @param array<string, array{label: string, remaining: ?int, total: ?int, unit: ?string, renewsOn: ?\DateTimeImmutable}> $reports */
-    public function report(array $reports, \DateTimeImmutable $now): void
+    // What runs spent taken off the balances typed in by hand, never below zero, each in one atomic update so that two runs ending together both count; a service's balance is left to its refresh
+    /** @param array<string, int> $spent */
+    public function spend(array $spent, \DateTimeImmutable $now): void
     {
-        $known = [];
-        foreach ($this->findBy(['key' => array_keys($reports)]) as $credit) {
-            $known[$credit->getKey()] = $credit;
-        }
-        foreach ($reports as $key => $report) {
-            $credit = $known[$key] ?? new Credit((string) $key)->setManual(false)->setPosition(100);
-            if ($credit->isManual()) {
-                continue;
-            }
-            $credit->setLabel($report['label'])->setTotal($report['total'])->setUnit($report['unit'])->setRenewsOn($report['renewsOn'])->setRemaining($report['remaining'], $now);
-            $this->getEntityManager()->persist($credit);
+        foreach ($spent as $key => $amount) {
+            $this->getEntityManager()->createQuery('UPDATE ' . Credit::class . ' c SET c.remaining = CASE WHEN c.remaining > :amount THEN c.remaining - :amount ELSE 0 END, c.updatedAt = :now WHERE c.key = :key AND c.provider IS NULL AND c.remaining IS NOT NULL')
+                ->setParameter('amount', $amount)
+                ->setParameter('now', $now)
+                ->setParameter('key', (string) $key)
+                ->execute();
         }
     }
 }

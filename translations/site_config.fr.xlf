@@ -6,9 +6,17 @@
                 <source>description.pilot_horizon_days</source>
                 <target>Jours que le tableau de bord montre un par un, avant de regrouper par mois</target>
             </trans-unit>
+            <trans-unit id="xjH3Gsq">
+                <source>description.pilot_open_scheme</source>
+                <target>Nom du schéma de liens qui ouvre sur l'ordinateur un fichier ou un dossier nommé sous une étape, le lien étant ce nom, :// puis le chemin (par exemple pilot-open, servi par runner/pilot-open.py) ; vide, les chemins restent du texte</target>
+            </trans-unit>
             <trans-unit id="VdOkW5Q">
                 <source>label.pilot_horizon_days</source>
                 <target>Horizon du tableau de bord (jours)</target>
+            </trans-unit>
+            <trans-unit id="NXMykGq">
+                <source>label.pilot_open_scheme</source>
+                <target>Schéma d'ouverture des fichiers</target>
             </trans-unit>
         </body>
     </file>

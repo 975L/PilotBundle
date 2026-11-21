@@ -173,16 +173,25 @@ export default class extends Controller {
                 const content = new DOMParser().parseFromString(html, "text/html").querySelector(".pilot-dialog-page");
                 if (!content) throw new Error(url);
                 this.bodyTarget.replaceChildren(...content.childNodes);
-                if (!this.dialogTarget.open) this.dialogTarget.showModal();
+                if (!this.dialogTarget.open) this.show();
                 if (this.refocus) this.bodyTarget.querySelector(`form[action="${CSS.escape(this.refocus)}"] [data-pilot-refocus]`)?.focus();
                 this.refocus = null;
             })
             .catch(() => { window.location.href = url; });
     }
 
+    // The dialog opened centred, then held by its top so a group folded or a card read again moves its bottom only
+    show() {
+        const dialog = this.dialogTarget;
+        dialog.showModal();
+        dialog.style.setProperty("--pilot-dialog-top", Math.max(8, dialog.getBoundingClientRect().top) + "px");
+        dialog.classList.add("pilot-dialog-pinned");
+    }
+
     // Closed by its button, Escape or a click beside it: the address no longer names what it showed, the page shows what changed in it
     closed() {
         this.bodyTarget.replaceChildren();
+        this.dialogTarget.classList.remove("pilot-dialog-pinned");
         if (/^#(card|doc)-/.test(window.location.hash)) window.history.pushState(null, "", window.location.pathname + window.location.search);
         // A gesture still on its way is waited for, the reload would cut it
         if (this.changed) Promise.resolve(this.pending).finally(() => window.location.reload());

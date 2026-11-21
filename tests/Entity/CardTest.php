@@ -73,6 +73,20 @@ class CardTest extends TestCase
         $this->assertSame(2, $cards[0]->getRank());
     }
 
+    // A step's files are out of date once an earlier step's run wrote files after them, a run without files or not done changing nothing
+    public function testStaleSteps(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1'], ['t' => 'step-2'], ['t' => 'step-3'], ['t' => 'step-4']]);
+        new Run($card, 'action-1', [], 1)->finish(RunStatus::Done, null, [], new \DateTimeImmutable('2026-11-20 10:00'))->setFiles(['/x/item-2.pdf']);
+        new Run($card, 'action-1', [], 2)->finish(RunStatus::Done, null, [], new \DateTimeImmutable('2026-11-20 11:00'))->setFiles(['/x/item-3.jpg']);
+        new Run($card, 'action-1', [], 3)->finish(RunStatus::Done, null, [], new \DateTimeImmutable('2026-11-20 12:00'))->setFiles(['/x/item-4.jpg']);
+        $this->assertSame([], $card->staleSteps());
+
+        new Run($card, 'action-1', [], 0)->finish(RunStatus::Done, null, [], new \DateTimeImmutable('2026-11-21 09:00'));
+        new Run($card, 'action-1', [], 1)->finish(RunStatus::Done, null, [], new \DateTimeImmutable('2026-11-21 10:00'))->setFiles(['/x/item-2.pdf']);
+        $this->assertSame([2, 3], $card->staleSteps());
+    }
+
     // A run held by a machine is released when its lease is lost, then finished with its outputs
     public function testRunLifecycle(): void
     {
@@ -90,19 +104,32 @@ class CardTest extends TestCase
         $this->assertSame(RunStatus::Queued, $run->getStatus());
         $this->assertNull($run->getMachine());
 
-        $run->finish(RunStatus::Done, 'ok', ['/tmp/item-1.txt'], 'log', $now);
+        $run->finish(RunStatus::Done, 'ok', ['/tmp/item-1.txt'], $now);
         $this->assertSame(100, $run->getProgress());
         $this->assertTrue($run->getStatus()->isFinished());
     }
 
-    // A step ticked keeps its day, unticked loses it, and an index out of the list changes nothing
+    // Steps are added by hand to a card of its own or one following a template of separate cards, never to one following a checklist template
+    public function testTakesStepsByHand(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1');
+        $this->assertTrue($card->takesStepsByHand());
+
+        $card->follow(new PlanTemplate('catalog', []));
+        $this->assertTrue($card->takesStepsByHand());
+
+        $card->follow(new PlanTemplate('catalog', [])->setChecklist(true));
+        $this->assertFalse($card->takesStepsByHand());
+    }
+
+    // A step ticked keeps its moment to the minute and who ticked it, unticked loses it, and an index out of the list changes nothing
     public function testToggleStep(): void
     {
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'first'], ['t' => 'second']]);
-        $day = new \DateTimeImmutable('2026-11-17');
+        $day = new \DateTimeImmutable('2026-11-17 14:35:20');
 
-        $card->toggleStep(1, $day)->toggleStep(5, $day);
-        $this->assertSame([['t' => 'first'], ['t' => 'second', 'done' => true, 'doneAt' => '2026-11-17']], $card->getChecklist());
+        $card->toggleStep(1, $day, 'IT')->toggleStep(5, $day);
+        $this->assertSame([['t' => 'first'], ['t' => 'second', 'done' => true, 'doneAt' => '2026-11-17 14:35', 'doneBy' => 'IT']], $card->getChecklist());
 
         $card->toggleStep(1, $day);
         $this->assertSame([['t' => 'first'], ['t' => 'second']], $card->getChecklist());
@@ -149,7 +176,7 @@ class CardTest extends TestCase
             ->setNote('note-1')
             ->setDue(new \DateTimeImmutable('2026-11-20'))
             ->setWaitingOn('someone')
-            ->setChecklist([['t' => 'step-1', 'done' => true, 'doneAt' => '2026-11-01', 'cost' => ['credit' => 'item-1', 'amount' => 2]]])
+            ->setChecklist([['t' => 'step-1', 'done' => true, 'doneAt' => '2026-11-01', 'doneBy' => 'AB', 'cost' => ['credit' => 'item-1', 'amount' => 2]], ['t' => 'feedback-1', 'feedback' => true, 'r' => 'reason-1']])
             ->share()
             ->markDone(new \DateTimeImmutable('2026-11-18'));
 
@@ -159,11 +186,28 @@ class CardTest extends TestCase
         $this->assertSame($card->getProject(), $copy->getProject());
         $this->assertSame('note-1', $copy->getNote());
         $this->assertSame('2026-11-20', $copy->getDue()?->format('Y-m-d'));
-        $this->assertSame([['t' => 'step-1', 'cost' => ['credit' => 'item-1', 'amount' => 2]]], $copy->getChecklist());
+        $this->assertSame([['t' => 'step-1', 'cost' => ['credit' => 'item-1', 'amount' => 2]], ['t' => 'feedback-1', 'feedback' => true]], $copy->getChecklist());
         $this->assertNull($copy->getWaitingOn());
         $this->assertNull($copy->getShareToken());
         $this->assertNull($copy->getDoneAt());
         $this->assertNotSame('done', $copy->getStatus()->value);
+    }
+
+    // The open feedback goes to a machine in whole lines within one pass, the lines that do not fit waiting for the next one
+    public function testFeedbackHandedInWholeLines(): void
+    {
+        $long = str_repeat('x', 490);
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([
+            ['t' => 'done-1', 'feedback' => true, 'done' => true],
+            ...array_map(static fn (int $number): array => ['t' => $long . $number, 'feedback' => true], range(1, 5)),
+        ]);
+
+        $lines = $card->feedbackToHand();
+
+        $this->assertCount(4, $lines);
+        $this->assertSame('1. ' . $long . '1', $lines[0]);
+        $this->assertLessThanOrEqual(Card::FEEDBACK_PASS_LENGTH, mb_strlen(implode("\n", $lines)));
+        $this->assertSame(1, $card->getFeedbackHeldOver());
     }
 
     // Steps added at the end, renamed keeping what they carry, removed by an empty text; nothing for an empty text or a missing step
@@ -215,7 +259,7 @@ class CardTest extends TestCase
     {
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'a', 'action' => 'build'], ['t' => 'b'], ['t' => 'c', 'action' => 'copy']])->setStatus(CardStatus::Running);
         $removed = new Run($card, 'build', [], 0);
-        $after = new Run($card, 'copy', [], 2)->finish(RunStatus::Done, null, [], null, new \DateTimeImmutable('2026-11-18 09:00'));
+        $after = new Run($card, 'copy', [], 2)->finish(RunStatus::Done, null, [], new \DateTimeImmutable('2026-11-18 09:00'));
 
         $card->renameStep(0, '', new \DateTimeImmutable('2026-11-18 10:00'));
         $this->assertSame(['b', 'c'], array_column($card->getChecklist(), 't'));
@@ -378,6 +422,17 @@ class CardTest extends TestCase
         $this->assertSame([], new Card($this->project, 'item-2')->getStepGroups());
     }
 
+    // A card following a checklist template keeps its ticked steps in sight, none folded
+    public function testStepPartsUnfoldedOnTemplate(): void
+    {
+        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1', 'done' => true], ['t' => 'step-2', 'done' => true], ['t' => 'step-3']]);
+        $card->follow(new PlanTemplate('catalog-checklist', [])->setChecklist(true));
+        $parts = $card->getStepGroups()[0]['parts'];
+
+        $this->assertSame([false], array_column($parts, 'folded'));
+        $this->assertSame([0, 1, 2], array_keys($parts[0]['steps']));
+    }
+
     // A screenshot set on a feedback only, listed, cleared, and never carried to a copy of the card
     public function testFeedbackImage(): void
     {
@@ -390,15 +445,20 @@ class CardTest extends TestCase
         $this->assertSame([], $card->getFeedbackImages());
     }
 
-    // A step planned for a day, cleared by none, an index out of the list changing nothing
-    public function testStepDue(): void
+    // A card merged takes the other's note under its own, its steps after its own and its feedback after its own, the other left empty; a done card opens again
+    public function testAbsorb(): void
     {
-        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1'], ['t' => 'step-2']]);
-        $card->setStepDue(1, new \DateTimeImmutable('2027-02-03'))->setStepDue(5, new \DateTimeImmutable('2027-02-03'));
-        $this->assertSame([['t' => 'step-1'], ['t' => 'step-2', 'due' => '2027-02-03']], $card->getChecklist());
+        $card = new Card($this->project, 'item-1')->setNote('note-1')->setChecklist([['t' => 'step-1', 'done' => true], ['t' => 'feedback-1', 'feedback' => true, 'done' => true]])->markDone(new \DateTimeImmutable('2026-11-20'));
+        $other = new Card($this->project, 'item-2')->setNote('note-2')->setChecklist([['t' => 'step-2'], ['t' => 'feedback-2', 'feedback' => true, 'img' => 'shot.png']]);
 
-        $card->setStepDue(1, null);
-        $this->assertSame([['t' => 'step-1'], ['t' => 'step-2']], $card->getChecklist());
+        $card->absorb($other);
+
+        $this->assertSame("note-1\n\nnote-2", $card->getNote());
+        $this->assertSame(['step-1', 'step-2', 'feedback-1', 'feedback-2'], array_column($card->getChecklist(), 't'));
+        $this->assertSame('shot.png', $card->getChecklist()[3]['img']);
+        $this->assertSame([], $other->getChecklist());
+        $this->assertFalse($card->isDone());
+        $this->assertSame($card, $card->absorb($card));
     }
 
     // A card goes only into a collection of its own space, leaves it and a file of the space it leaves when moved, a shared file staying

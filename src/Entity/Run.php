@@ -25,6 +25,9 @@ class Run
     // Seconds a claim lasts without news from the machine
     public const LEASE_SECONDS = 60;
 
+    // Most file paths a run keeps
+    public const int MAX_FILES = 50;
+
     // Step of a run whose step left the checklist, never an index of it
     public const int LEFT_STEP = -1;
 
@@ -54,14 +57,20 @@ class Run
     #[ORM\Column(type: Types::JSON)]
     private array $outputs = [];
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $log = null;
+    // Paths of the files the action wrote where they live on the machine, only named, never sent
+    /** @var list<string> */
+    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
+    private array $files = [];
 
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $finishedAt = null;
+
+    // When a machine took it, the time it spent in the queue left out of how long its action lasts
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $startedAt = null;
 
     #[ORM\Column(length: 64, nullable: true)]
     #[Assert\Length(max: 64)]
@@ -175,10 +184,31 @@ class Run
         return $this->outputs;
     }
 
-    // Tail of the command output
-    public function getLog(): ?string
+    /** @return list<string> */
+    public function getFiles(): array
     {
-        return $this->log;
+        return $this->files;
+    }
+
+    // Absolute paths only, each once, at most MAX_FILES, anything else left aside
+    /** @param list<string> $files */
+    public function setFiles(array $files): static
+    {
+        $this->files = \array_slice(array_values(array_unique(array_filter(array_map(trim(...), $files), static fn (string $path): bool => str_starts_with($path, '/') && mb_strlen($path) <= 500 && !str_contains($path, "\0")))), 0, self::MAX_FILES);
+
+        return $this;
+    }
+
+    // The files by folder, each folder named once with the names it holds, for the step that shows them
+    /** @return array<string, list<string>> */
+    public function getFilesByFolder(): array
+    {
+        $folders = [];
+        foreach ($this->files as $path) {
+            $folders[\dirname($path)][] = basename($path);
+        }
+
+        return $folders;
     }
 
     // Queue date
@@ -207,8 +237,15 @@ class Run
         $this->progress = 0;
         $this->message = null;
         $this->leaseUntil = $now->modify('+' . self::LEASE_SECONDS . ' seconds');
+        $this->startedAt = $now;
 
         return $this;
+    }
+
+    // When a machine took it, its time in the queue for a run from before that was kept
+    public function getStartedAt(): \DateTimeImmutable
+    {
+        return $this->startedAt ?? $this->createdAt;
     }
 
     // Records progress and renews the lease
@@ -239,12 +276,11 @@ class Run
 
     // Closes the run with its result
     /** @param list<string> $outputs */
-    public function finish(RunStatus $status, ?string $message, array $outputs, ?string $log, \DateTimeImmutable $now): static
+    public function finish(RunStatus $status, ?string $message, array $outputs, \DateTimeImmutable $now): static
     {
         $this->status = $status;
         $this->message = null === $message ? null : mb_substr($message, 0, 255);
         $this->outputs = $outputs;
-        $this->log = $log;
         $this->leaseUntil = null;
         $this->finishedAt = $now;
         if (RunStatus::Done === $status) {
@@ -257,6 +293,6 @@ class Run
     // Withdraws a run, still waiting or stopped while a machine holds it
     public function cancel(\DateTimeImmutable $now): static
     {
-        return $this->finish(RunStatus::Cancelled, null, [], null, $now);
+        return $this->finish(RunStatus::Cancelled, null, [], $now);
     }
 }

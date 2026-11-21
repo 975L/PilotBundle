@@ -5,7 +5,7 @@
 # This source file is subject to the MIT license that is bundled
 # with this source code in the file LICENSE.
 
-# Reference runner of c975l/pilot-bundle, claiming the runs queued for this machine and running them from the allowlist of $PILOT_RUNNER_CONFIG (default ~/.config/pilot-runner): polling loop, --once, --install (systemd user service) or --demo-hello <file> <text> [comment]; the site sends only an action key and values checked against their pattern, never a command, a "PROGRESS n message" line the command prints shows on the card and a "TITLE text" line renames it
+# Reference runner of c975l/pilot-bundle, claiming the runs queued for this machine and running them from the allowlist of $PILOT_RUNNER_CONFIG (default ~/.config/pilot-runner): polling loop, --once, --install (systemd user service) or --demo-hello <file> <text> [comment]; the site sends only an action key and values checked against their pattern, never a command, a "PROGRESS n message" line the command prints shows on the card a "TITLE text" line renames it, a "RESULT url" line sets its result address, a "FEEDBACK n reason" line leaves the feedback numbered n open a "SPENT credit amount" line tells what the run spent on that credit and a "FILE /path" line names a file it wrote, shown on its step
 
 import glob
 import json
@@ -17,6 +17,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.parse
 from collections import deque
 from pathlib import Path
 
@@ -26,11 +27,14 @@ import yaml
 CONFIG = Path(os.path.expanduser(os.environ.get('PILOT_RUNNER_CONFIG', '~/.config/pilot-runner')))
 UNIT = Path.home() / '.config/systemd/user/pilot-runner.service'
 INTERVAL = 10
-CREDITS_EVERY = 3600
 HEARTBEAT = 20
 PLACEHOLDER = re.compile(r'\{(\w+)\}')
 PROGRESS = re.compile(r'^PROGRESS (\d{1,3})(?: (.*))?$')
 TITLE = re.compile(r'^TITLE (.+)$')
+RESULT = re.compile(r'^RESULT (https?://\S+)$')
+FEEDBACK = re.compile(r'^FEEDBACK (\d+) (.+)$')
+SPENT = re.compile(r'^SPENT ([a-z0-9-]{1,50}) (\d{1,9})$')
+FILE = re.compile(r'^FILE (/.+)$')
 
 # Sites already reported unreachable, so a site switched off does not fill the log every few seconds
 UNREACHABLE = set()
@@ -58,15 +62,24 @@ def api(site, path, payload=None):
     return response
 
 
-# Sites served at each round, each with its own work folder since two sites may number their cards alike
+# Sites served at each round, each with its own work folder since two sites may number their cards alike; a site over plain http elsewhere than on this computer left aside, its token would cross the network readable
 def sites(config):
     served = []
     for index, site in enumerate(config.get('sites') or []):
         if not site.get('url') or not site.get('token'):
             continue
+        if not secure(site['url']):
+            print(f'Site left aside, https required off this computer: {site["url"]}', flush=True)
+            continue
         workdir = site.get('workdir') or os.path.join(config.get('workdir', '~/.local/share/pilot-runner'), f'site-{index}')
         served.append({'url': site['url'], 'token': site['token'], 'workdir': os.path.expanduser(workdir)})
     return served
+
+
+# Whether a site's address carries the token safely: https, or http to this computer only
+def secure(url):
+    parsed = urllib.parse.urlsplit(url)
+    return parsed.scheme == 'https' or (parsed.scheme == 'http' and parsed.hostname in ('127.0.0.1', 'localhost', '::1'))
 
 
 # Replaces the {name} of an argument by the known values, a missing value becoming empty
@@ -115,19 +128,19 @@ def stop_group(process):
         pass
 
 
-# Runs a claimed run and returns (status, message, outputs, log, title), the title a "TITLE text" line renamed the card to
+# Runs a claimed run and returns (status, message, outputs, said), said holding the title a "TITLE text" line renamed the card to, the address a "RESULT url" line gave its result, the feedback a "FEEDBACK n reason" line left open and what "SPENT credit amount" lines spent
 def execute(site, actions, run):
     action = actions.get(run['action'])
     if action is None:
-        return 'blocked', f'Unknown action on this machine: {run["action"]}', [], '', None
+        return 'blocked', f'Unknown action on this machine: {run["action"]}', [], {}
     params, error = check_params(action, run.get('params') or {})
     if error:
-        return 'blocked', error, [], '', None
+        return 'blocked', error, [], {}
     workdir = Path(site['workdir']) / f'card-{run["card"]}'
     workdir.mkdir(parents=True, exist_ok=True)
 
-    # The card's context as {title}, {note}, {project}, {doc}, a parameter of the same name winning
-    context = {key: str(run.get(key) or '') for key in ('title', 'note', 'project', 'doc')}
+    # The card's context as {title}, {note}, {due}, {project}, {doc}, a parameter of the same name winning
+    context = {key: str(run.get(key) or '') for key in ('title', 'note', 'due', 'project', 'doc')}
     values = {**context, **params, 'workdir': str(workdir)}
     argv = [os.path.expanduser(fill(arg, values)) for arg in action['argv']]
     outputs = [('?' if o.startswith('?') else '') + os.path.expanduser(fill(o.removeprefix('?'), values)) for o in action.get('outputs', [])]
@@ -141,28 +154,44 @@ def execute(site, actions, run):
     stop = threading.Event()
     threading.Thread(target=heartbeat, args=(site, run['id'], process, stop), daemon=True).start()
     log = deque(maxlen=200)
-    title = None
+    said = {'title': None, 'result': None, 'feedback': {}, 'spent': {}, 'files': []}
     for line in process.stdout:
         line = line.rstrip('\n')
         log.append(line)
-        renamed = TITLE.match(line)
-        if renamed:
-            title = renamed.group(1).strip()
+        heard(line, said)
         match = PROGRESS.match(line)
         if match:
             api(site, f'/runs/{run["id"]}/progress', {'progress': int(match.group(1)), 'message': match.group(2) or ''})
     code = process.wait()
     stop.set()
-    journal = '\n'.join(log)
     if code != 0:
         # The last line the command printed is its reason, shown on the card
-        reason = next((line for line in reversed(log) if line.strip() and not PROGRESS.match(line) and not TITLE.match(line)), f'Exit code {code}')
-        return 'failed', reason[:255], [], journal, title
+        reason = next((line for line in reversed(log) if line.strip() and not any(pattern.match(line) for pattern in (PROGRESS, TITLE, RESULT, FEEDBACK, SPENT, FILE))), f'Exit code {code}')
+        return 'failed', reason[:255], [], said
     found, missing = collect(outputs, workdir, run['id'], start)
     if missing:
-        return 'failed', 'Missing output: ' + ', '.join(missing), [], journal, title
+        return 'failed', 'Missing output: ' + ', '.join(missing), [], said
     upload(site, run, found)
-    return 'done', f'Done in {round(time.time() - start)} s', found, journal, title
+    return 'done', f'Done in {round(time.time() - start)} s', found, said
+
+
+# What a line of the command tells the site beyond its log: the card's new title, a feedback it leaves open with the reason, an amount spent on a credit, a file it wrote (FILE <absolute path>, only named on its step)
+def heard(line, said):
+    renamed = TITLE.match(line)
+    if renamed:
+        said['title'] = renamed.group(1).strip()
+    result = RESULT.match(line.strip())
+    if result:
+        said['result'] = result.group(1)
+    left = FEEDBACK.match(line)
+    if left:
+        said['feedback'][left.group(1)] = left.group(2).strip()
+    spent = SPENT.match(line.strip())
+    if spent:
+        said['spent'][spent.group(1)] = said['spent'].get(spent.group(1), 0) + int(spent.group(2))
+    written = FILE.match(line.strip())
+    if written and written.group(1) not in said['files']:
+        said['files'].append(written.group(1))
 
 
 # Sends the site each output under the size it accepts, to show it on the card; a heavier one stays on the machine, the card showing its path
@@ -178,7 +207,7 @@ def upload(site, run, paths):
             print(f'Could not send {path}: {error}', flush=True)
 
 
-# Actions declared to the site in the file's order: label, parameters typed on the card (the comment coming only from a send-back), card: true for one working on the card itself, help shown on hover; the site chooses on which projects each one is offered
+# Actions declared to the site in the file's order: label, parameters typed on the card (the comment coming only from the card's open feedback), card: true for one working on the card itself, help shown on hover; the site chooses on which projects each one is offered
 def declared(actions):
     return {key: {'label': action.get('label', key), 'params': [name for name in action.get('params', {}) if name != 'comment'],
                   'card': bool(action.get('card')), 'help': action.get('help')}
@@ -206,54 +235,57 @@ def collect(patterns, workdir, run_id, start):
     return found, missing
 
 
-# Polling loop, one run at a time, waiting when every queue is empty; once runs a single round
+# Runs under way on this machine, whichever site gave them: each with its thread and whether its action runs alone
+RUNNING = []
+
+
+# Polling loop: as many runs at once as the site's setting for this machine allows (X-Pilot-Parallel, one until told), an action marked "exclusive: true" in actions.yaml (a browser, a heavy export) only started on an idle machine and holding it alone; once runs a single round to its end
 def loop(once=False):
     config, actions = load('runner.yaml'), load('actions.yaml')
     served = sites(config)
     if not served:
         sys.exit(f'No site (url and token) under sites: in {CONFIG}/runner.yaml')
     print(f'Runner ready: {len(actions)} action(s) ({", ".join(actions)}), site(s) {", ".join(s["url"] for s in served)}', flush=True)
-    credits_at = 0
     while True:
-        if config.get('credits') and time.time() - credits_at > CREDITS_EVERY:
-            send_credits(config['credits'], served)
-            credits_at = time.time()
         busy = False
         for site in served:
             busy = claim(site, actions) or busy
         if once:
+            for thread, _ in list(RUNNING):
+                thread.join()
             return
         if not busy:
             time.sleep(INTERVAL)
 
 
-# One run claimed on a site, run, then reported to that same site; False when it had nothing to do
+# One run claimed on a site when the machine has room for it, then run in its own thread and reported to that same site; False when nothing was taken
 def claim(site, actions):
-    response = api(site, '/claim', {'actions': declared(actions)})
-    if response is None or response.status_code == 204:
+    RUNNING[:] = [(thread, alone) for thread, alone in RUNNING if thread.is_alive()]
+    if any(alone for _, alone in RUNNING) or len(RUNNING) >= site.get('parallel', 1):
+        return False
+    shared = [key for key, action in actions.items() if not action.get('exclusive')]
+    response = api(site, '/claim', {'actions': declared(actions), **({'only': shared} if RUNNING else {})})
+    if response is None:
+        return False
+    site['parallel'] = max(1, int(response.headers.get('X-Pilot-Parallel', '1') or 1))
+    if response.status_code == 204:
         return False
     if response.status_code != 200:
         print(f'Claim refused ({site["url"]}): HTTP {response.status_code}', flush=True)
         return False
     run = response.json()
     print(f'Run {run["id"]} ({site["url"]}): {run["action"]} ({run["title"]})', flush=True)
-    status, message, outputs, journal, title = execute(site, actions, run)
-    print(f'Run {run["id"]}: {status}, {message}', flush=True)
-    finish(site, run['id'], {'status': status, 'message': message, 'outputs': outputs, 'log': journal, 'title': title})
+    thread = threading.Thread(target=carry_out, args=(site, actions, run), daemon=True)
+    RUNNING.append((thread, bool((actions.get(run['action']) or {}).get('exclusive'))))
+    thread.start()
     return True
 
 
-# Balances of the paid services, printed as JSON by the credits command of runner.yaml and sent to each site; a failed reading waits for the next
-def send_credits(command, served):
-    try:
-        out = subprocess.run([os.path.expanduser(arg) for arg in command], capture_output=True, text=True, timeout=300)
-        found = json.loads(out.stdout)
-    except (OSError, subprocess.SubprocessError, ValueError) as error:
-        print(f'Could not read the credits: {error}', flush=True)
-        return
-    for site in served:
-        response = api(site, '/credits', {'credits': found})
-        print(f'Credits sent ({site["url"]}): {len(found)} service(s), HTTP {response.status_code if response is not None else "-"}', flush=True)
+# A claimed run executed then reported, in its own thread
+def carry_out(site, actions, run):
+    status, message, outputs, said = execute(site, actions, run)
+    print(f'Run {run["id"]}: {status}, {message}', flush=True)
+    finish(site, run['id'], {'status': status, 'message': message, 'outputs': outputs, **said})
 
 
 # End of a run reported until the site answers, within the lease: unacknowledged, the lease would end and the run be done again
@@ -269,7 +301,7 @@ def finish(site, run_id, payload):
         time.sleep(5)
 
 
-# Demo action: writes the text (and a send-back's comment) in about fifteen seconds, with its progress
+# Demo action: writes the text (and the open feedback handed as its comment) in about fifteen seconds, with its progress
 def demo_hello(path, text, comment=''):
     for step in range(1, 11):
         time.sleep(1.5)

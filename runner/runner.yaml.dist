@@ -9,5 +9,6 @@ sites:
 # Root of the work folders, one per site and per card
 workdir: ~/.local/share/pilot-runner
 
-# Command printing the balances of paid services as JSON, sent every hour to the Planning ({"key": {"label", "remaining", "total", "unit", "renewsOn"}})
-# credits: [~/scripts/credits.py]
+# Folders whose files and subfolders a pilot-open:// link may open on this computer (runner/pilot-open.py, installed by python3 runner/pilot-open.py --install), the paths a step names living under them
+open:
+  - ~/Documents

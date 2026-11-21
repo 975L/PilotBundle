@@ -12,6 +12,7 @@ namespace c975L\PilotBundle\Tests\Repository;
 
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\CardSet;
+use c975L\PilotBundle\Entity\Credit;
 use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\Plan;
 use c975L\PilotBundle\Entity\PlanTemplate;
@@ -19,6 +20,7 @@ use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Entity\Run;
 use c975L\PilotBundle\Enum\RunStatus;
 use c975L\PilotBundle\Repository\CardRepository;
+use c975L\PilotBundle\Repository\CreditRepository;
 use c975L\PilotBundle\Repository\RunRepository;
 use c975L\PilotBundle\Security\PilotScope;
 use c975L\PilotBundle\Tests\Fixtures\TestEntityManager;
@@ -45,6 +47,26 @@ class QueryTest extends TestCase
         $this->entityManager->persist($this->project);
     }
 
+    // What runs spent comes off a balance typed in by hand in the database, never below zero, a blank balance, a service's one and an unknown key left alone, two debits in a row both counting
+    public function testCreditSpend(): void
+    {
+        $typed = new Credit('item-1')->setRemaining(100);
+        $short = new Credit('item-2')->setRemaining(10);
+        $blank = new Credit('item-3');
+        $read = new Credit('item-4')->setProvider('catalog')->setRemaining(99);
+        foreach ([$typed, $short, $blank, $read] as $credit) {
+            $this->entityManager->persist($credit->setLabel($credit->getKey()));
+        }
+        $this->entityManager->flush();
+        $repository = new CreditRepository($this->registry);
+
+        $repository->spend(['item-1' => 30, 'item-2' => 25, 'item-3' => 5, 'item-4' => 40, 'item-5' => 1], new \DateTimeImmutable('2026-11-21 10:00'));
+        $repository->spend(['item-1' => 20], new \DateTimeImmutable('2026-11-21 10:00'));
+        $this->entityManager->clear();
+
+        $this->assertSame([50, 0, null, 99], array_map(fn (string $key): ?int => $repository->findOneBy(['key' => $key])?->getRemaining(), ['item-1', 'item-2', 'item-3', 'item-4']));
+    }
+
     // One run of a card at a time: the next one waits while one is held or queued before it, other cards' runs being offered
     public function testQueuedIdsOneRunOfACardAtATime(): void
     {
@@ -63,9 +85,26 @@ class QueryTest extends TestCase
         $this->entityManager->flush();
         $this->assertSame([$other->getId()], $repository->queuedIds(['build']));
 
-        $first->finish(RunStatus::Done, null, [], null, new \DateTimeImmutable());
+        $first->finish(RunStatus::Done, null, [], new \DateTimeImmutable());
         $this->entityManager->flush();
         $this->assertSame([$second->getId(), $other->getId()], $repository->queuedIds(['build']));
+    }
+
+    // An action's usual time is the median of its last runs done, from the moment a machine took each, none before a run is done
+    public function testTypicalSecondsIsTheMedianOfTheRunsDone(): void
+    {
+        $machine = new Machine('machine-1', str_repeat('b', 64));
+        $this->entityManager->persist($machine);
+        $repository = new RunRepository($this->registry);
+        $this->assertNull($repository->typicalSeconds('build'));
+
+        foreach ([60, 300, 120] as $index => $seconds) {
+            $start = new \DateTimeImmutable('2026-11-20 10:00');
+            new Run($this->card('item-' . $index), 'build', [], 0)->claim($machine, $start)->finish(RunStatus::Done, null, [], $start->modify('+' . $seconds . ' seconds'));
+        }
+        $this->entityManager->flush();
+
+        $this->assertSame(120, $repository->typicalSeconds('build'));
     }
 
     // Only the open cards of the template's plans made of a single card, a plan of a card per step left out

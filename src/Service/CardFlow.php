@@ -19,14 +19,16 @@ use c975L\PilotBundle\Enum\Executor;
 use c975L\PilotBundle\Enum\RunStatus;
 use c975L\PilotBundle\Exception\FlowException;
 use Psr\Clock\ClockInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
 use function Symfony\Component\Translation\t;
 
-// Moves the cards: a card handed to a machine is queued, run, then validated or sent back with a comment; the steps' actions queue one after the other, each done one ticking its step and queuing the next; a card closed in a plan opens the next one, a machine card leaving on its own
+// Moves the cards: a card handed to a machine is queued, run, then validated or handed the open feedback; the steps' actions queue one after the other, each done one ticking its step and queuing the next; a card closed in a plan opens the next one, a machine card leaving on its own
 class CardFlow
 {
     public function __construct(
         private readonly ClockInterface $clock,
+        private readonly ?Security $security = null,
     ) {
     }
 
@@ -85,40 +87,77 @@ class CardFlow
         return $this->tick($card->assign(Executor::Human)->setStatus(CardStatus::Ready), $index);
     }
 
-    // Sends the output back to the machine with a comment, given to the action as its "comment" parameter: the card's own run waiting for validation, or the last step's run done, that step unticked and queued again
-    public function sendBack(Card $card, string $comment): Run
+    // Hands the open feedback to the machine as one numbered comment: the card's own run waiting for validation goes back to it, else the action of the last run is queued again on its step, the machine doing only what the feedback asks
+    public function treatFeedback(Card $card): Run
     {
+        $comment = $this->feedbackComment($card);
+        if (CardStatus::Review === $card->getStatus()) {
+            $card->setComment($comment)->setStatus(CardStatus::Ready);
+
+            return $this->launch($card);
+        }
         $last = $card->lastRun();
         $step = $last?->getStep();
-        if (null !== $step && !isset($card->getChecklist()[$step])) {
-            $step = null;
+        if (null === $last || null === $step || !isset($card->getChecklist()[$step]) || $last->getStatus()->isActive() || \in_array($card->getStatus(), [CardStatus::Running, CardStatus::Done], true)) {
+            throw new FlowException(t('flow.not_now', [], 'pilot'));
         }
-        if (null === $step || RunStatus::Done !== $last->getStatus() || CardStatus::Done === $card->getStatus()) {
-            $this->expectReview($card);
+        $params = $last->getParams();
+        unset($params['comment']);
+
+        return $this->queue($card, (string) $last->getAction(), ['comment' => $comment] + $params, $step);
+    }
+
+    // The feedback still open, numbered one per line, whole lines within what a runner takes as a parameter; none open refused
+    private function feedbackComment(Card $card): string
+    {
+        $lines = $card->feedbackToHand();
+        if ([] === $lines) {
+            throw new FlowException(t('flow.feedback_none', [], 'pilot'));
         }
-        $comment = trim($comment);
-        if ('' === $comment) {
-            throw new FlowException(t('flow.comment_needed', [], 'pilot'));
-        }
-        if (str_starts_with($comment, '-')) {
-            throw new FlowException(t('flow.comment_dash', [], 'pilot'));
-        }
-        if (null !== $last && null !== $step && CardStatus::Review !== $card->getStatus()) {
-            if ($card->getChecklist()[$step]['done'] ?? false) {
-                $card->toggleStep($step, $this->clock->now());
+
+        return implode("\n", $lines);
+    }
+
+    // Settles the feedback a finished run was handed: each line of its comment still open on the card is ticked when the run is done, or keeps the reason the machine gave for leaving it; matched by its text, the lines having possibly moved meanwhile
+    /** @param array<int, string> $left */
+    public function feedbackSettled(Run $run, array $left): void
+    {
+        $handed = [];
+        foreach (explode("\n", $run->getParams()['comment'] ?? '') as $line) {
+            if (1 === preg_match('/^(\d+)\. (.+)$/', $line, $match)) {
+                $handed[$match[2]] = (int) $match[1];
             }
-
-            return $this->queue($card, (string) $last->getAction(), ['comment' => $comment] + $last->getParams(), $step);
         }
-        $card->setComment($comment)->setStatus(CardStatus::Ready);
-
-        return $this->launch($card);
+        $card = $run->getCard();
+        foreach ($card->getFeedback() as $index => $feedback) {
+            $number = $handed[str_replace(["\r", "\n"], ' ', $feedback['t'])] ?? null;
+            if (null === $number || ($feedback['done'] ?? false)) {
+                continue;
+            }
+            if (isset($left[$number])) {
+                $card->setFeedbackReason($index, $left[$number]);
+            } elseif (RunStatus::Done === $run->getStatus()) {
+                $card->setFeedbackReason($index, null)->toggleStep($index, $this->clock->now(), $run->getMachine()?->getName());
+            }
+        }
     }
 
     // Ticks or unticks a step, a machine action only ever leaving by its own button
     public function tick(Card $card, int $index): Card
     {
-        return $card->toggleStep($index, $this->clock->now());
+        return $card->toggleStep($index, $this->clock->now(), self::initials($this->security?->getUser()?->getUserIdentifier()));
+    }
+
+    // Initials of whoever ticks, from the name part of their identifier: the first letter of its first two words, else its first two letters
+    public static function initials(?string $identifier): ?string
+    {
+        $name = explode('@', (string) $identifier)[0];
+        $words = preg_split('/[^\p{L}\p{N}]+/u', $name, -1, \PREG_SPLIT_NO_EMPTY) ?: [];
+        if ([] === $words) {
+            return null;
+        }
+
+        return mb_strtoupper(isset($words[1]) ? mb_substr($words[0], 0, 1) . mb_substr($words[1], 0, 1) : mb_substr($words[0], 0, 2));
     }
 
     // Queues the action a step names, after the ones already queued on the card, when that step is still to do and not already under way
@@ -170,7 +209,7 @@ class CardFlow
         }
         $named = $card->getChecklist()[$step] ?? [];
         if ($done && ($named['action'] ?? null) === $run->getAction() && !($named['done'] ?? false)) {
-            $card->toggleStep($step, $this->clock->now());
+            $card->toggleStep($step, $this->clock->now(), $run->getMachine()?->getName());
         }
         $card->setStatus(match (true) {
             [] !== $card->activeRuns() => CardStatus::Running,

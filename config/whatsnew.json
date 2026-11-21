@@ -1,5 +1,105 @@
 [
     {
+        "date": "2026-11-21",
+        "description": [
+            {
+                "en": "Piloting: guided projects walk the piloting pages step by step — creating a space, adding a card, giving it its steps and feedback, sharing it by a link, adding a runner machine, making a plan template, launching a step on a machine, following the paid services' credits — started from the back office's guided projects.",
+                "fr": "Pilotage : des projets guidés parcourent les pages du pilotage pas à pas — créer un espace, ajouter une carte, lui donner ses étapes et ses retours, la partager par un lien, ajouter une machine d'exécution, créer un modèle de plan, lancer une étape sur une machine, suivre les crédits des services payants — lancés depuis les projets guidés du back-office.",
+                "es": "Pilotaje: proyectos guiados recorren las páginas del pilotaje paso a paso — crear un espacio, añadir una tarjeta, darle sus pasos y sus comentarios, compartirla por un enlace, añadir una máquina de ejecución, crear una plantilla de plan, lanzar un paso en una máquina, seguir los créditos de los servicios de pago — lanzados desde los proyectos guiados del back-office."
+            },
+            {
+                "en": "The piloting pages have their own look, light or dark as your system is, with colours that tell things apart: machine actions in blue, steps still to do written darker, ticked boxes in grey, files coloured by kind (PDF, image, video, folder), « To redo » in yellow, bins in red.",
+                "fr": "Les pages du pilotage ont leur propre apparence, claire ou sombre selon votre système, avec des couleurs qui distinguent les choses : actions machine en bleu, étapes à faire écrites plus foncé, cases cochées en gris, fichiers colorés par type (PDF, image, vidéo, dossier), « À refaire » en jaune, corbeilles en rouge.",
+                "es": "Las páginas del pilotaje tienen su propio aspecto, claro u oscuro según su sistema, con colores que distinguen las cosas: acciones de máquina en azul, pasos por hacer escritos más oscuros, casillas marcadas en gris, archivos coloreados por tipo (PDF, imagen, vídeo, carpeta), « Por rehacer » en amarillo, papeleras en rojo."
+            },
+            {
+                "en": "On a card, « Fold all » folds every group of steps at once, « Unfold all » opens them again.",
+                "fr": "Sur une carte, « Tout plier » replie d'un coup tous les groupes d'étapes, « Tout déplier » les rouvre.",
+                "es": "En una tarjeta, « Plegar todo » pliega de una vez todos los grupos de pasos, « Desplegar todo » los vuelve a abrir."
+            },
+            {
+                "en": "Piloting: a credit's API key is no longer shown on its form; leave the field empty to keep it.",
+                "fr": "Pilotage : la clé API d'un crédit n'est plus affichée sur son formulaire ; laissez le champ vide pour la garder.",
+                "es": "Pilotaje: la clave API de un crédito ya no se muestra en su formulario; deje el campo vacío para conservarla."
+            },
+            {
+                "en": "Piloting: when the open comments are too long for one pass, the machine takes the ones that fit and the card says how many wait for the next one.",
+                "fr": "Pilotage : quand les commentaires ouverts sont trop longs pour un seul passage, la machine prend ceux qui tiennent et la carte dit combien attendent le suivant.",
+                "es": "Pilotaje: cuando los comentarios abiertos son demasiado largos para una sola pasada, la máquina toma los que caben y la tarjeta dice cuántos esperan la siguiente."
+            },
+            {
+                "en": "Piloting: through a card's editing link, a step added to a card following a template is refused, with the reason shown.",
+                "fr": "Pilotage : par le lien d'édition d'une carte, une étape ajoutée à une carte qui suit un modèle est refusée, avec la raison affichée.",
+                "es": "Pilotaje: por el enlace de edición de una tarjeta, un paso añadido a una tarjeta que sigue una plantilla se rechaza, con el motivo indicado."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-20",
+        "description": [
+            {
+                "en": "Piloting: on a phone, the spaces hide behind a menu button at the top, a card's title is smaller and a step's buttons go down a line instead of squeezing its text; the run journal, of no use, is gone.",
+                "fr": "Pilotage : sur téléphone, les espaces se rangent derrière un bouton menu en haut, le titre d'une carte est plus petit et les boutons d'une étape passent à la ligne au lieu d'écraser son texte ; le journal des exécutions, sans utilité, disparaît.",
+                "es": "Pilotaje: en el teléfono, los espacios se guardan tras un botón de menú arriba, el título de una tarjeta es más pequeño y los botones de un paso bajan de línea en lugar de aplastar su texto; el registro de las ejecuciones, sin utilidad, desaparece."
+            },
+            {
+                "en": "Piloting: on a card following a checklist template, the ticked steps stay in sight, no longer folded under « Done ».",
+                "fr": "Pilotage : sur une carte qui suit un modèle de liste, les étapes cochées restent visibles, plus repliées sous « Terminées ».",
+                "es": "Pilotaje: en una tarjeta que sigue una plantilla de lista, los pasos marcados siguen a la vista, ya no plegados bajo « Terminados »."
+            },
+            {
+                "en": "Piloting: several ticked steps in a row stay in sight, folded only by a click on their heading.",
+                "fr": "Pilotage : plusieurs étapes cochées à la suite restent visibles, repliées seulement d'un clic sur leur titre.",
+                "es": "Pilotaje: varios pasos marcados seguidos siguen a la vista, plegados solo con un clic en su título."
+            },
+            {
+                "en": "Piloting: one field for the comments; « Hand to the machine » hands the open ones to the machine, which does only what they ask (an image, a sentence, a layout) without redoing the whole step, ticks those it handled and says why it leaves the others.",
+                "fr": "Pilotage : un seul champ pour les commentaires ; « Confier à la machine » confie ceux encore ouverts à la machine, qui fait seulement ce qu'ils demandent (une image, une phrase, une mise en page) sans refaire toute l'étape, coche ceux qu'elle a traités et dit pourquoi elle laisse les autres.",
+                "es": "Pilotaje: un solo campo para los comentarios; « Confiar a la máquina » confía los abiertos a la máquina, que hace solo lo que piden (una imagen, una frase, una maquetación) sin rehacer todo el paso, marca los que trató y dice por qué deja los demás."
+            },
+            {
+                "en": "Piloting: the balances of ElevenLabs, D-ID and the Expo builds are read from their service with your account's own API key, typed in the credits' settings and kept encrypted, every morning, with the « Refresh the balances » button of the dashboard and after a run that spent on them; what a run spends on Leonardo or GoEnhance comes off their balance. A space is now made from the + beside the spaces and set from the gear of its page; the piloting opens from the « Links » of the back office, in its own tab.",
+                "fr": "Pilotage : les soldes d'ElevenLabs, de D-ID et des builds Expo sont lus auprès de leur service avec la clé API de votre compte, saisie dans les réglages des crédits et gardée chiffrée, chaque matin, par le bouton « Mettre à jour les soldes » du tableau de bord et après une exécution qui les a dépensés ; ce qu'une exécution dépense sur Leonardo ou GoEnhance est retiré de leur solde. Un espace se crée désormais par le + à côté des espaces et se règle par la roue dentée de sa page ; le pilotage s'ouvre depuis les « Liens » du back-office, dans son propre onglet.",
+                "es": "Pilotaje: los saldos de ElevenLabs, D-ID y los builds de Expo se leen en su servicio con la clave API de su cuenta, introducida en los ajustes de los créditos y guardada cifrada, cada mañana, con el botón « Actualizar los saldos » del panel y tras una ejecución que los gastó; lo que una ejecución gasta en Leonardo o GoEnhance se descuenta de su saldo. Un espacio se crea ahora con el + junto a los espacios y se ajusta con la rueda dentada de su página; el pilotaje se abre desde los « Enlaces » del back-office, en su propia pestaña."
+            },
+            {
+                "en": "Each step and each feedback of a card now has a bin: one click, a confirmation, and the line is gone with its screenshot. A step whose machine action is running keeps it until the run ends.",
+                "fr": "Chaque étape et chaque commentaire d'une carte a désormais sa corbeille : un clic, une confirmation, et la ligne disparaît avec sa capture. Une étape dont l'action machine tourne la garde jusqu'à la fin de l'exécution.",
+                "es": "Cada paso y cada comentario de una tarjeta tiene ahora su papelera: un clic, una confirmación y la línea desaparece con su captura. Un paso cuya acción de máquina está en curso la conserva hasta que termina."
+            },
+            {
+                "en": "Piloting: an AI agent (Claude Code, Claude Desktop) can list your spaces and cards, read, add, edit, sort, merge, close or delete a card, add, tick or run its steps, leave a comment or read and write your files through the site's MCP endpoint, with your rights and the agent token you made it; depending on its settings, it asks you before each change.",
+                "fr": "Pilotage : un agent IA (Claude Code, Claude Desktop) peut lister vos espaces et vos cartes, lire, ajouter, modifier, trier, fusionner, clore ou supprimer une carte, ajouter, cocher ou lancer ses étapes, laisser un commentaire ou lire et écrire vos dossiers par l'adresse MCP du site, avec vos droits et le jeton d'agent que vous lui avez créé ; selon ses réglages, il vous demande avant chaque modification.",
+                "es": "Pilotaje: un agente de IA (Claude Code, Claude Desktop) puede listar sus espacios y tarjetas, leer, añadir, modificar, ordenar, fusionar, cerrar o eliminar una tarjeta, añadir, marcar o lanzar sus pasos, dejar un comentario o leer y escribir sus expedientes mediante la dirección MCP del sitio, con sus derechos y el token de agente que le creó; según sus ajustes, le pregunta antes de cada cambio."
+            },
+            {
+                "en": "A machine can now carry out several tasks at once: set how many in « Runs in parallel » on the Machines screen. A task its machine marks as exclusive still runs alone.",
+                "fr": "Une machine peut maintenant mener plusieurs tâches à la fois : réglez combien dans « Tâches en parallèle » de l'écran Machines. Une tâche que sa machine marque comme exclusive tourne toujours seule.",
+                "es": "Una máquina puede ahora llevar varias tareas a la vez: indique cuántas en «Tareas en paralelo» de la pantalla Máquinas. Una tarea que su máquina marca como exclusiva sigue ejecutándose sola."
+            },
+            {
+                "en": "A task under way no longer stays stuck on the same percentage: when it reports nothing new, its progress is estimated from how long that task usually takes, shown with « ≈ ».",
+                "fr": "Une tâche en cours ne reste plus bloquée sur le même pourcentage : quand elle ne dit rien de nouveau, son avancement est estimé d'après la durée habituelle de cette tâche, affiché avec « ≈ ».",
+                "es": "Una tarea en curso ya no se queda bloqueada en el mismo porcentaje: cuando no informa nada nuevo, su avance se estima según la duración habitual de esa tarea, mostrado con «≈»."
+            },
+            {
+                "en": "Under a step whose task is done, you now see where the files it made are on the computer (PDF, images, videos), folder by folder, to open them straight away.",
+                "fr": "Sous une étape dont la tâche est faite, vous voyez maintenant où se trouvent sur l'ordinateur les fichiers qu'elle a produits (PDF, images, vidéos), dossier par dossier, pour les ouvrir aussitôt.",
+                "es": "Bajo un paso cuya tarea está hecha, ve ahora dónde están en el ordenador los archivos que produjo (PDF, imágenes, vídeos), carpeta por carpeta, para abrirlos enseguida."
+            },
+            {
+                "en": "A click on a folder or a file under a step now opens it on your computer, once the opening scheme is set in the settings and the small opener installed on that computer.",
+                "fr": "Un clic sur un dossier ou un fichier sous une étape l'ouvre maintenant sur votre ordinateur, une fois le schéma d'ouverture réglé dans les réglages et le petit ouvreur installé sur cet ordinateur.",
+                "es": "Un clic en una carpeta o un archivo bajo un paso lo abre ahora en su ordenador, una vez fijado el esquema de apertura en los ajustes e instalado el pequeño abridor en ese ordenador."
+            },
+            {
+                "en": "Each step shows at the end of its text when and by whom it was done (dd/mm/yyyy hh:mm - initials): when its task made its files and on which machine, otherwise when it was ticked and the initials of who ticked it. When an earlier step was redone afterwards, its files are greyed and marked « To redo ».",
+                "fr": "Chaque étape affiche à la fin de son texte quand et par qui elle a été faite (jj/mm/aaaa hh:mm - initiales) : quand sa tâche a produit ses fichiers et sur quelle machine, sinon quand elle a été cochée et les initiales de qui l'a cochée. Quand une étape précédente a été refaite depuis, ses fichiers sont grisés et marqués « À refaire ».",
+                "es": "Cada paso muestra al final de su texto cuándo y quién lo hizo (dd/mm/aaaa hh:mm - iniciales): cuando su tarea produjo sus archivos y en qué máquina, si no cuando se marcó y las iniciales de quien lo marcó. Cuando un paso anterior se rehízo después, sus archivos quedan en gris y marcados « Por rehacer »."
+            }
+        ]
+    },
+    {
         "date": "2026-11-19",
         "description": [
             {

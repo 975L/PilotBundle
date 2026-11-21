@@ -1,0 +1,351 @@
+// Buttons, tags, lists, tabs, tables and notices, each with its color by role: blue for what a machine runs, green for what is done, yellow for what is to redo, red for what failed or deletes
+.pilot-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35em;
+    min-height: 1.75rem;
+    padding: .2rem .6rem;
+    border: 1px solid var(--pilot-border);
+    border-radius: var(--pilot-radius);
+    background: var(--pilot-surface);
+    color: var(--pilot-text);
+    font-size: .8125rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background-color .15s, border-color .15s, color .15s;
+}
+
+.pilot-btn:hover {
+    border-color: var(--pilot-muted);
+    text-decoration: none;
+}
+
+.pilot-btn-lg {
+    min-height: 2.25rem;
+    padding: .4rem .9rem;
+    font-size: .9375rem;
+}
+
+.pilot-btn-icon {
+    min-width: 1.75rem;
+    padding-inline: .35rem;
+}
+
+.pilot-btn-primary {
+    border-color: var(--pilot-primary);
+    background: var(--pilot-primary);
+    color: var(--pilot-on-primary);
+}
+
+.pilot-btn-primary:hover {
+    border-color: var(--pilot-primary);
+    filter: brightness(1.1);
+}
+
+.pilot-btn-outline-primary {
+    border-color: var(--pilot-primary);
+    color: var(--pilot-primary);
+}
+
+.pilot-btn-outline-primary:hover {
+    background: var(--pilot-primary-soft);
+    border-color: var(--pilot-primary);
+}
+
+.pilot-btn-secondary {
+    background: var(--pilot-surface-2);
+}
+
+.pilot-btn-success {
+    border-color: var(--pilot-success);
+    background: var(--pilot-success);
+    color: var(--pilot-surface);
+}
+
+.pilot-btn-outline-success {
+    border-color: var(--pilot-success);
+    color: var(--pilot-success);
+}
+
+.pilot-btn-outline-success:hover {
+    background: var(--pilot-success-soft);
+    border-color: var(--pilot-success);
+}
+
+.pilot-btn-danger {
+    border-color: var(--pilot-danger);
+    background: var(--pilot-danger);
+    color: var(--pilot-surface);
+}
+
+.pilot-btn-outline-danger {
+    border-color: var(--pilot-danger);
+    color: var(--pilot-danger);
+}
+
+.pilot-btn-outline-danger:hover {
+    background: var(--pilot-danger-soft);
+    border-color: var(--pilot-danger);
+}
+
+// A button drawn as a link or a lone icon, no frame
+.pilot-btn-ghost {
+    min-height: 0;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
+    color: var(--pilot-muted);
+}
+
+.pilot-btn-ghost:hover {
+    border-color: transparent;
+    color: var(--pilot-text);
+}
+
+// A deletion in a pale red, full red once its line or itself is pointed at
+.pilot-btn-delete {
+    color: color-mix(in srgb, var(--pilot-danger) 45%, var(--pilot-surface));
+}
+
+:is(.pilot-step-line, tr, .pilot-list-item, .pilot-framed):hover .pilot-btn-delete, .pilot-btn-delete:hover, .pilot-btn-delete:focus-visible {
+    color: var(--pilot-danger);
+}
+
+.pilot-btn-close {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--pilot-radius);
+    background: transparent;
+    color: var(--pilot-muted);
+    font-size: 1.1rem;
+}
+
+.pilot-btn-close:hover {
+    background: var(--pilot-surface-2);
+    color: var(--pilot-text);
+}
+
+.pilot-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: .3em;
+    padding: .15em .5em;
+    border-radius: var(--pilot-radius);
+    background: var(--pilot-surface-2);
+    color: var(--pilot-text);
+    font-size: .75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.pilot-tag-primary {
+    background: var(--pilot-primary);
+    color: var(--pilot-on-primary);
+}
+
+.pilot-tag-info {
+    background: var(--pilot-info-soft);
+    color: var(--pilot-info);
+}
+
+.pilot-tag-success {
+    background: var(--pilot-success-soft);
+    color: var(--pilot-success);
+}
+
+.pilot-tag-warning {
+    background: var(--pilot-warning-soft);
+    color: var(--pilot-warning);
+}
+
+.pilot-tag-danger {
+    background: var(--pilot-danger);
+    color: #fff;
+}
+
+.pilot-tag-dark {
+    background: var(--pilot-text);
+    color: var(--pilot-surface);
+}
+
+.pilot-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--pilot-border);
+    border-radius: var(--pilot-radius);
+    background: var(--pilot-surface);
+}
+
+.pilot-list-flush {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.pilot-list-item {
+    display: block;
+    padding: .45rem .75rem;
+    color: var(--pilot-text);
+}
+
+.pilot-list:not(.pilot-list-flush) > .pilot-list-item + .pilot-list-item {
+    border-top: 1px solid var(--pilot-border);
+}
+
+a.pilot-list-item:hover {
+    background: var(--pilot-surface-2);
+    text-decoration: none;
+}
+
+.pilot-list-item.active {
+    background: var(--pilot-primary);
+    color: var(--pilot-on-primary);
+}
+
+.pilot-list-item.active .pilot-muted, .pilot-list-item.active .pilot-sort-handle {
+    color: inherit;
+}
+
+.pilot-list-item.active .pilot-tag {
+    background: rgba(255, 255, 255, .25);
+    color: inherit;
+}
+
+.pilot-tab-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--pilot-border);
+}
+
+.pilot-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: .35em;
+    margin-bottom: -1px;
+    padding: .4rem .8rem;
+    border: 1px solid transparent;
+    border-radius: var(--pilot-radius) var(--pilot-radius) 0 0;
+    background: transparent;
+    color: var(--pilot-primary);
+}
+
+.pilot-tab:hover {
+    border-color: var(--pilot-surface-2) var(--pilot-surface-2) var(--pilot-border);
+    text-decoration: none;
+}
+
+.pilot-tab.active {
+    border-color: var(--pilot-border) var(--pilot-border) var(--pilot-bg);
+    background: var(--pilot-bg);
+    color: var(--pilot-text);
+}
+
+.pilot-table-wrap {
+    overflow-x: auto;
+}
+
+.pilot-table {
+    width: 100%;
+    font-size: .875rem;
+}
+
+.pilot-table :is(th, td) {
+    padding: .4rem .5rem;
+    border-bottom: 1px solid var(--pilot-border);
+    text-align: start;
+    vertical-align: middle;
+}
+
+.pilot-table th {
+    color: var(--pilot-muted);
+    font-weight: 600;
+}
+
+.pilot-alert {
+    margin-bottom: 1rem;
+    padding: .6rem .9rem;
+    border-radius: var(--pilot-radius);
+    border: 1px solid var(--pilot-border);
+    background: var(--pilot-surface);
+}
+
+.pilot-alert-danger {
+    border-color: var(--pilot-danger);
+    background: var(--pilot-danger-soft);
+}
+
+.pilot-alert-success {
+    border-color: var(--pilot-success);
+    background: var(--pilot-success-soft);
+}
+
+// A framed block: a sheet, a file, a field group
+.pilot-box {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--pilot-border);
+    border-radius: var(--pilot-radius-lg);
+    background: var(--pilot-surface);
+    overflow: hidden;
+}
+
+.pilot-box-body {
+    padding: .75rem;
+}
+
+.pilot-framed {
+    padding: .5rem;
+    border: 1px solid var(--pilot-border);
+    border-radius: var(--pilot-radius);
+}
+
+// A form laid by Symfony's plain layout: each field a block, its label above it
+.pilot-form > div, .pilot-form fieldset > div {
+    margin-bottom: 1rem;
+}
+
+.pilot-form label {
+    margin-bottom: .25rem;
+    font-weight: 600;
+}
+
+.pilot-form label:has(input[type="checkbox"]), .pilot-form input[type="checkbox"] + label {
+    font-weight: 400;
+}
+
+.pilot-form .help-text, .pilot-form [id$="_help"] {
+    margin-top: .25rem;
+    color: var(--pilot-muted);
+    font-size: .8125rem;
+}
+
+.pilot-form ul:has(> li) {
+    color: var(--pilot-danger);
+    list-style: none;
+    padding: 0;
+    margin: .25rem 0;
+}
+
+.pilot-label {
+    margin-bottom: .25rem;
+    font-weight: 600;
+}
+
+.pilot-fieldset {
+    margin: 0 0 1rem;
+    padding: .75rem;
+    border: 1px solid var(--pilot-border);
+    border-radius: var(--pilot-radius);
+}

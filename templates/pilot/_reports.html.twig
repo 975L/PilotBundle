@@ -2,16 +2,16 @@
 {% for report in reports %}
     {% set token = csrf_token('pilot_report_run' ~ report.id) %}
     {% set page_project = project ?? null %}
-    <section class="mb-4 pilot-report" data-pilot-fold="report-{{ report.key }}">
-        <div class="d-flex flex-wrap align-items-center gap-2 pilot-fold-head">
-            <h2 class="h5 mb-0">{{ report.label }}</h2>
-            <span class="small text-body-secondary">{{ 'label.report_scanned'|trans({'%date%': report.scannedAt|format_datetime('short', 'short')}, 'pilot') }}</span>
+    <section class="pilot-mb-lg pilot-report" data-pilot-fold="report-{{ report.key }}">
+        <div class="pilot-row pilot-fold-head">
+            <h2 class="pilot-title pilot-m0">{{ report.label }}</h2>
+            <span class="pilot-small pilot-muted">{{ 'label.report_scanned'|trans({'%date%': report.scannedAt|format_datetime('short', 'short')}, 'pilot') }}</span>
             {% for index, action in report.globals %}
                 {% include '@c975LPilot/pilot/_report_action.html.twig' with {row: null} %}
             {% endfor %}
         </div>
-        <div class="table-responsive">
-            <table class="table table-sm align-middle small mt-2">
+        <div class="pilot-table-wrap">
+            <table class="pilot-table pilot-mt-sm">
                 <thead><tr>{% for column in report.columns %}<th scope="col">{{ column.label }}</th>{% endfor %}<th scope="col"></th></tr></thead>
                 <tbody>
                     {% for row in report.rowsFor(page_project) %}
@@ -21,8 +21,8 @@
                                 {% set value = values[column.key] ?? null %}
                                 <td>{{ value is same as(true) ? '✓' : (value is same as(false) ? '' : value) }}</td>
                             {% endfor %}
-                            <td class="text-end">
-                                <div class="d-flex flex-wrap justify-content-end gap-1">
+                            <td class="pilot-end">
+                                <div class="pilot-row pilot-row-tight pilot-row-end">
                                     {% for index, action in report.actions %}
                                         {% if report.applies(action, row) %}{% include '@c975LPilot/pilot/_report_action.html.twig' %}{% endif %}
                                     {% endfor %}

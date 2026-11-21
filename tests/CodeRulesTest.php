@@ -32,6 +32,7 @@ class CodeRulesTest extends CodeRulesTestCase
     {
         return [
             self::BULK_QUERY => [
+                'c975L\\PilotBundle\\Repository\\CreditRepository::spend' => 'Balances are read live by the dashboard and the steps, never held in a cached fragment',
                 'c975L\\PilotBundle\\Repository\\RunRepository::take' => 'Runs are read live by the machines and the card page, never held in a cached fragment',
             ],
         ];

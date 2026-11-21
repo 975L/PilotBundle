@@ -23,9 +23,9 @@ class PilotUrls
     ) {
     }
 
-    // A card's page: /pilot/{space}/{id}
-    public function card(Card $card): string
+    // A card's page: /pilot/{space}/{id}, absolute when asked, for an agent to hand it on
+    public function card(Card $card, int $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH): string
     {
-        return $this->urlGenerator->generate(self::CARD_ROUTE, ['space' => $card->getProject()->getSlug(), 'id' => $card->getId()]);
+        return $this->urlGenerator->generate(self::CARD_ROUTE, ['space' => $card->getProject()->getSlug(), 'id' => $card->getId()], $referenceType);
     }
 }

@@ -12,15 +12,19 @@ namespace c975L\PilotBundle\Tests\Service;
 
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Doc;
+use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Entity\Run;
+use c975L\PilotBundle\Exception\FlowException;
 use c975L\PilotBundle\Repository\DocRepository;
 use c975L\PilotBundle\Service\CardMarkdown;
+use c975L\PilotBundle\Tests\Fixtures\PilotTestStubs;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CardMarkdownTest extends TestCase
 {
+    use PilotTestStubs;
+
     private const string FULL = <<<'MD'
         # item-1
 
@@ -67,7 +71,7 @@ class CardMarkdownTest extends TestCase
         $this->assertWrittenAndReadBack($card, "## Steps\n\n- [x] step-1\n\n## Feedback\n\n- [ ] feedback-1\n- [ ] feedback-2\n");
 
         $this->read($card, "## Feedback\n\n- [x] feedback-2\n- [ ] feedback-3\n");
-        $this->assertSame([['t' => 'step-1', 'done' => true], ['t' => 'feedback-2', 'feedback' => true, 'done' => true, 'doneAt' => '2026-11-21'], ['t' => 'feedback-3', 'feedback' => true]], $card->getChecklist());
+        $this->assertSame([['t' => 'step-1', 'done' => true], ['t' => 'feedback-2', 'feedback' => true, 'done' => true, 'doneAt' => '2026-11-21 00:00'], ['t' => 'feedback-3', 'feedback' => true]], $card->getChecklist());
 
         $this->read($card, "## Steps\n\n- [ ] step-1\n");
         $this->assertSame(['step-1', 'feedback-2', 'feedback-3'], array_column($card->getChecklist(), 't'));
@@ -99,7 +103,7 @@ class CardMarkdownTest extends TestCase
         $this->assertNull($card->getDue());
         $this->assertSame('other', $card->getWaitingOn());
         $this->assertSame('note-2', $card->getNote());
-        $this->assertSame([['t' => 'step-1', 'done' => true, 'doneAt' => '2026-11-01'], ['t' => 'step-2', 'cost' => ['credit' => 'item-1', 'amount' => 3], 'action' => 'build', 'done' => true, 'doneAt' => '2026-11-21'], ['t' => 'step-3']], $card->getChecklist());
+        $this->assertSame([['t' => 'step-1', 'done' => true, 'doneAt' => '2026-11-01'], ['t' => 'step-2', 'cost' => ['credit' => 'item-1', 'amount' => 3], 'action' => 'build', 'done' => true, 'doneAt' => '2026-11-21 00:00'], ['t' => 'step-3']], $card->getChecklist());
         $this->assertSame('File 2', $card->getDoc()?->getTitle());
         $this->assertSame('detail-2', $card->getDoc()->getDetail());
     }
@@ -115,6 +119,18 @@ class CardMarkdownTest extends TestCase
         $this->assertSame('2026-11-20', $card->getDue()?->format('Y-m-d'));
         $this->assertSame('someone', $card->getWaitingOn());
         $this->assertSame('summary-1', $card->getDoc()?->getSummary());
+    }
+
+    // A card following a checklist template is ticked and reordered through its markdown, a step it does not have refused
+    public function testTemplateCardTakesNoNewStep(): void
+    {
+        $card = $this->card()->follow(new PlanTemplate('catalog', [['title' => 'step-1', 'executor' => 'human']])->setChecklist(true));
+        $this->read($card, "## Steps\n\n- [x] step-2\n- [x] step-1\n");
+
+        $this->assertSame([['step-2', true], ['step-1', true]], array_map(static fn (array $step): array => [$step['t'], $step['done'] ?? false], $card->getChecklist()));
+
+        $this->expectException(FlowException::class);
+        $this->read($card, "## Steps\n\n- [x] step-2\n- [ ] step-9\n");
     }
 
     // A reference written on a card without one is created in its project
@@ -221,17 +237,13 @@ class CardMarkdownTest extends TestCase
         $this->assertSame([['t' => 'step-3'], ['t' => 'step-1', 'g' => 'Film']], $card->getChecklist());
     }
 
-    // The day a step is planned for written after its text, before its action, read back; removed, or invalid, it clears
-    public function testStepDue(): void
+    // A day after a step's text is part of its text
+    public function testStepDayKeptAsText(): void
     {
-        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1', 'due' => '2027-02-03', 'action' => 'action-1'], ['t' => 'step-2', 'due' => '2027-03-03']]);
-        $markdown = $this->markdown()->write($card);
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1');
+        $this->read($card, "## Steps\n\n- [ ] step-1 @2027-02-03\n");
 
-        $this->assertStringContainsString("- [ ] step-1 @2027-02-03 `action-1`\n- [ ] step-2 @2027-03-03\n", $markdown);
-        $this->assertSame($markdown, $this->markdown()->write($this->read($card, $markdown)));
-
-        $this->read($card, "## Steps\n\n- [ ] step-1 `action-1`\n- [ ] step-2 @2027-13-45\n- [ ] step-3 @2027-04-07\n");
-        $this->assertSame([['t' => 'step-1', 'action' => 'action-1'], ['t' => 'step-2'], ['t' => 'step-3', 'due' => '2027-04-07']], $card->getChecklist());
+        $this->assertSame([['t' => 'step-1 @2027-02-03']], $card->getChecklist());
     }
 
     // The links written in the header when set, read back, an empty one clearing it and one that is not http(s) dropped
@@ -249,14 +261,5 @@ class CardMarkdownTest extends TestCase
 
         $this->read($card, "# item-1\n\n- Result: ftp://example.com\n");
         $this->assertNull($card->getResultUrl());
-    }
-
-    // Addresses of the screenshots, as the router writes them
-    private function urls(): UrlGeneratorInterface
-    {
-        $urls = $this->createStub(UrlGeneratorInterface::class);
-        $urls->method('generate')->willReturnCallback(static fn (string $route, array $parameters): string => 'https://example.com/pilot/share/image/' . $parameters['name']);
-
-        return $urls;
     }
 }

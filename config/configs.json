@@ -9,5 +9,16 @@
         "group": "pilot",
         "severity": null,
         "description": "description.pilot_horizon_days"
+    },
+    {
+        "label": "label.pilot_open_scheme",
+        "slug": "pilot-open-scheme",
+        "sensitive": false,
+        "restricted": false,
+        "value": "",
+        "kind": "string",
+        "group": "pilot",
+        "severity": null,
+        "description": "description.pilot_open_scheme"
     }
 ]

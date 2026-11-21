@@ -10,14 +10,14 @@
 
 namespace c975L\PilotBundle\Controller;
 
-use c975L\PilotBundle\Entity\CardSet;
+use c975L\PilotBundle\Entity\Credit;
 use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\PlanTemplate;
-use c975L\PilotBundle\Exception\FlowException;
+use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Repository\CardRepository;
 use c975L\PilotBundle\Repository\ProjectRepository;
 use c975L\PilotBundle\Security\PilotAccess;
-use c975L\PilotBundle\Service\CardSetRemoval;
+use c975L\PilotBundle\Service\CreditRefresher;
 use c975L\PilotBundle\Service\SettingsKinds;
 use c975L\PilotBundle\Service\StepOrder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,14 +29,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-// The piloting settings on the piloting pages' own shell, the admin's: spaces, collections, plan templates, machine actions, machines and credits listed, created, edited and deleted
+// The piloting settings on the piloting pages' own shell, the admin's: plan templates, machine actions, machines and credits listed, created, edited and deleted, a space made and edited from its own pages
 class SettingsController extends AbstractController
 {
     use PilotPageTrait;
 
     // The route names the templates and the redirects use
     public const string LIST_ROUTE = 'pilot_settings_list';
-    public const string KINDS = 'space|collection|template|action|machine|credit';
+    public const string KINDS = 'space|template|action|machine|credit';
 
     public function __construct(
         private readonly PilotAccess $pilotAccess,
@@ -45,16 +45,17 @@ class SettingsController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly SettingsKinds $settingsKinds,
         private readonly TranslatorInterface $translator,
+        private readonly CreditRefresher $creditRefresher,
     ) {
     }
 
-    // The settings open on the spaces
+    // The settings open on the plan templates
     #[Route('/pilot/settings', name: 'pilot_settings')]
     public function index(): RedirectResponse
     {
         $this->denyUnlessAdmin();
 
-        return $this->redirectToRoute(self::LIST_ROUTE, ['kind' => 'space']);
+        return $this->redirectToRoute(self::LIST_ROUTE, ['kind' => 'template']);
     }
 
     // The rows of one kind, in their order, with their columns
@@ -85,7 +86,7 @@ class SettingsController extends AbstractController
             }
             $this->entityManager->persist($row);
 
-            return $this->saved($kind);
+            return $this->saved($kind, $row);
         }
 
         return $this->formPage($kind, $settings, $form, null);
@@ -105,18 +106,21 @@ class SettingsController extends AbstractController
                 $stepOrder->fromTemplate($row, $previous);
             }
 
-            return $this->saved($kind);
+            return $this->saved($kind, $row);
         }
 
         return $this->formPage($kind, $settings, $form, $row);
     }
 
-    // The change written, back to the list of its kind
-    private function saved(string $kind): RedirectResponse
+    // The change written, back to the list of its kind or to the space saved; a credit naming a service read at once, so that a wrong key shows straight away
+    private function saved(string $kind, object $row): RedirectResponse
     {
+        if ($row instanceof Credit && !$row->isManual() && !$this->creditRefresher->refresh($row)) {
+            $this->addFlash('danger', $this->translator->trans('flash.credit_unread', [], 'pilot'));
+        }
         $this->entityManager->flush();
 
-        return $this->redirectToRoute(self::LIST_ROUTE, ['kind' => $kind]);
+        return $row instanceof Project ? $this->redirectToRoute(PilotController::PROJECT_ROUTE, ['slug' => $row->getSlug()]) : $this->redirectToRoute(self::LIST_ROUTE, ['kind' => $kind]);
     }
 
     // The form of a kind, for a new row or the one edited
@@ -126,25 +130,17 @@ class SettingsController extends AbstractController
         return $this->page('@c975LPilot/pilot/settings/form.html.twig', ['kind' => $kind, 'settings' => $settings, 'form' => $form, 'row' => $row]);
     }
 
-    // A row deleted for good, what depends on it following the database's rules (a space's cards with it), a collection handing its cards to another of its space
+    // A row deleted for good, what depends on it following the database's rules (a space's cards with it), back to its list or, for a space, to the dashboard
     #[Route('/pilot/settings/{kind}/{id}/delete', name: 'pilot_settings_delete', requirements: ['kind' => self::KINDS, 'id' => '\d+'], methods: ['POST'])]
-    public function delete(string $kind, int $id, Request $request, CardSetRemoval $cardSetRemoval): RedirectResponse
+    public function delete(string $kind, int $id, Request $request): RedirectResponse
     {
         $this->denyUnlessAdmin();
         $row = $this->entityManager->find($this->settingsKinds->get($kind)['class'], $id);
         if (null !== $row && $this->isCsrfTokenValid('pilot_settings_delete' . $kind . $id, $request->request->getString('_token'))) {
-            try {
-                if ($row instanceof CardSet) {
-                    $cardSetRemoval->remove($row);
-                } else {
-                    $this->entityManager->remove($row);
-                }
-                $this->entityManager->flush();
-            } catch (FlowException $exception) {
-                $this->addFlash('danger', $exception->reason->trans($this->translator));
-            }
+            $this->entityManager->remove($row);
+            $this->entityManager->flush();
         }
 
-        return $this->redirectToRoute(self::LIST_ROUTE, ['kind' => $kind]);
+        return 'space' === $kind ? $this->redirectToRoute(PilotController::DASHBOARD_ROUTE) : $this->redirectToRoute(self::LIST_ROUTE, ['kind' => $kind]);
     }
 }

@@ -1,12 +1,12 @@
 {# One action of a report, on a row or on the whole table, with the parameters it asks prefilled #}
-<form method="post" action="{{ path('pilot_report_run', {id: report.id}) }}" class="d-flex gap-1 align-items-center">
+<form method="post" action="{{ path('pilot_report_run', {id: report.id}) }}" class="pilot-row pilot-row-tight">
     <input type="hidden" name="_token" value="{{ token }}">
     <input type="hidden" name="action" value="{{ index }}">
     {% if row is not null %}<input type="hidden" name="row" value="{{ row }}">{% endif %}
     {% if page_project %}<input type="hidden" name="project" value="{{ page_project.id }}">{% endif %}
     {% for name in action.ask %}
         {% set value = report.params(action, row, {})[name] %}
-        <input name="params[{{ name }}]" value="{{ value }}" aria-label="{{ name }}" class="form-control form-control-sm w-auto"{{ value matches '/^\\d{4}-\\d{2}-\\d{2}$/' ? ' type=date' }}>
+        <input name="params[{{ name }}]" value="{{ value }}" aria-label="{{ name }}" class="pilot-auto"{{ value matches '/^\\d{4}-\\d{2}-\\d{2}$/' ? ' type=date' }}>
     {% endfor %}
-    <button class="btn btn-sm btn-outline-primary">{{ action.label }}</button>
+    <button class="pilot-btn pilot-btn-outline-primary">{{ action.label }}</button>
 </form>

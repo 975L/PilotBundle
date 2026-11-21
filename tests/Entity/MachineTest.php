@@ -33,7 +33,18 @@ class MachineTest extends TestCase
         $this->assertSame('', new Machine('machine-1', '')->setName(null)->getName());
     }
 
-    // A machine with no space chosen serves them all and the whole site, one with spaces only those
+    // A machine with no space chosen serves them all, one with spaces only those
+    // The runs taken at once stay between one and the most allowed, an emptied field meaning one
+    public function testParallelIsBounded(): void
+    {
+        $machine = new Machine('machine-1', '');
+        $this->assertSame(1, $machine->getParallel());
+        $this->assertSame(3, $machine->setParallel(3)->getParallel());
+        $this->assertSame(Machine::MAX_PARALLEL, $machine->setParallel(99)->getParallel());
+        $this->assertSame(1, $machine->setParallel(0)->getParallel());
+        $this->assertSame(1, $machine->setParallel(null)->getParallel());
+    }
+
     public function testServes(): void
     {
         $catalog = new Project('catalog', 'Catalog');
@@ -41,11 +52,9 @@ class MachineTest extends TestCase
         $machine = new Machine('machine-1', str_repeat('a', 64));
 
         $this->assertTrue($machine->serves($other));
-        $this->assertTrue($machine->servesAll());
         $machine->addProject($catalog);
         $this->assertTrue($machine->serves($catalog));
         $this->assertFalse($machine->serves($other));
-        $this->assertFalse($machine->servesAll());
     }
 
     // A machine takes an action only while online, for a space it serves, when it declared the action

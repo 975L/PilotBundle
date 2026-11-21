@@ -2,20 +2,20 @@
 
 {% block pilot %}
     <h1>{{ 'label.plan_new'|trans({}, 'pilot') }} · {{ template.name }}</h1>
-    <p class="text-body-secondary">{{ project.name }}</p>
-    <ol class="small">
-        {% for step in template.steps %}<li>{{ step.title }}{% if step.action ?? false %} <span class="text-body-secondary">({{ step.action }})</span>{% endif %}</li>{% endfor %}
+    <p class="pilot-muted">{{ project.name }}</p>
+    <ol class="pilot-small">
+        {% for step in template.steps %}<li>{{ step.title }}{% if step.action ?? false %} <span class="pilot-muted">({{ step.action }})</span>{% endif %}</li>{% endfor %}
     </ol>
-    <form method="post" class="d-grid gap-2 pilot-plan-form">
+    <form method="post" class="pilot-stack pilot-plan-form">
         <input type="hidden" name="_token" value="{{ csrf_token('pilot_plan_new') }}">
-        <label class="form-label">{{ 'label.plan_title'|trans({}, 'pilot') }}
-            <input name="title" id="pilot-plan-title" required maxlength="200" class="form-control">
+        <label class="pilot-label">{{ 'label.plan_title'|trans({}, 'pilot') }}
+            <input name="title" id="pilot-plan-title" required maxlength="200">
         </label>
         {% for name in variables %}
-            <label class="form-label">{{ name }}
-                <input name="values[{{ name }}]" class="form-control">
+            <label class="pilot-label">{{ name }}
+                <input name="values[{{ name }}]">
             </label>
         {% endfor %}
-        <div><button class="btn btn-primary pilot-plan-create">{{ 'label.plan_create'|trans({}, 'pilot') }}</button></div>
+        <div><button class="pilot-btn pilot-btn-primary pilot-btn-lg pilot-plan-create">{{ 'label.plan_create'|trans({}, 'pilot') }}</button></div>
     </form>
 {% endblock %}

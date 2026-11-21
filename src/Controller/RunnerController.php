@@ -14,19 +14,18 @@ use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\Run;
 use c975L\PilotBundle\Enum\RunStatus;
 use c975L\PilotBundle\Exception\FlowException;
-use c975L\PilotBundle\Repository\CreditRepository;
 use c975L\PilotBundle\Repository\MachineRepository;
 use c975L\PilotBundle\Service\DocIngester;
 use c975L\PilotBundle\Service\ReportIngester;
 use c975L\PilotBundle\Service\RunOutputs;
 use c975L\PilotBundle\Service\RunQueue;
-use Doctrine\ORM\EntityManagerInterface;
-use Psr\Clock\ClockInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 use function Symfony\Component\Translation\t;
@@ -35,12 +34,17 @@ use function Symfony\Component\Translation\t;
 #[Route('/api/pilot/runner', name: 'pilot_runner_', methods: ['POST'], format: 'json')]
 class RunnerController extends AbstractController
 {
+    // The limiter counting the unknown tokens, by address
+    public const string DENIED_LIMITER = 'c975l_pilot_runner_denied';
+
     public function __construct(
         private readonly MachineRepository $machineRepository,
         private readonly RunQueue $runQueue,
         private readonly RunOutputs $runOutputs,
         private readonly ReportIngester $reportIngester,
         private readonly DocIngester $docIngester,
+        #[Autowire(service: 'limiter.' . self::DENIED_LIMITER)]
+        private readonly RateLimiterFactoryInterface $deniedLimiter,
     ) {
     }
 
@@ -50,11 +54,15 @@ class RunnerController extends AbstractController
     {
         $machine = $this->machine($request);
         if (null === $machine) {
-            return $this->denied();
+            return $this->denied($request);
         }
-        $run = $this->runQueue->claim($machine, $this->capabilities($request->getPayload()->all()['actions'] ?? []));
+        $payload = $request->getPayload()->all();
+        $only = \is_array($payload['only'] ?? null) ? array_values(array_filter($payload['only'], is_string(...))) : null;
+        $run = $this->runQueue->claim($machine, $this->capabilities($payload['actions'] ?? []), $only);
+        // How many runs the machine takes at once, told at every call so that a runner follows its settings without restarting
+        $headers = ['X-Pilot-Parallel' => (string) $machine->getParallel()];
         if (null === $run) {
-            return new Response(null, Response::HTTP_NO_CONTENT);
+            return new Response(null, Response::HTTP_NO_CONTENT, $headers);
         }
         $card = $run->getCard();
 
@@ -65,12 +73,13 @@ class RunnerController extends AbstractController
             'params' => $run->getParams(),
             'title' => $card->getTitle(),
             'note' => $card->getNote() ?? '',
+            'due' => $card->getDue()?->format('Y-m-d') ?? '',
             'project' => $card->getProject()->getSlug(),
             'doc' => $card->getDoc()?->getSlug() ?? '',
             'docMarkdown' => $card->getDoc()?->toMarkdown() ?? '',
             'lease' => Run::LEASE_SECONDS,
             'maxBytes' => RunOutputs::MAX_BYTES,
-        ]);
+        ], Response::HTTP_OK, $headers);
     }
 
     // Progress of a held run, which renews its lease; without fields it is a plain heartbeat
@@ -101,7 +110,7 @@ class RunnerController extends AbstractController
         });
     }
 
-    // End of a held run with its status, message, produced files and log tail
+    // End of a held run with its status, message, produced files, the title it gave its card, the feedback it left open and what it spent ({"spent": {"credit-key": 120}})
     #[Route('/runs/{id}/finish', name: 'finish', requirements: ['id' => '\d+'])]
     public function finish(Run $run, Request $request): JsonResponse
     {
@@ -112,55 +121,45 @@ class RunnerController extends AbstractController
         }
         $outputs = array_values(array_filter((array) ($payload['outputs'] ?? []), is_string(...)));
 
-        return $this->guard($request, fn (Machine $machine) => $this->runQueue->finish($run, $machine, $status, $this->text($payload['message'] ?? null), $outputs, $this->text($payload['log'] ?? null), $this->text($payload['title'] ?? null)));
+        return $this->guard($request, fn (Machine $machine) => $this->runQueue->finish($run, $machine, $status, $this->text($payload['message'] ?? null), $outputs, $this->text($payload['title'] ?? null), $this->left($payload['feedback'] ?? null), $this->text($payload['result'] ?? null), $this->spent($payload['spent'] ?? null), array_values(array_filter((array) ($payload['files'] ?? []), is_string(...)))));
     }
 
-    // Balances of paid services the machine read, sent apart from any run by a machine serving every space: {"credits": {"key": {"label", "remaining", "total", "unit", "renewsOn"}}}
-    #[Route('/credits', name: 'credits')]
-    public function credits(Request $request, CreditRepository $creditRepository, EntityManagerInterface $entityManager, ClockInterface $clock): JsonResponse
+    // The feedback the run left open, by its number in the comment it was handed, with the reason: {"2": "reason"}
+    /** @return array<int, string> */
+    private function left(mixed $feedback): array
     {
-        // Only a machine serving the whole site reports the balances, which belong to it
-        if (true !== $this->machine($request)?->servesAll()) {
-            return $this->denied();
-        }
-        $reports = [];
-        $credits = $request->getPayload()->all()['credits'] ?? [];
-        foreach (\is_array($credits) ? $credits : [] as $key => $credit) {
-            if (\is_string($key) && 1 === preg_match('/^[a-z0-9-]{1,50}$/', $key) && \is_array($credit)) {
-                $reports[$key] = $this->report($key, $credit);
+        $left = [];
+        foreach (\is_array($feedback) ? $feedback : [] as $number => $reason) {
+            if (is_numeric($number) && \is_string($reason) && '' !== trim($reason)) {
+                $left[(int) $number] = mb_substr(trim($reason), 0, 255);
             }
         }
-        $creditRepository->report($reports, $clock->now());
-        $entityManager->flush();
 
-        return $this->json(['ok' => true]);
+        return $left;
     }
 
-    // One reported balance, its fields typed and bounded
-    /**
-     * @param array<mixed> $credit
-     *
-     * @return array{label: string, remaining: ?int, total: ?int, unit: ?string, renewsOn: ?\DateTimeImmutable}
-     */
-    private function report(string $key, array $credit): array
+    // What the run spent by credit key, each amount a positive whole number
+    /** @return array<string, int> */
+    private function spent(mixed $spent): array
     {
-        $renews = \is_string($credit['renewsOn'] ?? null) ? \DateTimeImmutable::createFromFormat('!Y-m-d', substr($credit['renewsOn'], 0, 10)) : false;
+        $amounts = [];
+        foreach (\is_array($spent) ? $spent : [] as $key => $amount) {
+            if (\is_string($key) && 1 === preg_match('/^[a-z0-9-]{1,50}$/', $key) && \is_int($amount) && $amount > 0) {
+                $amounts[$key] = $amount;
+            }
+        }
 
-        return [
-            'label' => mb_substr(\is_string($credit['label'] ?? null) ? $credit['label'] : $key, 0, 100),
-            'remaining' => \is_int($credit['remaining'] ?? null) ? max(0, $credit['remaining']) : null,
-            'total' => \is_int($credit['total'] ?? null) ? max(0, $credit['total']) : null,
-            'unit' => \is_string($credit['unit'] ?? null) ? mb_substr($credit['unit'], 0, 30) : null,
-            'renewsOn' => false === $renews ? null : $renews,
-        ];
+        return $amounts;
     }
 
-    // The machine whose token the request carries, null without one or for an unknown one
+    // The machine whose token the request carries, null without one, for an unknown one, or for an address past its ceiling of unknown tokens, refused before its token is even looked up so that guessing one is cut short
     private function machine(Request $request): ?Machine
     {
-        $header = (string) $request->headers->get('Authorization');
+        if (0 === $this->deniedLimiter->create((string) $request->getClientIp())->consume(0)->getRemainingTokens()) {
+            return null;
+        }
 
-        return str_starts_with($header, 'Bearer ') ? $this->machineRepository->findOneByToken(substr($header, 7)) : null;
+        return $this->machineRepository->findOneByBearer($request->headers->get('Authorization'));
     }
 
     // Runs a queue gesture for the calling machine, a refused one answering 409 so the runner drops the run
@@ -169,7 +168,7 @@ class RunnerController extends AbstractController
     {
         $machine = $this->machine($request);
         if (null === $machine) {
-            return $this->denied();
+            return $this->denied($request);
         }
         try {
             $gesture($machine);
@@ -180,9 +179,14 @@ class RunnerController extends AbstractController
         return $this->json(['ok' => true]);
     }
 
-    // Answer to a request without a known token
-    private function denied(): JsonResponse
+    // Answer to a request without a known token, counted against its address, 429 once the address is past its ceiling
+    private function denied(Request $request): JsonResponse
     {
+        $limit = $this->deniedLimiter->create((string) $request->getClientIp())->consume();
+        if (!$limit->isAccepted()) {
+            return $this->json(['error' => 'Too many unknown tokens.'], Response::HTTP_TOO_MANY_REQUESTS, ['Retry-After' => (string) max(1, $limit->getRetryAfter()->getTimestamp() - time())]);
+        }
+
         return $this->json(['error' => 'Unknown machine.'], Response::HTTP_UNAUTHORIZED);
     }
 
