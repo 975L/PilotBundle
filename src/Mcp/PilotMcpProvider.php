@@ -45,7 +45,7 @@ class PilotMcpProvider implements McpToolProviderInterface
         yield new McpTool('pilot_close_card', 'Close a card', 'Marks a card done, or opens it again with done false.', $this->pilotTools->closeCard(...), true);
         yield new McpTool('pilot_run_step', 'Run a step', 'Queues the machine action a step names for a machine of its space; its run then shows on the step in pilot_card.', $this->pilotTools->runStep(...), true);
         yield new McpTool('pilot_merge_cards', 'Merge two cards', 'Merges card into the card into: its note, steps and comments carried over, then card deleted.', $this->pilotTools->mergeCards(...), true, true);
-        yield new McpTool('pilot_delete_card', 'Delete a card', 'Deletes a card for good, with its runs and their files.', $this->pilotTools->deleteCard(...), true, true);
+        yield new McpTool('pilot_delete_card', 'Delete a card', 'Deletes a card permanently, with its runs and their files.', $this->pilotTools->deleteCard(...), true, true);
         yield new McpTool('pilot_docs', 'Files', 'Files whose title or text holds the search words, else those of a space, else every file the account sees.', $this->pilotDocTools->docs(...));
         yield new McpTool('pilot_doc', 'File', 'A file as markdown: title, summary, then detail.', $this->pilotDocTools->doc(...));
         yield new McpTool('pilot_write_doc', 'Write a file', 'Adds a file to a space (space and title), or rewrites the one named by doc, only the summary or detail given changing.', $this->pilotDocTools->writeDoc(...), true);

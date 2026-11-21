@@ -126,7 +126,7 @@ class PilotMcpProviderTest extends TestCase
     {
         $read = $this->tool('pilot_card', ['card' => $this->card->getId()]);
         $this->assertStringStartsWith('# item-1', $read['markdown']);
-        $this->assertSame('https://site.example/pilot/catalog/' . $this->card->getId(), $read['url']);
+        $this->assertSame('https://site.example/pilot/catalog#card-' . $this->card->getId(), $read['url']);
         $this->assertSame([0, 1], array_column($read['steps'], 'index'));
 
         $this->assertSame(['done' => true], $this->tool('pilot_tick_step', ['card' => $this->card->getId(), 'step' => 1]));

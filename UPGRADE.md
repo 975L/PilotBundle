@@ -1,5 +1,11 @@
 # UPGRADE
 
+## v1.2.1
+
+File opening links on by default.
+
+- `pilot-open-scheme` now declares `pilot-open`: an empty row takes it at the next config load, so the paths under a step become `pilot-open://` links; set it to `none` to keep them as text.
+
 ## v1.2.0
 
 Shared links and machines held to what they were given.

@@ -28,5 +28,6 @@ class PilotUrlsTest extends TestCase
 
         $this->assertSame('pilot_space_card catalog/12', new PilotUrls($urls)->card($card));
         $this->assertSame('https:pilot_space_card catalog/12', new PilotUrls($urls)->card($card, UrlGeneratorInterface::ABSOLUTE_URL));
+        $this->assertSame('https:pilot_project catalog#card-12', new PilotUrls($urls)->shared($card));
     }
 }

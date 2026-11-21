@@ -340,7 +340,7 @@
             </trans-unit>
             <trans-unit id="vLfhOWW">
                 <source>label.card_delete</source>
-                <target>Delete for good</target>
+                <target>Delete permanently</target>
             </trans-unit>
             <trans-unit id="hFdwawk">
                 <source>label.card_doc</source>
@@ -1143,7 +1143,7 @@
             </trans-unit>
             <trans-unit id="4BsAj9K">
                 <source>label.info_doc_delete</source>
-                <target>The reference is deleted for good, the cards citing it stay, without a reference.</target>
+                <target>The reference is deleted permanently, the cards citing it stay, without a reference.</target>
             </trans-unit>
             <trans-unit id="FxX95j_">
                 <source>label.info_entrust</source>
@@ -1503,7 +1503,7 @@
             </trans-unit>
             <trans-unit id="iP40pdO">
                 <source>label.settings_delete_confirm</source>
-                <target>Delete for good</target>
+                <target>Delete permanently</target>
             </trans-unit>
             <trans-unit id="4Cu_7WA">
                 <source>label.settings_edit</source>

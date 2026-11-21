@@ -29,7 +29,6 @@ use c975L\PilotBundle\Service\PilotUrls;
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Server\Exception\ToolCallException;
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 // The piloting as MCP tools, acting with the rights of the agent token's account
@@ -437,10 +436,10 @@ class PilotTools
         return $indexed;
     }
 
-    // A card's page as an absolute address, for the agent to hand it on
+    // A card as an absolute address opening it over its space's page, for the agent to hand it on
     private function url(Card $card): string
     {
-        return $this->pilotUrls->card($card, UrlGeneratorInterface::ABSOLUTE_URL);
+        return $this->pilotUrls->shared($card);
     }
 
     // A day given as YYYY-MM-DD, null without one, anything else refused

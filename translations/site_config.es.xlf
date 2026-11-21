@@ -8,7 +8,7 @@
             </trans-unit>
             <trans-unit id="xjH3Gsq">
                 <source>description.pilot_open_scheme</source>
-                <target>Nombre del esquema de enlaces que abre en el ordenador un archivo o una carpeta nombrados bajo un paso, siendo el enlace ese nombre, :// y la ruta (por ejemplo pilot-open, servido por runner/pilot-open.py); vacío, las rutas quedan como texto</target>
+                <target>Nombre del esquema de enlaces que abre en el ordenador un archivo o una carpeta nombrados bajo un paso, siendo el enlace ese nombre, :// y la ruta (por ejemplo pilot-open, servido por runner/pilot-open.py); none, las rutas quedan como texto</target>
             </trans-unit>
             <trans-unit id="VdOkW5Q">
                 <source>label.pilot_horizon_days</source>

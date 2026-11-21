@@ -34,12 +34,12 @@ class PilotUrlExtension
         return $this->pilotUrls->card($card);
     }
 
-    // The link opening a file or a folder of the machine, each segment of its path encoded; null while the site sets no opening link, the path then shown as text
+    // The link opening a file or a folder of the machine, each segment of its path encoded; null while the site sets no opening link or none, the path then shown as text
     #[AsTwigFunction('pilot_open_url')]
     public function open(string $path): ?string
     {
         $scheme = strtolower(trim((string) $this->configService->get(self::OPEN_KEY)));
 
-        return 1 !== preg_match('/^[a-z][a-z0-9+.-]{1,30}$/', $scheme) || \in_array($scheme, ['http', 'https', 'javascript', 'data', 'file'], true) ? null : $scheme . '://' . implode('/', array_map(rawurlencode(...), explode('/', $path)));
+        return 1 !== preg_match('/^[a-z][a-z0-9+.-]{1,30}$/', $scheme) || \in_array($scheme, ['none', 'http', 'https', 'javascript', 'data', 'file'], true) ? null : $scheme . '://' . implode('/', array_map(rawurlencode(...), explode('/', $path)));
     }
 }

@@ -8,7 +8,7 @@
             </trans-unit>
             <trans-unit id="xjH3Gsq">
                 <source>description.pilot_open_scheme</source>
-                <target>Nom du schéma de liens qui ouvre sur l'ordinateur un fichier ou un dossier nommé sous une étape, le lien étant ce nom, :// puis le chemin (par exemple pilot-open, servi par runner/pilot-open.py) ; vide, les chemins restent du texte</target>
+                <target>Nom du schéma de liens qui ouvre sur l'ordinateur un fichier ou un dossier nommé sous une étape, le lien étant ce nom, :// puis le chemin (par exemple pilot-open, servi par runner/pilot-open.py) ; none, les chemins restent du texte</target>
             </trans-unit>
             <trans-unit id="VdOkW5Q">
                 <source>label.pilot_horizon_days</source>

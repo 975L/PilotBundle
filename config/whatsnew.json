@@ -3,6 +3,11 @@
         "date": "2026-11-21",
         "description": [
             {
+                "en": "Piloting: the files a machine names under a step open on the computer from the start, the opening link being on by default.",
+                "fr": "Pilotage : les fichiers qu'une machine nomme sous une étape s'ouvrent sur l'ordinateur d'emblée, le lien d'ouverture étant actif par défaut.",
+                "es": "Pilotaje: los archivos que una máquina nombra bajo un paso se abren en el ordenador desde el principio, el enlace de apertura activo por defecto."
+            },
+            {
                 "en": "Piloting: a step done by a machine can show links under it, the post to approve in the social calendar for instance, opened in a new tab.",
                 "fr": "Pilotage : une étape faite par une machine peut afficher des liens sous elle, le post à valider dans le calendrier des réseaux par exemple, ouverts dans un nouvel onglet.",
                 "es": "Pilotaje: un paso hecho por una máquina puede mostrar enlaces debajo, la publicación por validar en el calendario de redes por ejemplo, abiertos en una pestaña nueva."

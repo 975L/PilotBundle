@@ -163,7 +163,7 @@ class PilotController extends AbstractController
     }
 
     // A space: its open cards as tiles, the done ones as short rows, its references
-    #[Route('/pilot/{slug}', name: 'pilot_project', requirements: ['slug' => '[a-z0-9-]+'], priority: -10)]
+    #[Route('/pilot/{slug}', name: PilotUrls::SPACE_ROUTE, requirements: ['slug' => '[a-z0-9-]+'], priority: -10)]
     public function project(#[MapEntity(mapping: ['slug' => 'slug'])] Project $project, PlanTemplateRepository $planTemplateRepository, ActionOffer $actionOffer, RunRepository $runRepository): Response
     {
         $this->guard($project, PilotAccess::VIEW);

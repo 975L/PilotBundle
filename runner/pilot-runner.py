@@ -277,7 +277,12 @@ def claim(site, actions):
     if response.status_code != 200:
         print(f'Claim refused ({site["url"]}): HTTP {response.status_code}', flush=True)
         return False
-    run = response.json()
+    # An answer that is no JSON (a site error, a login page) skips the round instead of stopping the runner
+    try:
+        run = response.json()
+    except ValueError:
+        print(f'Claim unreadable ({site["url"]}): the answer is no JSON', flush=True)
+        return False
     print(f'Run {run["id"]} ({site["url"]}): {run["action"]} ({run["title"]})', flush=True)
     thread = threading.Thread(target=carry_out, args=(site, actions, run), daemon=True)
     RUNNING.append((thread, bool((actions.get(run['action']) or {}).get('exclusive'))))

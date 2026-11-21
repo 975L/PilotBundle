@@ -15,7 +15,7 @@
         "slug": "pilot-open-scheme",
         "sensitive": false,
         "restricted": false,
-        "value": "",
+        "value": "pilot-open",
         "kind": "string",
         "group": "pilot",
         "severity": null,

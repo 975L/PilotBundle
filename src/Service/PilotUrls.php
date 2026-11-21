@@ -17,6 +17,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class PilotUrls
 {
     public const string CARD_ROUTE = 'pilot_space_card';
+    public const string SPACE_ROUTE = 'pilot_project';
 
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
@@ -27,5 +28,11 @@ class PilotUrls
     public function card(Card $card, int $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH): string
     {
         return $this->urlGenerator->generate(self::CARD_ROUTE, ['space' => $card->getProject()->getSlug(), 'id' => $card->getId()], $referenceType);
+    }
+
+    // A card as an absolute address handed on, its space's page opening it in its dialog: /pilot/{space}#card-{id}
+    public function shared(Card $card): string
+    {
+        return $this->urlGenerator->generate(self::SPACE_ROUTE, ['slug' => $card->getProject()->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL) . '#card-' . $card->getId();
     }
 }

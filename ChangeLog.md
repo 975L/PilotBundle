@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.1
+
+File opening links on by default, runner kept alive on a broken claim
+
+- The address of a card an agent hands on opening it in its dialog over its space's page (`PilotUrls::shared()`) (21/11/2026)
+- The config `pilot-open-scheme` set to `pilot-open` by default, the files under a step opened on the computer from the install, `none` leaving the paths as text (21/11/2026)
+- The reference runner skipping a round whose claim answer is no JSON instead of stopping (21/11/2026)
+- « Delete permanently » in English instead of « Delete for good » (21/11/2026)
+
 ## v1.2.0
 
 Machine actions kept to their spaces, dashboard refreshed as runs end

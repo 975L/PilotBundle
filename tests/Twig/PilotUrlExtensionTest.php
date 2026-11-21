@@ -15,13 +15,14 @@ use c975L\PilotBundle\Service\PilotUrls;
 use c975L\PilotBundle\Twig\PilotUrlExtension;
 use PHPUnit\Framework\TestCase;
 
-// A path a step names becomes a link of the scheme the site sets, its segments encoded, and stays text without one or with a scheme of the web
+// A path a step names becomes a link of the scheme the site sets, its segments encoded, and stays text without one, with none or with a scheme of the web
 class PilotUrlExtensionTest extends TestCase
 {
     public function testOpenLinkFollowsTheScheme(): void
     {
         $this->assertSame('item-1:///catalog/Item%20%C3%A9t%C3%A9/01.jpg', $this->extension('item-1')->open('/catalog/Item été/01.jpg'));
         $this->assertNull($this->extension('')->open('/catalog/01.jpg'));
+        $this->assertNull($this->extension('none')->open('/catalog/01.jpg'));
         $this->assertNull($this->extension('javascript')->open('/catalog/01.jpg'));
         $this->assertNull($this->extension('item 1')->open('/catalog/01.jpg'));
     }
