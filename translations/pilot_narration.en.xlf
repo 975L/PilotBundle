@@ -2,6 +2,30 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="en" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="egt8bEz">
+                <source>narration.guided_step_pilot_agent_card</source>
+                <target>Click the tile of a card whose step names the agent's action.</target>
+            </trans-unit>
+            <trans-unit id="RV2icXQ">
+                <source>narration.guided_step_pilot_agent_feedback</source>
+                <target>Answer what it asks on the card, then validate.</target>
+            </trans-unit>
+            <trans-unit id="DCPEUea">
+                <source>narration.guided_step_pilot_agent_open</source>
+                <target>Open the piloting pages, on their dashboard.</target>
+            </trans-unit>
+            <trans-unit id="lxe.fUM">
+                <source>narration.guided_step_pilot_agent_run</source>
+                <target>Click the step's play button: the runner starts the agent on it.</target>
+            </trans-unit>
+            <trans-unit id="PW9EBLM">
+                <source>narration.guided_step_pilot_agent_space</source>
+                <target>Click the space of the card, in the left column.</target>
+            </trans-unit>
+            <trans-unit id="md0YRzH">
+                <source>narration.guided_step_pilot_agent_watch</source>
+                <target>Follow its steps: the agent ticks each one it finishes and comments what it did.</target>
+            </trans-unit>
             <trans-unit id="WCGaA4V">
                 <source>narration.guided_step_pilot_card_new</source>
                 <target>Click the plus of the tab the card goes in.</target>

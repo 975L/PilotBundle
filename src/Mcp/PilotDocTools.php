@@ -46,7 +46,7 @@ class PilotDocTools
     {
         $docs = null === $this->text($space) || null !== $this->text($search)
             ? $this->docRepository->search((string) $this->text($search), $this->scope(), self::LIMIT)
-            : $this->docRepository->findFiles($this->space((string) $space));
+            : $this->docRepository->findFiles($this->space((string) $space, PilotAccess::EDIT));
 
         return array_map(static fn (Doc $doc): array => [
             'slug' => $doc->getSlug(),
@@ -81,7 +81,7 @@ class PilotDocTools
      */
     public function writeDoc(?string $space = null, ?string $title = null, ?string $summary = null, ?string $detail = null, ?string $doc = null): array
     {
-        $found = null === $this->text($doc) ? $this->newDoc((string) $space, $title) : $this->served((string) $doc, PilotAccess::EDIT);
+        $found = null === $this->text($doc) ? $this->newDoc((string) $space, $title) : $this->served((string) $doc);
         if (null !== $this->text($title)) {
             $found->setTitle(mb_substr((string) $this->text($title), 0, 200));
         }
@@ -114,16 +114,13 @@ class PilotDocTools
         return $this->docRepository->newFile($project, (string) $this->text($title));
     }
 
-    // A file by its slug at the level asked, as its page guards it: one of a space by the account's role there, one of no space by the admin only; one it may not see refused as unknown
-    private function served(string $slug, string $level = PilotAccess::VIEW): Doc
+    // A file by its slug, as its page guards it: one of a space for a contributor there at least, a guest seeing only its cards, one of no space for the admin only; any other refused as unknown
+    private function served(string $slug): Doc
     {
         $doc = $this->docRepository->findOneBy(['slug' => trim($slug)]);
         $project = $doc?->getProject();
-        if (!$doc instanceof Doc || !(null === $project ? $this->pilotAccess->isAdmin() : $this->pilotAccess->can($project, PilotAccess::VIEW))) {
+        if (!$doc instanceof Doc || !(null === $project ? $this->pilotAccess->isAdmin() : $this->pilotAccess->can($project, PilotAccess::EDIT))) {
             throw new ToolCallException(sprintf('No file "%s".', $slug));
-        }
-        if (null !== $project && !$this->pilotAccess->can($project, $level)) {
-            throw new ToolCallException(sprintf('This account may not change the file "%s".', $slug));
         }
 
         return $doc;

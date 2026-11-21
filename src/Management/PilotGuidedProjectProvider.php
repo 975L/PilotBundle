@@ -98,6 +98,15 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
                 ['key' => 'dashboard', 'highlight' => '.pilot-brand'],
                 ['key' => 'refresh', 'highlight' => '.pilot-credits-refresh button'],
             ]),
+            // A step handed to an AI agent through the runner, which works on the card through the site's MCP endpoint and asks on it what it misses
+            self::project('pilot_agent', 12090, null, [
+                ['key' => 'open', 'url' => $this->dashboard()],
+                ['key' => 'space', 'highlight' => self::SPACE],
+                ['key' => 'card', 'highlight' => self::CARD],
+                ['key' => 'run', 'highlight' => '.pilot-step-run'],
+                ['key' => 'watch', 'highlight' => '.pilot-checklist'],
+                ['key' => 'feedback', 'highlight' => '.pilot-feedback-add'],
+            ]),
         ];
     }
 

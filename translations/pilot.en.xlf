@@ -2,6 +2,10 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="en" datatype="plaintext" original="pilot.en.xlf">
         <body>
+            <trans-unit id="Sp6PB6o">
+                <source>description.guided_project_pilot_agent</source>
+                <target>The runner starts an agent on a step; it works on the card through the site's MCP endpoint and asks on it what it misses.</target>
+            </trans-unit>
             <trans-unit id="FKn3gOj">
                 <source>description.guided_project_pilot_card</source>
                 <target>A card is one thing to do in a space: a title first, its steps and its day then.</target>
@@ -33,6 +37,30 @@
             <trans-unit id="h3w1C7_">
                 <source>description.guided_project_pilot_template</source>
                 <target>A plan template gives a card its steps at once, or one card per step, in the spaces that offer it.</target>
+            </trans-unit>
+            <trans-unit id="VVwBJhz">
+                <source>description.guided_step_pilot_agent_card</source>
+                <target>Its steps say the work to do, some naming an action for a machine.</target>
+            </trans-unit>
+            <trans-unit id="L9cw6vK">
+                <source>description.guided_step_pilot_agent_feedback</source>
+                <target>What it misses, it asks on the card: answer there, then validate.</target>
+            </trans-unit>
+            <trans-unit id="V9u0XmA">
+                <source>description.guided_step_pilot_agent_open</source>
+                <target>Spaces, cards and their steps, shared by people and agents.</target>
+            </trans-unit>
+            <trans-unit id="E7Sed7G">
+                <source>description.guided_step_pilot_agent_run</source>
+                <target>The runner of a machine serving the space starts the agent on it.</target>
+            </trans-unit>
+            <trans-unit id="_Yo8MfV">
+                <source>description.guided_step_pilot_agent_space</source>
+                <target>The space of the project, in the left column.</target>
+            </trans-unit>
+            <trans-unit id="G9tvpkI">
+                <source>description.guided_step_pilot_agent_watch</source>
+                <target>It ticks each step it finishes and comments what it did.</target>
             </trans-unit>
             <trans-unit id="LDz0SQV">
                 <source>description.guided_step_pilot_card_new</source>
@@ -805,6 +833,10 @@
                 <source>label.gesture_forbidden</source>
                 <target>Your role in this space does not allow it.</target>
             </trans-unit>
+            <trans-unit id="7pQ_3En">
+                <source>label.guided_project_pilot_agent</source>
+                <target>Hand a step to an AI agent</target>
+            </trans-unit>
             <trans-unit id="TfNuaia">
                 <source>label.guided_project_pilot_card</source>
                 <target>Add a card</target>
@@ -836,6 +868,30 @@
             <trans-unit id="3jFb7Bs">
                 <source>label.guided_project_pilot_template</source>
                 <target>Create a plan template</target>
+            </trans-unit>
+            <trans-unit id="PSzuVz6">
+                <source>label.guided_step_pilot_agent_card</source>
+                <target>Open a card</target>
+            </trans-unit>
+            <trans-unit id="JS4Ua8S">
+                <source>label.guided_step_pilot_agent_feedback</source>
+                <target>Answer the agent</target>
+            </trans-unit>
+            <trans-unit id="7rMx2qh">
+                <source>label.guided_step_pilot_agent_open</source>
+                <target>Open the piloting</target>
+            </trans-unit>
+            <trans-unit id="8KtbzXd">
+                <source>label.guided_step_pilot_agent_run</source>
+                <target>Hand the step over</target>
+            </trans-unit>
+            <trans-unit id="pvDIaf_">
+                <source>label.guided_step_pilot_agent_space</source>
+                <target>Choose a space</target>
+            </trans-unit>
+            <trans-unit id="LXtjKss">
+                <source>label.guided_step_pilot_agent_watch</source>
+                <target>Follow the agent</target>
             </trans-unit>
             <trans-unit id="oJy6EmI">
                 <source>label.guided_step_pilot_card_new</source>

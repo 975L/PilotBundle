@@ -241,6 +241,15 @@ class PilotMcpProviderTest extends TestCase
         $this->assertSame('catalog-file-1', $this->entityManager->find(Card::class, $this->card->getId())->getDoc()?->getSlug());
     }
 
+    // A guest of a space, seeing it without editing there, opens none of its files, as on their page
+    public function testDocsRefusedToAGuest(): void
+    {
+        $this->denied = [PilotAccess::EDIT];
+        $this->assertSame('No file "catalog-file-1".', $this->toolError('pilot_doc', ['doc' => 'catalog-file-1']));
+        $this->assertSame('This account may not do that in the space "catalog".', $this->toolError('pilot_docs', ['space' => 'catalog']));
+        $this->assertSame('No file "catalog-file-1".', $this->toolError('pilot_write_doc', ['doc' => 'catalog-file-1', 'detail' => 'detail-9']));
+    }
+
     // A card of a space the account does not see is refused like an unknown one, for reading as for writing, a gesture its role does not hold said so
     public function testUnseenCardRefused(): void
     {

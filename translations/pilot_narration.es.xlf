@@ -2,6 +2,30 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="es" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="egt8bEz">
+                <source>narration.guided_step_pilot_agent_card</source>
+                <target>Haga clic en el mosaico de una tarjeta cuyo paso nombra la acción del agente.</target>
+            </trans-unit>
+            <trans-unit id="RV2icXQ">
+                <source>narration.guided_step_pilot_agent_feedback</source>
+                <target>Responda a lo que pregunta en la tarjeta y luego valide.</target>
+            </trans-unit>
+            <trans-unit id="DCPEUea">
+                <source>narration.guided_step_pilot_agent_open</source>
+                <target>Abra las páginas del pilotaje, en su panel.</target>
+            </trans-unit>
+            <trans-unit id="lxe.fUM">
+                <source>narration.guided_step_pilot_agent_run</source>
+                <target>Haga clic en el botón de reproducción del paso: el runner lanza en él el agente.</target>
+            </trans-unit>
+            <trans-unit id="PW9EBLM">
+                <source>narration.guided_step_pilot_agent_space</source>
+                <target>Haga clic en el espacio de la tarjeta, en la columna de la izquierda.</target>
+            </trans-unit>
+            <trans-unit id="md0YRzH">
+                <source>narration.guided_step_pilot_agent_watch</source>
+                <target>Siga sus pasos: el agente marca cada uno que termina y comenta lo que hizo.</target>
+            </trans-unit>
             <trans-unit id="WCGaA4V">
                 <source>narration.guided_step_pilot_card_new</source>
                 <target>Haga clic en el más de la pestaña donde va la tarjeta.</target>

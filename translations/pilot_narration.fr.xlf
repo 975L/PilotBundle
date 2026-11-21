@@ -2,6 +2,30 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="fr" datatype="plaintext" original="pilot_narration.en.xlf">
         <body>
+            <trans-unit id="egt8bEz">
+                <source>narration.guided_step_pilot_agent_card</source>
+                <target>Cliquez sur la tuile d'une carte dont une étape nomme l'action de l'agent.</target>
+            </trans-unit>
+            <trans-unit id="RV2icXQ">
+                <source>narration.guided_step_pilot_agent_feedback</source>
+                <target>Répondez à ce qu'il demande sur la carte, puis validez.</target>
+            </trans-unit>
+            <trans-unit id="DCPEUea">
+                <source>narration.guided_step_pilot_agent_open</source>
+                <target>Ouvrez les pages du pilotage, sur leur tableau de bord.</target>
+            </trans-unit>
+            <trans-unit id="lxe.fUM">
+                <source>narration.guided_step_pilot_agent_run</source>
+                <target>Cliquez sur le bouton lecture de l'étape : le runner y lance l'agent.</target>
+            </trans-unit>
+            <trans-unit id="PW9EBLM">
+                <source>narration.guided_step_pilot_agent_space</source>
+                <target>Cliquez sur l'espace de la carte, dans la colonne de gauche.</target>
+            </trans-unit>
+            <trans-unit id="md0YRzH">
+                <source>narration.guided_step_pilot_agent_watch</source>
+                <target>Suivez ses étapes : l'agent coche chacune de celles qu'il termine et commente ce qu'il a fait.</target>
+            </trans-unit>
             <trans-unit id="WCGaA4V">
                 <source>narration.guided_step_pilot_card_new</source>
                 <target>Cliquez sur le plus de l'onglet où va la carte.</target>

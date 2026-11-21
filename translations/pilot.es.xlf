@@ -2,6 +2,10 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
     <file source-language="en" target-language="es" datatype="plaintext" original="pilot.en.xlf">
         <body>
+            <trans-unit id="Sp6PB6o">
+                <source>description.guided_project_pilot_agent</source>
+                <target>El runner lanza un agente en un paso; trabaja en la tarjeta mediante la dirección MCP del sitio y pregunta en ella lo que le falta.</target>
+            </trans-unit>
             <trans-unit id="FKn3gOj">
                 <source>description.guided_project_pilot_card</source>
                 <target>Una tarjeta es una cosa por hacer en un espacio: primero un título, luego sus pasos y su día.</target>
@@ -33,6 +37,30 @@
             <trans-unit id="h3w1C7_">
                 <source>description.guided_project_pilot_template</source>
                 <target>Una plantilla de plan da de una vez sus pasos a una tarjeta, o una tarjeta por paso, en los espacios que la proponen.</target>
+            </trans-unit>
+            <trans-unit id="VVwBJhz">
+                <source>description.guided_step_pilot_agent_card</source>
+                <target>Sus pasos dicen el trabajo por hacer, algunos nombrando una acción para una máquina.</target>
+            </trans-unit>
+            <trans-unit id="L9cw6vK">
+                <source>description.guided_step_pilot_agent_feedback</source>
+                <target>Lo que le falta, lo pregunta en la tarjeta: responda allí y luego valide.</target>
+            </trans-unit>
+            <trans-unit id="V9u0XmA">
+                <source>description.guided_step_pilot_agent_open</source>
+                <target>Espacios, tarjetas y sus pasos, compartidos por las personas y los agentes.</target>
+            </trans-unit>
+            <trans-unit id="E7Sed7G">
+                <source>description.guided_step_pilot_agent_run</source>
+                <target>El runner de una máquina que sirve el espacio lanza en él el agente.</target>
+            </trans-unit>
+            <trans-unit id="_Yo8MfV">
+                <source>description.guided_step_pilot_agent_space</source>
+                <target>El espacio del proyecto, en la columna de la izquierda.</target>
+            </trans-unit>
+            <trans-unit id="G9tvpkI">
+                <source>description.guided_step_pilot_agent_watch</source>
+                <target>Marca cada paso que termina y comenta lo que hizo.</target>
             </trans-unit>
             <trans-unit id="LDz0SQV">
                 <source>description.guided_step_pilot_card_new</source>
@@ -805,6 +833,10 @@
                 <source>label.gesture_forbidden</source>
                 <target>Su rol en este espacio no lo permite.</target>
             </trans-unit>
+            <trans-unit id="7pQ_3En">
+                <source>label.guided_project_pilot_agent</source>
+                <target>Confiar un paso a un agente de IA</target>
+            </trans-unit>
             <trans-unit id="TfNuaia">
                 <source>label.guided_project_pilot_card</source>
                 <target>Añadir una tarjeta</target>
@@ -836,6 +868,30 @@
             <trans-unit id="3jFb7Bs">
                 <source>label.guided_project_pilot_template</source>
                 <target>Crear una plantilla de plan</target>
+            </trans-unit>
+            <trans-unit id="PSzuVz6">
+                <source>label.guided_step_pilot_agent_card</source>
+                <target>Abrir una tarjeta</target>
+            </trans-unit>
+            <trans-unit id="JS4Ua8S">
+                <source>label.guided_step_pilot_agent_feedback</source>
+                <target>Responder al agente</target>
+            </trans-unit>
+            <trans-unit id="7rMx2qh">
+                <source>label.guided_step_pilot_agent_open</source>
+                <target>Abrir el pilotaje</target>
+            </trans-unit>
+            <trans-unit id="8KtbzXd">
+                <source>label.guided_step_pilot_agent_run</source>
+                <target>Confiar el paso</target>
+            </trans-unit>
+            <trans-unit id="pvDIaf_">
+                <source>label.guided_step_pilot_agent_space</source>
+                <target>Elegir un espacio</target>
+            </trans-unit>
+            <trans-unit id="LXtjKss">
+                <source>label.guided_step_pilot_agent_watch</source>
+                <target>Seguir al agente</target>
             </trans-unit>
             <trans-unit id="oJy6EmI">
                 <source>label.guided_step_pilot_card_new</source>

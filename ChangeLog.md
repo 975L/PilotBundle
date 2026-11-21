@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.1.1
+
+Guided project handing a step to an AI agent
+
+- `pilot-agent` guided project: a step handed to an AI agent, working on the card through the site's MCP endpoint (21/11/2026)
+- MCP files tools opened to a contributor of the space at least, as their page, a guest no longer reading every file of its space (21/11/2026)
+
 ## v1.1.0
 
 Demo automation space, php-http/discovery plugin allowed

@@ -3,6 +3,11 @@
         "date": "2026-11-21",
         "description": [
             {
+                "en": "Piloting: a guided project shows how to hand a step to an AI agent, which works on the card, ticks what it finishes and asks on the card what it misses.",
+                "fr": "Pilotage : un projet guidé montre comment confier une étape à un agent IA, qui travaille sur la carte, coche ce qu'il termine et demande sur la carte ce qui lui manque.",
+                "es": "Pilotaje: un proyecto guiado muestra cómo confiar un paso a un agente de IA, que trabaja en la tarjeta, marca lo que termina y pregunta en la tarjeta lo que le falta."
+            },
+            {
                 "en": "Piloting: guided projects walk the piloting pages step by step — creating a space, adding a card, giving it its steps and feedback, sharing it by a link, adding a runner machine, making a plan template, launching a step on a machine, following the paid services' credits — started from the back office's guided projects.",
                 "fr": "Pilotage : des projets guidés parcourent les pages du pilotage pas à pas — créer un espace, ajouter une carte, lui donner ses étapes et ses retours, la partager par un lien, ajouter une machine d'exécution, créer un modèle de plan, lancer une étape sur une machine, suivre les crédits des services payants — lancés depuis les projets guidés du back-office.",
                 "es": "Pilotaje: proyectos guiados recorren las páginas del pilotaje paso a paso — crear un espacio, añadir una tarjeta, darle sus pasos y sus comentarios, compartirla por un enlace, añadir una máquina de ejecución, crear una plantilla de plan, lanzar un paso en una máquina, seguir los créditos de los servicios de pago — lanzados desde los proyectos guiados del back-office."
