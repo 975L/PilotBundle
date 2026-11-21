@@ -66,12 +66,19 @@
         {% include '@c975LPilot/pilot/_spend.html.twig' with {month: this_month} %}
     {% endif %}
 
-    {% for day, cards in days %}
-        <h2 class="pilot-title">{{ day|format_date('full') }}</h2>
-        <div class="pilot-cards pilot-drop pilot-mb-lg" data-pilot-card-drag-target="zone" data-due="{{ day }}">
-            {% for card in cards %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% endfor %}
+    {# The coming days side by side, each one a drop zone for its cards #}
+    {% if days is not empty %}
+        <div class="pilot-days pilot-mb-lg">
+            {% for day, cards in days %}
+                <section>
+                    <h2 class="pilot-title">{{ day|format_date('full') }}</h2>
+                    <div class="pilot-cards pilot-drop" data-pilot-card-drag-target="zone" data-due="{{ day }}">
+                        {% for card in cards %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
         </div>
-    {% endfor %}
+    {% endif %}
 
     {# The later deadlines month by month, every card shown, the month written larger than a day #}
     {% for month, cards in later %}

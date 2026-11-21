@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.0
+
+Demo automation space, php-http/discovery plugin allowed
+
+- A demo automation space: a machine that never runs, a run already done with its report and files, an action left to launch (21/11/2026)
+- `php-http/discovery` plugin allowed in `allow-plugins`, so `composer qa` no longer stops on its prompt (21/11/2026)
+- The coming days of the planning laid out side by side instead of one under another (21/11/2026)
+
 ## v1.0.0
 
 First stable release: own look, machine feedback, credits, MCP server

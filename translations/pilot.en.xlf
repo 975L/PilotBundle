@@ -554,6 +554,14 @@
                 <source>label.dashboard</source>
                 <target>Dashboard</target>
             </trans-unit>
+            <trans-unit id="N86zpT2">
+                <source>label.demo_action_export</source>
+                <target>Export the records</target>
+            </trans-unit>
+            <trans-unit id="kUYOwKX">
+                <source>label.demo_action_report</source>
+                <target>Build the report</target>
+            </trans-unit>
             <trans-unit id="w8P9WZl">
                 <source>label.demo_card_contact</source>
                 <target>Put the contact form online</target>
@@ -561,6 +569,10 @@
             <trans-unit id="wgRNw9b">
                 <source>label.demo_card_domain</source>
                 <target>Renew the domain name</target>
+            </trans-unit>
+            <trans-unit id="UZoRPYK">
+                <source>label.demo_card_export</source>
+                <target>Export the catalogue</target>
             </trans-unit>
             <trans-unit id="K.EPILm">
                 <source>label.demo_card_home</source>
@@ -578,6 +590,10 @@
                 <source>label.demo_card_launch</source>
                 <target>Announce the launch</target>
             </trans-unit>
+            <trans-unit id="w8PUE7X">
+                <source>label.demo_card_report</source>
+                <target>Weekly report</target>
+            </trans-unit>
             <trans-unit id="CMVRo5C">
                 <source>label.demo_card_theme</source>
                 <target>Choose the theme colours</target>
@@ -586,13 +602,48 @@
                 <source>label.demo_collection_items</source>
                 <target>Records</target>
             </trans-unit>
+            <trans-unit id="nAjtkV4">
+                <source>label.demo_collection_runs</source>
+                <target>Runs</target>
+            </trans-unit>
             <trans-unit id="HW0YDVO">
                 <source>label.demo_collection_tasks</source>
                 <target>Tasks</target>
             </trans-unit>
+            <trans-unit id="tzZ1lsO">
+                <source>label.demo_doc_detail</source>
+                <target>## Closed
+
+- Choose the theme colours
+
+## Late
+
+- Renew the domain name
+
+## Coming
+
+- Write the home page
+- Put the contact form online</target>
+            </trans-unit>
+            <trans-unit id="WALX8BE">
+                <source>label.demo_doc_summary</source>
+                <target>The cards closed this week, the late ones and the coming days.</target>
+            </trans-unit>
+            <trans-unit id="7suMHL2">
+                <source>label.demo_doc_title</source>
+                <target>Weekly report</target>
+            </trans-unit>
             <trans-unit id="4OICjkr">
                 <source>label.demo_feedback_photo</source>
                 <target>Add a team photo</target>
+            </trans-unit>
+            <trans-unit id=".mk86Xh">
+                <source>label.demo_run_done</source>
+                <target>Report written</target>
+            </trans-unit>
+            <trans-unit id="Z47KkPl">
+                <source>label.demo_space_automation</source>
+                <target>Automation</target>
             </trans-unit>
             <trans-unit id="dN_zcUK">
                 <source>label.demo_space_catalog</source>
@@ -602,13 +653,25 @@
                 <source>label.demo_space_site</source>
                 <target>Showcase site</target>
             </trans-unit>
+            <trans-unit id="B4aAk4l">
+                <source>label.demo_step_check</source>
+                <target>Check the export</target>
+            </trans-unit>
             <trans-unit id="5aLrj9y">
                 <source>label.demo_step_description</source>
                 <target>Description</target>
             </trans-unit>
+            <trans-unit id="3EcI.qM">
+                <source>label.demo_step_export</source>
+                <target>Export the records</target>
+            </trans-unit>
             <trans-unit id="q3gGEuQ">
                 <source>label.demo_step_fields</source>
                 <target>Choose the fields</target>
+            </trans-unit>
+            <trans-unit id="2.VqRZJ">
+                <source>label.demo_step_gather</source>
+                <target>Gather the figures</target>
             </trans-unit>
             <trans-unit id="WVqhQRz">
                 <source>label.demo_step_outline</source>
@@ -625,6 +688,10 @@
             <trans-unit id="ORWUYAm">
                 <source>label.demo_step_price</source>
                 <target>Price</target>
+            </trans-unit>
+            <trans-unit id="fb5rVTh">
+                <source>label.demo_step_read</source>
+                <target>Read the report</target>
             </trans-unit>
             <trans-unit id="jMR3.de">
                 <source>label.demo_step_review</source>

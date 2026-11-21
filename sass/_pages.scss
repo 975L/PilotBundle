@@ -60,6 +60,17 @@
     grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
 }
 
+// The coming days laid out in a row, a day's cards side by side within it
+.pilot-days, .pilot-days .pilot-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.pilot-days .pilot-card {
+    width: 14rem;
+}
+
 .pilot-reference {
     --pilot-ink: var(--pilot-neutral);
     border-left: 4px solid var(--pilot-ink);

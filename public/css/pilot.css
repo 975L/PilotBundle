@@ -643,6 +643,16 @@ a.pilot-list-item:hover {
   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
 }
 
+.pilot-days, .pilot-days .pilot-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.pilot-days .pilot-card {
+  width: 14rem;
+}
+
 .pilot-reference {
   --pilot-ink: var(--pilot-neutral);
   border-left: 4px solid var(--pilot-ink);

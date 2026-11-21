@@ -36,7 +36,7 @@ description: "Use this skill when working with project piloting in a Symfony app
 
 ### Demo dataset
 
-`Service\PilotDemoFixtureProvider` (UiBundle's `DemoFixtureProviderInterface`) seeds a demo site with two spaces, slugs `demo-site` and `demo-catalog`, a collection each and their cards, written through the `label.demo_*` keys in the site's locale. They are sample rows, not content to build on; no member, machine nor run is seeded.
+`Service\PilotDemoFixtureProvider` (UiBundle's `DemoFixtureProviderInterface`) seeds a demo site with three spaces, slugs `demo-site`, `demo-catalog` and `demo-automation`, a collection each and their cards, written through the `label.demo_*` keys in the site's locale. The automation space holds the `demo-runner` machine, whose token is drawn and never shown so nothing claims a run in its name, its `demo-report` and `demo-export` actions, a run already done with its report (the `demo-report` file) and the paths of its files, and a step whose action only queues. They are sample rows, not content to build on; no member is seeded.
 
 ## The runner
 
