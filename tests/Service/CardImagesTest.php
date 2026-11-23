@@ -96,15 +96,17 @@ class CardImagesTest extends TestCase
     {
         $images = new CardImages($this->root);
         $old = (string) $images->storeFeedback($this->upload('image.png'));
-        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->addFeedback('feedback-1')->addFeedback('feedback-2')->setFeedbackImage(0, $old)->setFeedbackImage(1, str_repeat('c', 32) . '.png');
+        $second = (string) $images->storeFeedback($this->upload('image.png'));
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->addFeedback('feedback-1')->addFeedback('feedback-2')->setFeedbackImages(0, [$old, $second])->setFeedbackImages(1, [str_repeat('c', 32) . '.png']);
 
         $images->renewFeedback($card);
         $renewed = $card->getFeedbackImages();
-        $images->forget(array_values(array_diff([$old], $renewed)));
+        $images->forget(array_values(array_diff([$old, $second], $renewed)));
 
-        $this->assertCount(1, $renewed);
-        $this->assertNotSame($old, $renewed[0]);
+        $this->assertCount(2, $renewed);
+        $this->assertSame([], array_intersect([$old, $second], $renewed));
         $this->assertNotNull($images->feedbackPath($renewed[0]));
+        $this->assertNotNull($images->feedbackPath($renewed[1]));
         $this->assertNull($images->feedbackPath($old));
         $this->assertArrayNotHasKey('img', $card->getChecklist()[1]);
     }

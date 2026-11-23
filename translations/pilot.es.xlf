@@ -196,7 +196,7 @@
             </trans-unit>
             <trans-unit id="rlwMvLX">
                 <source>description.guided_step_pilot_steps_feedback</source>
-                <target>Una corrección o una idea después de los pasos, con una captura pegada en el campo si hace falta.</target>
+                <target>Una corrección o una idea después de los pasos, con hasta tres capturas pegadas en el campo si hace falta; los ya marcados al principio se pliegan bajo un solo título.</target>
             </trans-unit>
             <trans-unit id="0QvzaYX">
                 <source>description.guided_step_pilot_steps_fold</source>
@@ -249,6 +249,10 @@
             <trans-unit id="r90BtJm">
                 <source>flow.checklist_full</source>
                 <target>Una tarjeta tiene como máximo %max% pasos y comentarios.</target>
+            </trans-unit>
+            <trans-unit id="pO0Jasn">
+                <source>flow.feedback_images_full</source>
+                <target>Un comentario lleva como máximo %max% capturas.</target>
             </trans-unit>
             <trans-unit id="fTDLbj6">
                 <source>flow.feedback_none</source>
@@ -823,7 +827,7 @@
             </trans-unit>
             <trans-unit id="knyhcYc">
                 <source>label.feedback_image_remove</source>
-                <target>Quitar la captura</target>
+                <target>Quitar esta captura</target>
             </trans-unit>
             <trans-unit id="_7kRkv3">
                 <source>label.feedback_image_view</source>
@@ -832,6 +836,10 @@
             <trans-unit id="xnLpcyM">
                 <source>label.feedback_run</source>
                 <target>Confiar a la máquina</target>
+            </trans-unit>
+            <trans-unit id="ia33Qgi">
+                <source>label.feedback_ticked</source>
+                <target>Tratados (%count%)</target>
             </trans-unit>
             <trans-unit id="_J1nX.h">
                 <source>label.gesture_expired</source>
@@ -1151,7 +1159,7 @@
             </trans-unit>
             <trans-unit id="Qjf4vqF">
                 <source>label.info_feedback_add</source>
-                <target>Una corrección o una idea; una captura se pega aquí</target>
+                <target>Una corrección o una idea; hasta tres capturas se pegan aquí</target>
             </trans-unit>
             <trans-unit id="vULSJYl">
                 <source>label.info_feedback_run</source>
@@ -1211,7 +1219,7 @@
             </trans-unit>
             <trans-unit id="oMrXH3_">
                 <source>label.info_step_delete</source>
-                <target>La línea y su captura se eliminan, sin vuelta atrás.</target>
+                <target>La línea y sus capturas se eliminan, sin vuelta atrás.</target>
             </trans-unit>
             <trans-unit id="dUHOSNA">
                 <source>label.info_step_edit</source>

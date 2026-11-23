@@ -735,33 +735,47 @@ class PilotController extends AbstractController
         return $card->moveTo($project);
     }
 
-    // A feedback added, with the screenshot sent or pasted along, a picture refused adding nothing, a full checklist refused before any file is kept
+    // A feedback added, with up to MAX_FEEDBACK_IMAGES screenshots sent or pasted along, a picture refused adding nothing, a full checklist refused before any file is kept
     private function feedbackAdd(Card $card, Request $request): Card
     {
         $text = $request->request->getString('text');
-        $file = $request->files->get('image');
-        $image = null;
-        if ($file instanceof UploadedFile && '' !== trim($text)) {
+        $sent = $request->files->get('image');
+        $files = array_slice(array_filter(\is_array($sent) ? $sent : [$sent], static fn (mixed $file): bool => $file instanceof UploadedFile), 0, Card::MAX_FEEDBACK_IMAGES);
+        $images = [];
+        if ([] !== $files && '' !== trim($text)) {
             Card::expectRoom(\count($card->getChecklist()) + 1);
-            $image = $this->screenshot($file);
+            // A picture refused among several takes the ones already kept off the disk
+            foreach ($files as $file) {
+                try {
+                    $images[] = $this->screenshot($file);
+                } catch (FlowException $refusal) {
+                    $this->cardImages->forget($images);
+
+                    throw $refusal;
+                }
+            }
         }
         $before = array_key_last($card->getChecklist());
         $card->addFeedback($text);
         $added = array_key_last($card->getChecklist());
 
-        return null !== $image && $added !== $before ? $card->setFeedbackImage((int) $added, $image) : $card;
+        return [] !== $images && $added !== $before ? $card->setFeedbackImages((int) $added, $images) : $card;
     }
 
-    // A feedback's screenshot replaced by the one sent, or removed by « remove »
+    // A screenshot added to a feedback, refused once it holds MAX_FEEDBACK_IMAGES before the file is kept, or the one named taken off by « remove »
     private function feedbackImage(Card $card, Request $request): Card
     {
         $index = $request->request->getInt('index', -1);
         $file = $request->files->get('image');
-        if ($request->request->getBoolean('remove')) {
-            return $card->setFeedbackImage($index, null);
+        if ($request->request->has('remove')) {
+            return $card->removeFeedbackImage($index, $request->request->getString('remove'));
         }
+        if (!$file instanceof UploadedFile || !$card->isFeedback($index)) {
+            return $card;
+        }
+        $card->expectImageRoom($index);
 
-        return $file instanceof UploadedFile && $card->isFeedback($index) ? $card->setFeedbackImage($index, $this->screenshot($file)) : $card;
+        return $card->addFeedbackImage($index, $this->screenshot($file));
     }
 
     // A screenshot kept, refused when it is no picture or too heavy

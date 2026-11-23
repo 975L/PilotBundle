@@ -26,6 +26,8 @@ class CardMarkdown
 
     public const string REFERENCE_HEADING = '## Reference';
 
+    public const string SHARED_TAG = 'shared';
+
     private const string DUE = 'Due';
 
     private const string WAITING_ON = 'Waiting on';
@@ -40,8 +42,8 @@ class CardMarkdown
     ) {
     }
 
-    // The card, project and status in its header for reading only, its source and result links when it has them
-    public function write(Card $card): string
+    // The card, project and status in its header for reading only, its source and result links when it has them; framed for an agent, what the editing link wrote held between <shared> tags
+    public function write(Card $card, bool $framed = false): string
     {
         $lines = ['# ' . $card->getTitle(), '', '- Project: ' . $card->getProject()->getName(), '- Status: ' . $card->getStatus()->value, '- ' . self::DUE . ': ' . $card->getDue()?->format('Y-m-d'), '- ' . self::WAITING_ON . ': ' . $card->getWaitingOn()];
         foreach ([self::SOURCE => $card->getSourceUrl(), self::RESULT => $card->getResultUrl()] as $name => $url) {
@@ -50,10 +52,16 @@ class CardMarkdown
             }
         }
         if (null !== $card->getNote()) {
-            array_push($lines, '', $card->getNote());
+            array_push($lines, '', self::framed($card->getNote(), $framed && $card->isNoteShared()));
         }
 
-        return implode("\n", [...$lines, ...$this->steps($card), ...$this->reference($card)]) . "\n";
+        return implode("\n", [...$lines, ...$this->steps($card, $framed), ...$this->reference($card)]) . "\n";
+    }
+
+    // A text written through the editing link held between <shared> tags, its own angle brackets neutralised so it never closes them, any other text as it is
+    public static function framed(string $text, bool $shared): string
+    {
+        return $shared ? '<' . self::SHARED_TAG . '>' . str_replace(['<', '>'], ['&lt;', '&gt;'], $text) . '</' . self::SHARED_TAG . '>' : $text;
     }
 
     // A text shaped as write() gives it laid back on the card: a part left out keeps what the card had, a part written replaces it
@@ -80,7 +88,7 @@ class CardMarkdown
         return $card;
     }
 
-    // The title on the first line, then the date, the awaited answer and the links (a line left out keeping its value, an empty one clearing it), the rest from the first other line as the note, headings and fields included
+    // The title on the first line, then the date, the awaited answer and the links (a line left out keeping its value, an empty one clearing it), the rest from the first other line as the note, headings and fields included, marked as the link's once it changes
     private function readHead(Card $card, string $head): void
     {
         $lines = explode("\n", $head);
@@ -92,7 +100,10 @@ class CardMarkdown
             array_shift($lines);
         }
         $text = trim(implode("\n", $lines));
-        $card->setNote('' !== $text ? $text : null);
+        $note = '' !== $text ? $text : null;
+        if ($note !== $card->getNote()) {
+            $card->setNote($note)->shareNote();
+        }
     }
 
     // A field or a blank line of the header read, false for the first line of the note
@@ -144,15 +155,16 @@ class CardMarkdown
         $card->restep($laid, $from, $day);
     }
 
-    // One task list read against the items of its kind the card has: an item kept by its text (each one once, in order) keeping what it spends, its run and the action it names (shown after it, read back as its own); a step in the group of the « ### » heading above it
+    // One task list read against the items of its kind the card has: an item kept by its text (each one once, in order) keeping what it spends, its run and the action it names (shown after it, read back as its own), a new or reworded one marked as the link's; a step in the group of the « ### » heading above it
     /**
-     * @param array<int, array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string}> $own
+     * @param array<int, array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string|list<string>, s?: bool}> $own
      *
-     * @return array{list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string}>, list<?int>}
+     * @return array{list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string|list<string>, s?: bool}>, list<?int>}
      */
     private function readList(string $text, array $own, bool $feedback, \DateTimeImmutable $day): array
     {
         $free = array_map(static fn (array $step): string => $step['t'], $own);
+        $shots = array_merge(...array_values(array_map(static fn (array $step): array => (array) ($step['img'] ?? []), $own)));
         $steps = [];
         $from = [];
         $group = null;
@@ -160,7 +172,7 @@ class CardMarkdown
         foreach ($items as $item) {
             // The screenshot written under a feedback is its own, its file kept by its name, only one the card already holds
             if ('' !== ($item[4] ?? '')) {
-                $steps = self::withImage($steps, $feedback && \in_array($item[4], array_column($own, 'img'), true), $item[4]);
+                $steps = self::withImage($steps, $feedback && \in_array($item[4], $shots, true), $item[4]);
 
                 continue;
             }
@@ -176,7 +188,7 @@ class CardMarkdown
             $title = trim((string) preg_replace('/ `[\w-]+`$/', '', trim($title)));
             $index = StepOrder::take($free, $title);
             $from[] = $index;
-            $step = null === $index ? ['t' => mb_substr($title, 0, 500)] : $own[$index];
+            $step = null === $index ? ['t' => mb_substr($title, 0, 500), 's' => true] : $own[$index];
             unset($step['img']);
             $steps[] = $this->mark($feedback ? $step : StepOrder::grouped($step, ['group' => $group ?? '']), ' ' !== $mark, $feedback, $day);
         }
@@ -184,16 +196,18 @@ class CardMarkdown
         return [$steps, $from];
     }
 
-    // The screenshot given to the feedback read just before it, when it may take it, a step or nothing above it taking none
+    // A screenshot added to the feedback read just before it, when it may take it and holds fewer than MAX_FEEDBACK_IMAGES, a step or nothing above it taking none
     /**
-     * @param list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string}> $steps
+     * @param list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string|list<string>, s?: bool}> $steps
      *
-     * @return list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string}>
+     * @return list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string|list<string>, s?: bool}>
      */
     private static function withImage(array $steps, bool $allowed, string $name): array
     {
-        if ($allowed && [] !== $steps) {
-            $steps[\count($steps) - 1]['img'] = $name;
+        $last = \count($steps) - 1;
+        $shots = (array) ($steps[$last]['img'] ?? []);
+        if ($allowed && $last >= 0 && \count($shots) < Card::MAX_FEEDBACK_IMAGES && !\in_array($name, $shots, true)) {
+            $steps[$last]['img'] = [...$shots, $name];
         }
 
         return $steps;
@@ -201,9 +215,9 @@ class CardMarkdown
 
     // An item ticked or not, dated to the minute it is ticked, a feedback kept as such
     /**
-     * @param array{t: string, done?: bool, doneAt?: string, doneBy?: string, feedback?: bool, img?: string} $step
+     * @param array{t: string, done?: bool, doneAt?: string, doneBy?: string, feedback?: bool, img?: string|list<string>, s?: bool} $step
      *
-     * @return array{t: string, done?: bool, doneAt?: string, doneBy?: string, feedback?: bool, img?: string}
+     * @return array{t: string, done?: bool, doneAt?: string, doneBy?: string, feedback?: bool, img?: string|list<string>, s?: bool}
      */
     private function mark(array $step, bool $done, bool $feedback, \DateTimeImmutable $day): array
     {
@@ -231,9 +245,9 @@ class CardMarkdown
         $card->setDoc($doc->fromMarkdown($text));
     }
 
-    // The steps as task list items under the « ### » heading of their group, then the feedback, its screenshot as an image on the indented line under it
+    // The steps as task list items under the « ### » heading of their group, then the feedback, its screenshots as images on the indented lines under it
     /** @return list<string> */
-    private function steps(Card $card): array
+    private function steps(Card $card, bool $framed): array
     {
         $lines = [];
         foreach ([self::STEPS_HEADING => $card->getSteps(), self::FEEDBACK_HEADING => $card->getFeedback()] as $heading => $steps) {
@@ -247,9 +261,9 @@ class CardMarkdown
                     $group = $step['g'] ?? null;
                     array_push($lines, '', '### ' . ($group ?? '-'), '');
                 }
-                $lines[] = '- [' . (($step['done'] ?? false) ? 'x' : ' ') . '] ' . $step['t'] . (isset($step['action']) ? ' `' . $step['action'] . '`' : '');
-                if (isset($step['img'])) {
-                    $lines[] = '  ![screenshot](' . $this->imageUrl($step['img']) . ')';
+                $lines[] = '- [' . (($step['done'] ?? false) ? 'x' : ' ') . '] ' . self::framed($step['t'], $framed && ($step['s'] ?? false)) . (isset($step['action']) ? ' `' . $step['action'] . '`' : '');
+                foreach ((array) ($step['img'] ?? []) as $name) {
+                    $lines[] = '  ![screenshot](' . $this->imageUrl($name) . ')';
                 }
             }
         }

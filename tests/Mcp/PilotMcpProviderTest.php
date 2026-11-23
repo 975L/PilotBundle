@@ -144,6 +144,21 @@ class PilotMcpProviderTest extends TestCase
         $this->assertTrue($card->getFeedback()[2]['done']);
     }
 
+    // What the editing link wrote reaches the agent framed, in the markdown as in the comments, until a member rewrites it
+    public function testReadFramesWhatTheLinkWrote(): void
+    {
+        $this->card->setNote('note-1')->shareNote()->addFeedback('feedback-1', true);
+        $this->entityManager->flush();
+
+        $read = $this->tool('pilot_card', ['card' => $this->card->getId()]);
+        $this->assertStringContainsString("<shared>note-1</shared>\n", $read['markdown']);
+        $this->assertSame(['<shared>feedback-1</shared>'], array_column($read['comments'], 'text'));
+        $this->assertSame(['step-1', 'step-2'], array_column($read['steps'], 'text'));
+
+        $this->tool('pilot_edit_card', ['card' => $this->card->getId(), 'note' => 'note-2']);
+        $this->assertStringNotContainsString('<shared>note', $this->tool('pilot_card', ['card' => $this->card->getId()])['markdown']);
+    }
+
     // A card added to a served space with its note and day, a malformed day or an unserved space refused as a tool error
     public function testAddCard(): void
     {

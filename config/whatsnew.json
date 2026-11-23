@@ -3,6 +3,26 @@
         "date": "2026-11-23",
         "description": [
             {
+                "en": "Piloting: what someone outside your account writes through a card's editing link (note, steps, comments) now reaches an AI agent marked as such, so that it weighs it as a request without obeying it.",
+                "fr": "Pilotage : ce qu'une personne extérieure à votre compte écrit par le lien d'édition d'une carte (note, étapes, commentaires) parvient désormais à un agent IA marqué comme tel, pour qu'il le prenne comme une demande sans y obéir.",
+                "es": "Pilotaje: lo que una persona ajena a su cuenta escribe mediante el enlace de edición de una tarjeta (nota, pasos, comentarios) llega ahora a un agente IA marcado como tal, para que lo tome como una petición sin obedecerlo."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-23",
+        "description": [
+            {
+                "en": "Piloting: a comment now takes up to three screenshots, and the comments already ticked at the top of a card fold away under one heading.",
+                "fr": "Pilotage : un commentaire accepte désormais jusqu'à trois captures, et les commentaires déjà cochés en tête d'une carte se replient sous un seul titre.",
+                "es": "Pilotaje: un comentario admite ahora hasta tres capturas, y los comentarios ya marcados al principio de una tarjeta se pliegan bajo un solo título."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-23",
+        "description": [
+            {
                 "en": "Piloting: an AI agent connected to the site can now cancel a card's run, validate what a machine produced and tick a comment, as you do on the card.",
                 "fr": "Pilotage : un agent IA connecté au site peut désormais annuler l'exécution d'une carte, valider ce qu'une machine a produit et cocher un commentaire, comme vous le faites sur la carte.",
                 "es": "Pilotaje: un agente IA conectado al sitio ahora puede cancelar la ejecución de una tarjeta, validar lo que una máquina produjo y marcar un comentario, como usted lo hace en la tarjeta."

@@ -1,5 +1,11 @@
 # UPGRADE
 
+## v1.4.0
+
+What the editing link writes kept apart for agents.
+
+- A card records whether its note was written through its editing link: run `doctrine:migrations:diff` then `migrate`, which adds `pilot_card.note_shared` (boolean, `false` by default). `Card::addFeedback()` takes a second argument, `true` for a feedback coming from outside the account.
+
 ## v1.2.1
 
 File opening links on by default.

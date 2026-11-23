@@ -160,7 +160,7 @@
             </trans-unit>
             <trans-unit id="18WlJ0e">
                 <source>narration.guided_step_pilot_steps_feedback</source>
-                <target>Note a feedback after the steps, with a screenshot pasted on the field if needed.</target>
+                <target>Note a feedback after the steps, with up to three screenshots pasted on the field if needed.</target>
             </trans-unit>
             <trans-unit id="XHp6nB.">
                 <source>narration.guided_step_pilot_steps_fold</source>

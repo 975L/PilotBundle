@@ -435,16 +435,71 @@ class CardTest extends TestCase
         $this->assertSame([0, 1, 2], array_keys($parts[0]['steps']));
     }
 
-    // A screenshot set on a feedback only, listed, cleared, and never carried to a copy of the card
+    // Screenshots set on a feedback only, listed, added up to the most allowed, taken off one by one, and never carried to a copy of the card
     public function testFeedbackImage(): void
     {
         $card = new Card($this->project, 'item-1')->addStep('step-1')->addFeedback('feedback-1');
-        $card->setFeedbackImage(0, 'item-1.png')->setFeedbackImage(1, 'item-2.png');
+        $card->setFeedbackImages(0, ['item-1.png'])->setFeedbackImages(1, ['item-2.png']);
         $this->assertSame(['item-2.png'], $card->getFeedbackImages());
         $this->assertSame([], $card->duplicate(' (copy)')->getFeedbackImages());
 
-        $card->setFeedbackImage(1, null);
+        $card->addFeedbackImage(1, 'item-3.png')->addFeedbackImage(1, 'item-4.png');
+        $this->assertSame(['item-2.png', 'item-3.png', 'item-4.png'], $card->getFeedbackImages());
+        try {
+            $card->addFeedbackImage(1, 'item-5.png');
+            $this->fail('A feedback took a fourth screenshot.');
+        } catch (FlowException $exception) {
+            $this->assertSame('flow.feedback_images_full', $exception->getMessage());
+        }
+
+        $card->removeFeedbackImage(1, 'item-3.png');
+        $this->assertSame(['item-2.png', 'item-4.png'], $card->getFeedback()[1]['img']);
+        $card->setFeedbackImages(1, []);
         $this->assertSame([], $card->getFeedbackImages());
+        $this->assertArrayNotHasKey('img', $card->getChecklist()[1]);
+    }
+
+    // A single screenshot name kept before several were allowed read as a list of one, beside a list on the same card
+    public function testLegacyFeedbackImage(): void
+    {
+        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'feedback-1', 'feedback' => true, 'img' => 'item-1.png'], ['t' => 'feedback-2', 'feedback' => true, 'img' => ['item-2.png', 'item-3.png', 'item-4.png']]]);
+
+        $this->assertSame(['item-1.png', 'item-2.png', 'item-3.png', 'item-4.png'], $card->getFeedbackImages());
+        $this->assertSame(['item-1.png'], $card->getFeedback()[0]['img']);
+        $this->assertSame(['item-1.png', 'item-5.png'], $card->addFeedbackImage(0, 'item-5.png')->getFeedback()[0]['img']);
+    }
+
+    // The ticked feedback the list starts with folded, a ticked one further down left in its place
+    public function testFeedbackParts(): void
+    {
+        $card = new Card($this->project, 'item-1')->addStep('step-1')->setChecklist([['t' => 'step-1'], ['t' => 'feedback-1', 'feedback' => true, 'done' => true], ['t' => 'feedback-2', 'feedback' => true, 'done' => true], ['t' => 'feedback-3', 'feedback' => true], ['t' => 'feedback-4', 'feedback' => true, 'done' => true]]);
+
+        $parts = $card->getFeedbackParts();
+
+        $this->assertCount(2, $parts);
+        $this->assertTrue($parts[0]['folded']);
+        $this->assertSame([1, 2], array_keys($parts[0]['steps']));
+        $this->assertFalse($parts[1]['folded']);
+        $this->assertSame([3, 4], array_keys($parts[1]['steps']));
+    }
+
+    // What the editing link wrote stays marked until a member rewrites it: the note once it changes, a step once its text does; a merge or a copy carrying the mark along
+    public function testSharedMarkFollowsTheText(): void
+    {
+        $card = new Card($this->project, 'item-1')->setNote('note-1')->shareNote()->setChecklist([['t' => 'step-1', 's' => true]])->addFeedback('feedback-1', true);
+        $card->setNote('note-1')->renameStep(0, 'step-1', new \DateTimeImmutable('2026-11-20'));
+        $this->assertTrue($card->isNoteShared());
+        $this->assertTrue($card->getChecklist()[0]['s'] ?? false);
+        $this->assertTrue($card->duplicate(' (copy)')->isNoteShared());
+        $this->assertTrue($card->duplicate(' (copy)')->getChecklist()[1]['s'] ?? false);
+
+        $card->setNote('note-2')->renameStep(0, 'step-2', new \DateTimeImmutable('2026-11-20'));
+        $this->assertFalse($card->isNoteShared());
+        $this->assertArrayNotHasKey('s', $card->getChecklist()[0]);
+
+        $card->absorb(new Card($this->project, 'item-2')->setNote('note-3')->shareNote());
+        $this->assertTrue($card->isNoteShared());
+        $this->assertFalse(new Card($this->project, 'item-3')->absorb(new Card($this->project, 'item-4')->shareNote())->isNoteShared());
     }
 
     // A card merged takes the other's note under its own, its steps after its own and its feedback after its own, the other left empty; a done card opens again
@@ -457,7 +512,7 @@ class CardTest extends TestCase
 
         $this->assertSame("note-1\n\nnote-2", $card->getNote());
         $this->assertSame(['step-1', 'step-2', 'feedback-1', 'feedback-2'], array_column($card->getChecklist(), 't'));
-        $this->assertSame('shot.png', $card->getChecklist()[3]['img']);
+        $this->assertSame(['shot.png'], $card->getChecklist()[3]['img']);
         $this->assertSame([], $other->getChecklist());
         $this->assertFalse($card->isDone());
         $this->assertSame($card, $card->absorb($card));

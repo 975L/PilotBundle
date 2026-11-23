@@ -1,0 +1,38 @@
+{# A feedback line of a card's page: its box, its text edited in place, why the machine left it open, its screenshots, its bin and its robot button #}
+<li class="pilot-step-line">
+    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'step'}) }}" class="pilot-step-box">
+        <input type="hidden" name="_token" value="{{ token }}">
+        <input type="hidden" name="index" value="{{ index }}">
+        <input type="checkbox" data-pilot-autosubmit aria-label="{{ step.t }}"{{ (step.done ?? false) ? ' checked' }}>
+    </form>
+    <span data-controller="pilot-inline-edit" class="pilot-step-body">
+        <span class="pilot-inline-view pilot-step-text{{ (step.done ?? false) ? ' pilot-step-done' }}" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.step_edit'|trans({}, 'pilot') }}">{{ step.t }}</span>
+        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'stepedit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <input type="hidden" name="index" value="{{ index }}">
+            <input name="text" value="{{ step.t }}" maxlength="500" class="pilot-grow pilot-auto" aria-label="{{ 'label.step_edit'|trans({}, 'pilot') }}" placeholder="{{ 'label.info_step_edit'|trans({}, 'pilot') }}">
+        </form>
+        {% if step.r is defined and not (step.done ?? false) %}<span class="pilot-block pilot-small pilot-danger-text pilot-feedback-reason">{{ step.r }}</span>{% endif %}
+    </span>
+    {# Its screenshots small, each opened full size over the page by a click or taken off by its cross, the picture button adding one more while it holds fewer than the most allowed #}
+    {% for name in step.img ?? [] %}
+        {% set shot = path('pilot_feedback_image', {name: name}) %}
+        <a href="{{ shot }}" data-pilot-zoom class="pilot-fixed pilot-feedback-shot" title="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}"><img src="{{ shot }}" alt="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}" loading="lazy"></a>
+        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'feedbackimage'}) }}">
+            <input type="hidden" name="_token" value="{{ token }}">
+            <input type="hidden" name="index" value="{{ index }}">
+            <button name="remove" value="{{ name }}" class="pilot-btn pilot-btn-ghost pilot-btn-delete pilot-feedback-shot-remove" title="{{ 'label.feedback_image_remove'|trans({}, 'pilot') }}" aria-label="{{ 'label.feedback_image_remove'|trans({}, 'pilot') }}">{{ pilot_icon('xmark') }}</button>
+        </form>
+    {% endfor %}
+    {% if (step.img ?? [])|length < constant('c975L\\PilotBundle\\Entity\\Card::MAX_FEEDBACK_IMAGES') %}
+    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'feedbackimage'}) }}" enctype="multipart/form-data">
+        <input type="hidden" name="_token" value="{{ token }}">
+        <input type="hidden" name="index" value="{{ index }}">
+        <label class="pilot-btn pilot-btn-ghost pilot-feedback-shot-send" title="{{ 'label.feedback_image'|trans({}, 'pilot') }}">{{ pilot_icon('image') }}
+            <input type="file" name="image" accept="image/png, image/jpeg, image/webp, image/gif" hidden data-pilot-autosubmit aria-label="{{ 'label.feedback_image'|trans({}, 'pilot') }}">
+        </label>
+    </form>
+    {% endif %}
+    {% include '@c975LPilot/pilot/_line_delete.html.twig' with {running: false} %}
+    {% include '@c975LPilot/pilot/_ai_share.html.twig' with {ai_image: (step.img ?? [])|map(name => url('pilot_feedback_image', {name: name}))|join(' '), ai_context: 'pilot-ai-brief-' ~ card.id} %}
+</li>

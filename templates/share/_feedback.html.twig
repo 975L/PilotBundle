@@ -1,0 +1,7 @@
+{# A feedback line of the shared page: its box, its text, each screenshot small beside it and opened full size over the page by a click #}
+{% set done = step.done ?? false %}
+<li{{ done ? ' class="pilot-share-done"' }}>
+    {% include '@c975LPilot/share/_tick.html.twig' %}
+    <span class="pilot-share-text">{{ step.t }}</span>
+    {% for name in step.img ?? [] %}{% set shot = path('pilot_feedback_image', {name: name}) %}<a href="#shot-{{ index }}-{{ loop.index }}"><img src="{{ shot }}" alt="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}" height="80" loading="lazy"></a><a href="#shot-closed" id="shot-{{ index }}-{{ loop.index }}" class="pilot-share-zoom" aria-label="{{ 'label.close'|trans({}, 'pilot') }}"><img src="{{ shot }}" alt="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}" loading="lazy"></a>{% endfor %}
+</li>

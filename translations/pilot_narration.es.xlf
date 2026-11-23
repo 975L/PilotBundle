@@ -160,7 +160,7 @@
             </trans-unit>
             <trans-unit id="18WlJ0e">
                 <source>narration.guided_step_pilot_steps_feedback</source>
-                <target>Anote un comentario después de los pasos, con una captura pegada en el campo si hace falta.</target>
+                <target>Anote un comentario después de los pasos, con hasta tres capturas pegadas en el campo si hace falta.</target>
             </trans-unit>
             <trans-unit id="XHp6nB.">
                 <source>narration.guided_step_pilot_steps_fold</source>

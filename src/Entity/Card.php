@@ -43,6 +43,9 @@ class Card implements \Stringable
     // Most lines a checklist holds, steps and feedback together, so that no link fills a card without end
     public const int MAX_CHECKLIST = 300;
 
+    // Most screenshots one feedback holds
+    public const int MAX_FEEDBACK_IMAGES = 3;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -66,6 +69,10 @@ class Card implements \Stringable
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $note = null;
+
+    // Whether the note was last written through the card's editing link, by someone outside the account
+    #[ORM\Column(options: ['default' => false])]
+    private bool $noteShared = false;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $due = null;
@@ -92,8 +99,8 @@ class Card implements \Stringable
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
-    // Sub-steps ticked one by one: text, the group gathering it with its neighbours, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), the machine action a step leaves for once the one before is ticked; the feedback (a fix, an idea, the file name of a screenshot, why the machine left it open) after the steps
-    /** @var list<array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string, r?: string}> */
+    // Sub-steps ticked one by one: text, the group gathering it with its neighbours, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), the machine action a step leaves for once the one before is ticked; the feedback (a fix, an idea, the file name of a screenshot, why the machine left it open) after the steps, a line written through the editing link marked
+    /** @var list<array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string|list<string>, r?: string, s?: bool}> */
     #[ORM\Column(type: Types::JSON)]
     private array $checklist = [];
 
@@ -306,9 +313,26 @@ class Card implements \Stringable
         return $this->note;
     }
 
+    // The note, written by a member: a note that changes is no longer the editing link's
     public function setNote(?string $note): static
     {
+        if ($note !== $this->note) {
+            $this->noteShared = false;
+        }
         $this->note = $note;
+
+        return $this;
+    }
+
+    public function isNoteShared(): bool
+    {
+        return $this->noteShared;
+    }
+
+    // Marks the note as written through the editing link
+    public function shareNote(): static
+    {
+        $this->noteShared = true;
 
         return $this;
     }
@@ -403,7 +427,7 @@ class Card implements \Stringable
     }
 
     /**
-     * @return list<array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string, r?: string}>
+     * @return list<array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string|list<string>, r?: string, s?: bool}>
      */
     public function getChecklist(): array
     {
@@ -411,7 +435,7 @@ class Card implements \Stringable
     }
 
     /**
-     * @param list<array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string, r?: string}> $checklist
+     * @param list<array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string|list<string>, r?: string, s?: bool}> $checklist
      */
     public function setChecklist(array $checklist): static
     {
@@ -439,15 +463,15 @@ class Card implements \Stringable
         return $this->reopen();
     }
 
-    // Adds a feedback at the end (a fix, an idea), an empty text adding nothing, a full checklist refusing it; a done card opens again
-    public function addFeedback(string $text): static
+    // Adds a feedback at the end (a fix, an idea), marked when it comes through the editing link, an empty text adding nothing, a full checklist refusing it; a done card opens again
+    public function addFeedback(string $text, bool $shared = false): static
     {
         $text = mb_substr(trim($text), 0, 500);
         if ('' === $text) {
             return $this;
         }
         self::expectRoom(\count($this->checklist) + 1);
-        $this->checklist[] = ['t' => $text, 'feedback' => true];
+        $this->checklist[] = ['t' => $text, 'feedback' => true] + ($shared ? ['s' => true] : []);
 
         return $this->reopen();
     }
@@ -466,7 +490,7 @@ class Card implements \Stringable
     }
 
     // The steps of the checklist, the feedback left out, by their index in it
-    /** @return array<int, array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string, r?: string}> */
+    /** @return array<int, array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string|list<string>, r?: string, s?: bool}> */
     public function getSteps(): array
     {
         return array_filter($this->checklist, static fn (array $step): bool => !($step['feedback'] ?? false));
@@ -526,18 +550,53 @@ class Card implements \Stringable
         return $merged;
     }
 
-    // A screenshot set on a feedback, or none; a step changes nothing, the file left being removed by whoever replaced it
-    public function setFeedbackImage(int $index, ?string $name): static
+    // The screenshots of a feedback replaced by those given, kept to MAX_FEEDBACK_IMAGES, none taking the key off; a step changes nothing, the files left being removed by whoever replaced them
+    /** @param list<string> $names */
+    public function setFeedbackImages(int $index, array $names): static
     {
         if (!$this->isFeedback($index)) {
             return $this;
         }
         unset($this->checklist[$index]['img']);
-        if (null !== $name) {
-            $this->checklist[$index]['img'] = $name;
+        $names = \array_slice(array_values(array_unique($names)), 0, self::MAX_FEEDBACK_IMAGES);
+        if ([] !== $names) {
+            $this->checklist[$index]['img'] = $names;
         }
 
         return $this;
+    }
+
+    // A screenshot added to a feedback, refused once it holds MAX_FEEDBACK_IMAGES
+    public function addFeedbackImage(int $index, string $name): static
+    {
+        $this->expectImageRoom($index);
+
+        return $this->setFeedbackImages($index, [...self::shots($this->checklist[$index] ?? []), $name]);
+    }
+
+    // A screenshot taken off a feedback by its name, the others kept in their order
+    public function removeFeedbackImage(int $index, string $name): static
+    {
+        return $this->setFeedbackImages($index, array_values(array_diff(self::shots($this->checklist[$index] ?? []), [$name])));
+    }
+
+    // Refuses one more screenshot on a feedback already holding MAX_FEEDBACK_IMAGES, with the reason to show
+    public function expectImageRoom(int $index): void
+    {
+        if (\count(self::shots($this->checklist[$index] ?? [])) >= self::MAX_FEEDBACK_IMAGES) {
+            throw new FlowException(t('flow.feedback_images_full', ['%max%' => self::MAX_FEEDBACK_IMAGES], 'pilot'));
+        }
+    }
+
+    // The screenshots of a line as a list, a single name kept before several were allowed read as one
+    /**
+     * @param array{img?: string|list<string>} $step
+     *
+     * @return list<string>
+     */
+    private static function shots(array $step): array
+    {
+        return array_values(array_filter((array) ($step['img'] ?? []), static fn (string $name): bool => '' !== $name));
     }
 
     // Why the machine left a feedback open, shown under it, or none once handled; a step changes nothing
@@ -558,14 +617,28 @@ class Card implements \Stringable
     /** @return list<string> */
     public function getFeedbackImages(): array
     {
-        return array_values(array_filter(array_map(static fn (array $step): ?string => $step['img'] ?? null, $this->getFeedback())));
+        return array_merge(...array_values(array_map(self::shots(...), $this->getFeedback())));
     }
 
-    // The feedback of the checklist, by its index in it
-    /** @return array<int, array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string, r?: string}> */
+    // The feedback of the checklist, by its index in it, its screenshots always a list
+    /** @return array<int, array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: list<string>, r?: string, s?: bool}> */
     public function getFeedback(): array
     {
-        return array_filter($this->checklist, static fn (array $step): bool => $step['feedback'] ?? false);
+        $feedback = array_filter($this->checklist, static fn (array $step): bool => $step['feedback'] ?? false);
+
+        return array_map(static function (array $step): array {
+            $shots = self::shots($step);
+            unset($step['img']);
+
+            return [] === $shots ? $step : $step + ['img' => $shots];
+        }, $feedback);
+    }
+
+    // The feedback cut where it changes between ticked and open, the run of ticked lines it starts with folded
+    /** @return list<array{folded: bool, steps: array<int, array{t: string, done?: bool, g?: string, img?: list<string>}>}> */
+    public function getFeedbackParts(): array
+    {
+        return self::stepParts($this->getFeedback(), true);
     }
 
     // The open feedback handed to a machine in one pass, numbered one per line, whole lines only within what a runner takes as one parameter, the rest waiting for the next pass
@@ -605,7 +678,7 @@ class Card implements \Stringable
         return $this;
     }
 
-    // Rewrites the text of a step, keeping what it spends, names and whether it is done; an empty text removes it, its run under way withdrawn
+    // Rewrites the text of a step, keeping what it spends, names and whether it is done, a text that changes no longer the editing link's; an empty text removes it, its run under way withdrawn
     public function renameStep(int $index, string $text, \DateTimeImmutable $now): static
     {
         if (!isset($this->checklist[$index])) {
@@ -619,6 +692,9 @@ class Card implements \Stringable
             return $this->restep(array_values($steps), array_keys($steps), $now);
         }
         $before = self::stepKey($this->checklist[$index]);
+        if ($text !== $this->checklist[$index]['t']) {
+            unset($this->checklist[$index]['s']);
+        }
         $this->checklist[$index]['t'] = $text;
         $this->renameNeed($before, self::stepKey($this->checklist[$index]));
 
@@ -696,8 +772,8 @@ class Card implements \Stringable
 
     // Lays new steps, each given with the index it had or null for a new one; the runs follow their step, one whose step left leaving it (withdrawn while under way), the card back to do once nothing runs or once a done one gets a box to tick
     /**
-     * @param list<array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string, r?: string}> $steps
-     * @param list<?int>                                                                                                                                                                                                                                                   $from
+     * @param list<array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string|list<string>, r?: string, s?: bool}> $steps
+     * @param list<?int>                                                                                                                                                                                                                                                                          $from
      */
     public function restep(array $steps, array $from, \DateTimeImmutable $now): static
     {
@@ -830,7 +906,7 @@ class Card implements \Stringable
         return $this;
     }
 
-    // Another card merged into this one: its note under this one's, its steps after these, its feedback after this one's with their screenshots, it left without any so its removal deletes none; a done card opens again - refused past the checklist's ceiling
+    // Another card merged into this one: its note under this one's, the link's once either was, its steps after these, its feedback after this one's with their screenshots, it left without any so its removal deletes none; a done card opens again - refused past the checklist's ceiling
     public function absorb(self $other): static
     {
         if ($other === $this) {
@@ -839,6 +915,7 @@ class Card implements \Stringable
         self::expectRoom(\count($this->checklist) + \count($other->checklist));
         $note = implode("\n\n", array_filter([trim((string) $this->note), trim((string) $other->getNote())], static fn (string $text): bool => '' !== $text));
         $this->note = '' === $note ? null : $note;
+        $this->noteShared = $this->noteShared || ($other->isNoteShared() && null !== $other->getNote());
         $this->checklist = [...array_values($this->getSteps()), ...array_values($other->getSteps()), ...array_values($this->getFeedback()), ...array_values($other->getFeedback())];
         $other->setChecklist([]);
 
@@ -855,7 +932,7 @@ class Card implements \Stringable
             return $step;
         }, $this->checklist);
 
-        return new self($this->project, mb_substr($this->title . $suffix, 0, 500))
+        $copy = new self($this->project, mb_substr($this->title . $suffix, 0, 500))
             ->setNote($this->note)
             ->setDue($this->due)
             ->setDoc($this->doc)
@@ -864,6 +941,8 @@ class Card implements \Stringable
             ->follow($this->template)
             ->assign($this->executor, $this->kind, $this->action, $this->params)
             ->setChecklist($steps);
+
+        return $this->noteShared ? $copy->shareNote() : $copy;
     }
 
     public function getImage(): ?string

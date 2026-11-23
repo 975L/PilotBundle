@@ -108,15 +108,16 @@
 
     {% if card.feedback is not empty or editable %}
         <h2>{{ 'label.feedback'|trans({}, 'pilot') }}</h2>
-        {# The feedback on the card, ticked from here through the editing link, its screenshot small beside it #}
+        {# The feedback on the card, ticked from here through the editing link, its screenshots small beside it, the ticked lines it starts with folded #}
         <ul class="pilot-share-steps">
-            {% for index, step in card.feedback %}
-                {% set done = step.done ?? false %}
-                <li{{ done ? ' class="pilot-share-done"' }}>
-                    {% include '@c975LPilot/share/_tick.html.twig' %}
-                    <span class="pilot-share-text">{{ step.t }}</span>
-                    {% if step.img is defined %}{% set shot = path('pilot_feedback_image', {name: step.img}) %}<a href="#shot-{{ index }}"><img src="{{ shot }}" alt="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}" height="80" loading="lazy"></a><a href="#shot-closed" id="shot-{{ index }}" class="pilot-share-zoom" aria-label="{{ 'label.close'|trans({}, 'pilot') }}"><img src="{{ shot }}" alt="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}" loading="lazy"></a>{% endif %}
-                </li>
+            {% for part in card.feedbackParts %}
+                {% if part.folded %}
+                    <li><details><summary>{{ 'label.feedback_ticked'|trans({'%count%': part.steps|length}, 'pilot') }}</summary><ul class="pilot-share-steps">
+                    {% for index, step in part.steps %}{% include '@c975LPilot/share/_feedback.html.twig' %}{% endfor %}
+                    </ul></details></li>
+                {% else %}
+                    {% for index, step in part.steps %}{% include '@c975LPilot/share/_feedback.html.twig' %}{% endfor %}
+                {% endif %}
             {% endfor %}
         </ul>
         {% if editable %}

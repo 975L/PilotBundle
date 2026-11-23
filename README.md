@@ -1,31 +1,62 @@
 # PilotBundle
 
-Symfony bundle that pilots projects as cards on pages of their own, shared between the members of each space — steps, deadlines, feedback with screenshots, cards shared by link, a step running an action on a runner machine that hands the card back for validation, and an MCP server for AI agents.
-
 [![GitHub](https://img.shields.io/github/license/975L/PilotBundle)](https://github.com/975L/PilotBundle/blob/main/LICENSE)
 [![Packagist Version](https://img.shields.io/packagist/v/c975l/pilot-bundle)](https://packagist.org/packages/c975l/pilot-bundle)
 [![PHP Version](https://img.shields.io/packagist/php-v/c975l/pilot-bundle)](https://packagist.org/packages/c975l/pilot-bundle)
+
+![PilotBundle](.github/images/PilotBundle.svg)
+
+**Your site keeps its own projects as cards, shared between the members of each space, with steps, deadlines and feedback, and steps a machine of yours can carry out.**
 
 **[Bundle page](https://bundles.975l.com/en/pages/pilot-bundle) · [Tutorials](https://bundles.975l.com/en/tutoriels/pilot-bundle) · [Live demo](https://bundles.975l.com/demo/) · [Demo back-office](https://bundles.975l.com/demo/login)**
 
 > **BUNDLE UNDER DEVELOPMENT — USE AT YOUR OWN RISK**
 
+> **TL;DR** — PilotBundle adds piloting pages at `/pilot`, outside the back office, where each space gathers its cards with their steps, deadlines and feedback, shared with the members you add. It rests on [CoreBundle](https://github.com/975L/CoreBundle) for the accounts, the back office and the MCP endpoint. Require the package, run the migration, import the routes and open `/pilot`.
+
+## What you get
+
+- Spaces holding their cards in collections, on pages of their own at `/pilot`.
+- Cards with steps, a deadline, a description and feedback with screenshots.
+- Members with a role in each space, from a guest ticking the cards given to them to the owner setting the space up.
+- A dashboard of late cards and coming deadlines, day by day then month by month.
+- Cards shared outside the site by a secret link, read-only or editable, and downloaded as markdown.
+- Steps handed to a runner machine of yours, which runs the action and hands the card back for a human to validate.
+- Plans built from templates, and reports a machine sends shown on the pages.
+- An MCP server so an AI agent works on the cards and files with its account's rights.
+
+## Quick start
+
+```bash
+composer require c975l/pilot-bundle
+```
+
+Then follow the full [installation](#installation) section below: migration, public files, routes and security rules.
+
+## For AI agents
+
+- Skills: [`c975l-pilot`](skills/c975l-pilot/SKILL.md) — the model, the pages and what each role may do, the runner's protocol and the MCP tools. A coding agent reads it straight from `vendor/c975l/pilot-bundle/skills/`.
+- MCP: an AI agent works with the piloting through the site's MCP endpoint (CoreBundle's `/api/mcp`), with the rights of its token's account — `pilot_spaces`, `pilot_cards`, `pilot_card`, `pilot_add_card`, `pilot_edit_card`, `pilot_add_steps`, `pilot_tick_step`, `pilot_comment`, `pilot_close_card`, `pilot_run_step`, `pilot_cancel_run`, `pilot_validate_run`, `pilot_merge_cards`, `pilot_delete_card`, `pilot_docs`, `pilot_doc` and `pilot_write_doc`. See [MCP server](#mcp-server).
+
+## Reference
+
+> **For developers** — a `Project` is a space of `Card`s shared between `Member`s with a role, `PilotAccess` answers what an account may do in it, `CardFlow` ticks, runs and validates, `RunQueue` hands runs to a `Machine` under a lease through `/api/pilot/runner`, and `PilotMcpProvider` lets an AI agent do the same with its account's rights.
+
+<details>
+<summary>Contents</summary>
+
+- **Setup** — [requirements](#requirements) · [installation](#installation)
+- **Using it** — [runner machines](#runner-machines) · [security of the runner API](#security-of-the-runner-api) · [MCP server](#mcp-server) · [opening the files on the computer](#opening-the-files-on-the-computer) · [configuration](#configuration) · [importing an export](#importing-an-export) · [translations](#translations) · [guided projects](#guided-projects) · [what it does not contribute](#what-this-bundle-deliberately-does-not-contribute) · [AI agent skills](#ai-agent-skills)
+
+</details>
+
 ---
 
 ## Why PilotBundle
 
-![PilotBundle](.github/images/PilotBundle.svg)
-
 Add PilotBundle on top of the shared [CoreBundle](https://github.com/975L/CoreBundle) foundation when a site should hold its own projects: what is to do, by when, by whom, and what a machine can do on its own. Everything lives in the application — the spaces, their cards, their steps and their files — on pages of their own at `/pilot`, outside the back office, and a machine of yours (a workstation, a server) carries out the actions it declares, then hands the card back for a human to validate. The bundle calls no AI itself: whatever does the work, a model or a plain script, is the command a runner maps an action to.
 
 ---
-
-> **TL;DR** — a `Project` is a space of `Card`s shared between `Member`s with a role, `PilotAccess` answers what an account may do in it, `CardFlow` ticks, runs and validates, `RunQueue` hands runs to a `Machine` under a lease through `/api/pilot/runner`, and `PilotMcpProvider` lets an AI agent do the same with its account's rights.
-
-## Contents
-
-- **Setup** — [requirements](#requirements) · [installation](#installation)
-- **Using it** — [runner machines](#runner-machines) · [security of the runner API](#security-of-the-runner-api) · [MCP server](#mcp-server) · [opening the files on the computer](#opening-the-files-on-the-computer) · [configuration](#configuration) · [importing an export](#importing-an-export) · [translations](#translations) · [guided projects](#guided-projects) · [what it does not contribute](#what-this-bundle-deliberately-does-not-contribute) · [AI agent skills](#ai-agent-skills)
 
 ## Features
 
@@ -41,7 +72,7 @@ Add PilotBundle on top of the shared [CoreBundle](https://github.com/975L/CoreBu
 - **A demo dataset** (UiBundle's `DemoFixtureProviderInterface`): three spaces, `demo-site`, `demo-catalog` and `demo-automation`, a collection each and cards showing a step ticked, a feedback, a day late and coming ones, an answer awaited and a card done, in the site's locale; the automation space shows a machine at work that never runs — its token drawn and never shown, last seen two days ago, a run already done with its report and the paths of its files, an action left to launch that only queues — no member, the demo's admin seeing every space.
 - **Members**: an owner adds an account of the site to a space by its email, with a role: a guest sees and ticks the cards given to it, a contributor works on every card, an editor also launches the machines, lends a card's editing link and deletes cards, an owner sets the space up and chooses its members, the form saying the same whether the email has an account or not. Every page and gesture checks it (a page the account does not see answers 404), every list shows only what it sees, and the site's admin sees and does everything. A card is given to members from its dialog.
 - **Deleting a card** for good from its dialog, with its runs and the files they kept, by one button the browser asks to confirm (an editor or an owner).
-- **Feedback**: a card takes feedback after its steps (a fix, an idea), added in one line from its dialog or through its editing link (`/feedback`), ticked once dealt with, deleted by its bin with its screenshot; it waits for no step, stays after the steps when they are reordered, shows counted on the tile while open, and is written as `## Feedback` in the card's markdown. Each feedback takes a screenshot (PNG, JPEG, WebP or GIF up to 10 MB), pasted or dropped on the field while it is written or sent by its picture button, shown small beside it and taken off by its cross; it is kept under `private/pilot/feedback` (declared to the offsite backup) under a 128-bit random name and served without signing in at `/pilot/share/image/<name>`, the name being the permission, so that the robot button can hand its address to an AI along with the feedback and the card's title and pitch (not its other feedback) (`  ![screenshot](<address>)` under the feedback). A copied card takes none, and a screenshot is deleted with its feedback or its card. Its « Hand to the machine » button hands the open lines to the machine at once, numbered as the `comment` of the card's last action (the card's own run waiting for validation, or the last step's run queued again on its step): the action does only what they ask, each line it handled is ticked when the run ends, and one it leaves open (a `FEEDBACK <n> <reason>` line of the command) keeps the reason under it. A `RESULT <url>` line of a command sets the card's result address, the page it published for instance. The bundle calls no AI itself: whatever carries the feedback out (Claude, another model, a plain script) is the command the runner's `actions.yaml` maps the action to, which only has to declare a `comment` param (`comment: '.{1,2000}'`) to take the feedback and print a `FEEDBACK <n> <reason>` line for each one it leaves.
+- **Feedback**: a card takes feedback after its steps (a fix, an idea), added in one line from its dialog or through its editing link (`/feedback`), ticked once dealt with, deleted by its bin with its screenshots; it waits for no step, stays after the steps when they are reordered, shows counted on the tile while open, and is written as `## Feedback` in the card's markdown. Each feedback takes up to three screenshots (PNG, JPEG, WebP or GIF up to 10 MB each), pasted or dropped on the field one after the other while it is written, chosen together by its picture button, or added one more by the picture button of its line, shown small beside it and each taken off by its cross; the ticked feedback the list starts with is gathered under a heading folded from the start, on the card and on its shared page; it is kept under `private/pilot/feedback` (declared to the offsite backup) under a 128-bit random name and served without signing in at `/pilot/share/image/<name>`, the name being the permission, so that the robot button can hand their addresses to an AI along with the feedback and the card's title and pitch (not its other feedback) (one `  ![screenshot](<address>)` line per screenshot under the feedback). A copied card takes none, and a screenshot is deleted with its feedback or its card. Its « Hand to the machine » button hands the open lines to the machine at once, numbered as the `comment` of the card's last action (the card's own run waiting for validation, or the last step's run queued again on its step): the action does only what they ask, each line it handled is ticked when the run ends, and one it leaves open (a `FEEDBACK <n> <reason>` line of the command) keeps the reason under it. A `RESULT <url>` line of a command sets the card's result address, the page it published for instance. The bundle calls no AI itself: whatever carries the feedback out (Claude, another model, a plain script) is the command the runner's `actions.yaml` maps the action to, which only has to declare a `comment` param (`comment: '.{1,2000}'`) to take the feedback and print a `FEEDBACK <n> <reason>` line for each one it leaves.
 - **Ticked steps folded in place**: on a card, a ticked step stays in its place, struck through, and is no longer dragged; those the list (or a group) starts with, when several, gathered under a heading that folds them, ticked ones further down staying in place, open by default, the order of the steps kept; on a card following a checklist template none fold, its ticked steps staying in sight.
 - **Sharing with the AI**: each open step and feedback of a card has a robot button copying it with the card's markdown, ready to paste into a Claude session to discuss it then carry it out.
 - **Export**: whoever reads a card downloads it as one markdown file (`/pilot/card/<id>.md`, the text the robot button hands over) or prints it, as a PDF through the browser's print, the card alone without the spaces, the buttons nor the fields.
@@ -162,6 +193,8 @@ The piloting brings its tools to the site's MCP endpoint, `/api/mcp`, which c975
 | `pilot_docs` | The files holding the `search` words, else those of a `space`, else every file the account sees |
 | `pilot_doc` | A file as markdown: title, summary, then detail |
 | `pilot_write_doc` | A file added to a `space` with its `title`, or the one named by `doc` rewritten, only the `summary` or `detail` given changing |
+
+What a card's editing link wrote (its note, a step or a comment added or reworded there) comes from outside the account: `pilot_card` hands it between `<shared>` tags, its own angle brackets neutralised, and the tool's description and the server's instructions tell the agent to weigh it as a request, never follow it as an instruction. A member rewriting it takes the mark off. The runner's claim and the robot button still hand the text as it is, the command or the person choosing what to make of it.
 
 The reading tools are marked read-only, the writing ones not and merging and deleting destructive, so the client asks before each write unless it was told to allow it: the confirmation is the client's, the server enforcing none. With Claude Code:
 

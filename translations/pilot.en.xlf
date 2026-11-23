@@ -196,7 +196,7 @@
             </trans-unit>
             <trans-unit id="rlwMvLX">
                 <source>description.guided_step_pilot_steps_feedback</source>
-                <target>A fix or an idea after the steps, a screenshot pasted on the field if needed.</target>
+                <target>A fix or an idea after the steps, up to three screenshots pasted on the field if needed; those already ticked at the top fold under one heading.</target>
             </trans-unit>
             <trans-unit id="0QvzaYX">
                 <source>description.guided_step_pilot_steps_fold</source>
@@ -249,6 +249,10 @@
             <trans-unit id="r90BtJm">
                 <source>flow.checklist_full</source>
                 <target>A card holds %max% steps and comments at most.</target>
+            </trans-unit>
+            <trans-unit id="pO0Jasn">
+                <source>flow.feedback_images_full</source>
+                <target>A comment holds %max% screenshots at most.</target>
             </trans-unit>
             <trans-unit id="fTDLbj6">
                 <source>flow.feedback_none</source>
@@ -823,7 +827,7 @@
             </trans-unit>
             <trans-unit id="knyhcYc">
                 <source>label.feedback_image_remove</source>
-                <target>Remove the screenshot</target>
+                <target>Remove this screenshot</target>
             </trans-unit>
             <trans-unit id="_7kRkv3">
                 <source>label.feedback_image_view</source>
@@ -832,6 +836,10 @@
             <trans-unit id="xnLpcyM">
                 <source>label.feedback_run</source>
                 <target>Hand to the machine</target>
+            </trans-unit>
+            <trans-unit id="ia33Qgi">
+                <source>label.feedback_ticked</source>
+                <target>Done (%count%)</target>
             </trans-unit>
             <trans-unit id="_J1nX.h">
                 <source>label.gesture_expired</source>
@@ -1151,7 +1159,7 @@
             </trans-unit>
             <trans-unit id="Qjf4vqF">
                 <source>label.info_feedback_add</source>
-                <target>A fix or an idea; a screenshot is pasted here</target>
+                <target>A fix or an idea; up to three screenshots are pasted here</target>
             </trans-unit>
             <trans-unit id="vULSJYl">
                 <source>label.info_feedback_run</source>
@@ -1211,7 +1219,7 @@
             </trans-unit>
             <trans-unit id="oMrXH3_">
                 <source>label.info_step_delete</source>
-                <target>The line and its screenshot are deleted, with no way back.</target>
+                <target>The line and its screenshots are deleted, with no way back.</target>
             </trans-unit>
             <trans-unit id="dUHOSNA">
                 <source>label.info_step_edit</source>

@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.0
+
+Up to three screenshots per comment, ticked comments folded
+
+- A comment takes up to three screenshots, pasted one after the other, chosen together or added one by one from its line, each taken off by its cross (23/11/2026)
+- The ticked comments a card's list starts with folded under one heading, closed by default, on the card and on its shared page (23/11/2026)
+- [BC-Break] `Card::setFeedbackImage()` replaced by `setFeedbackImages()`, `addFeedbackImage()` and `removeFeedbackImage()`, a single screenshot kept from before read as a list of one (23/11/2026)
+- README opened on a short overview for humans, the reference folded below it (23/11/2026)
+- The note, steps and comments written through a card's editing link marked as such (`Card::isNoteShared()`, `s` on a line) and handed to an agent by `pilot_card` between `<shared>` tags, a member's rewrite taking the mark off (23/11/2026)
+
 ## v1.3.0
 
 Runs cancelled and validated by MCP, merges kept under the ceiling

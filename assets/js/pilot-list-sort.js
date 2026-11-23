@@ -17,7 +17,7 @@ export default class extends Controller {
         return {
             item,
             onStart: () => this.pickUp(item),
-            onMove: (dragged, x, y) => this.moveTo(dragged, y),
+            onMove: (dragged, _x, y) => this.moveTo(dragged, y),
             onDrop: () => this.drop(item),
             onCancel: () => this.revert(item),
         };

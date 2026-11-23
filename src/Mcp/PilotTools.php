@@ -91,7 +91,7 @@ class PilotTools
         return array_map($this->summary(...), \array_slice($cards, 0, self::LIMIT));
     }
 
-    // A card as markdown, with the index of each step and comment to tick one or answer it, the machine action a step names and where its last run stands
+    // A card as markdown, with the index of each step and comment to tick one or answer it, the machine action a step names and where its last run stands, what the editing link wrote framed
     /**
      * @param int $card id of the card
      *
@@ -103,7 +103,7 @@ class PilotTools
 
         return [
             'url' => $this->url($found),
-            'markdown' => $this->cardMarkdown->write($found),
+            'markdown' => $this->cardMarkdown->write($found, true),
             'steps' => $this->withRuns($found, $this->indexed($found->getSteps())),
             'comments' => $this->indexed($found->getFeedback()),
         ];
@@ -451,9 +451,9 @@ class PilotTools
         ], static fn (mixed $value): bool => null !== $value), $steps);
     }
 
-    // Lines of a checklist with their index in it
+    // Lines of a checklist with their index in it, one written through the editing link framed
     /**
-     * @param array<int, array{t: string, done?: bool}> $lines
+     * @param array<int, array{t: string, done?: bool, s?: bool}> $lines
      *
      * @return list<array{index: int, text: string, done: bool}>
      */
@@ -461,7 +461,7 @@ class PilotTools
     {
         $indexed = [];
         foreach ($lines as $index => $line) {
-            $indexed[] = ['index' => $index, 'text' => $line['t'], 'done' => $line['done'] ?? false];
+            $indexed[] = ['index' => $index, 'text' => CardMarkdown::framed($line['t'], $line['s'] ?? false), 'done' => $line['done'] ?? false];
         }
 
         return $indexed;

@@ -72,13 +72,16 @@ class CardImages
     public function renewFeedback(Card $card): Card
     {
         foreach ($card->getFeedback() as $index => $feedback) {
-            $path = isset($feedback['img']) ? $this->feedbackPath($feedback['img']) : null;
-            $name = null;
-            if (null !== $path) {
+            $names = [];
+            foreach ($feedback['img'] ?? [] as $old) {
+                $path = $this->feedbackPath($old);
+                if (null === $path) {
+                    continue;
+                }
                 $name = bin2hex(random_bytes(16)) . '.' . pathinfo($path, \PATHINFO_EXTENSION);
-                $name = copy($path, \dirname($path) . '/' . $name) ? $name : $feedback['img'];
+                $names[] = copy($path, \dirname($path) . '/' . $name) ? $name : $old;
             }
-            $card->setFeedbackImage($index, $name);
+            $card->setFeedbackImages($index, $names);
         }
 
         return $card;

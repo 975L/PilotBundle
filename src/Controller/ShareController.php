@@ -171,7 +171,7 @@ class ShareController extends AbstractController
             return null;
         }
         if ('feedback' === $gesture) {
-            $card->addFeedback($request->request->getString('text'));
+            $card->addFeedback($request->request->getString('text'), true);
 
             return null;
         }

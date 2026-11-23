@@ -258,52 +258,30 @@
                 {% if card.feedbackHeldOver > 0 %}<span class="pilot-muted">{{ 'label.feedback_held_over'|trans({'%count%': card.feedbackHeldOver}, 'pilot') }}</span>{% endif %}
             {% endif %}
         </div>
+        {# The feedback ticked the list starts with gathered under a heading that folds them, folded from the start, those further down staying in their place #}
         <ul class="pilot-bare-list pilot-feedback">
-            {% for index, step in card.feedback %}
-                <li class="pilot-step-line">
-                    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'step'}) }}" class="pilot-step-box">
-                        <input type="hidden" name="_token" value="{{ token }}">
-                        <input type="hidden" name="index" value="{{ index }}">
-                        <input type="checkbox" data-pilot-autosubmit aria-label="{{ step.t }}"{{ (step.done ?? false) ? ' checked' }}>
-                    </form>
-                    <span data-controller="pilot-inline-edit" class="pilot-step-body">
-                        <span class="pilot-inline-view pilot-step-text{{ (step.done ?? false) ? ' pilot-step-done' }}" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.step_edit'|trans({}, 'pilot') }}">{{ step.t }}</span>
-                        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'stepedit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
-                            <input type="hidden" name="_token" value="{{ token }}">
-                            <input type="hidden" name="index" value="{{ index }}">
-                            <input name="text" value="{{ step.t }}" maxlength="500" class="pilot-grow pilot-auto" aria-label="{{ 'label.step_edit'|trans({}, 'pilot') }}" placeholder="{{ 'label.info_step_edit'|trans({}, 'pilot') }}">
-                        </form>
-                        {% if step.r is defined and not (step.done ?? false) %}<span class="pilot-block pilot-small pilot-danger-text pilot-feedback-reason">{{ step.r }}</span>{% endif %}
-                    </span>
-                    {# Its screenshot small, opened full size over the page by a click, replaced by the picture button or taken off by the cross #}
-                    {% if step.img is defined %}
-                        {% set shot = path('pilot_feedback_image', {name: step.img}) %}
-                        <a href="{{ shot }}" data-pilot-zoom class="pilot-fixed pilot-feedback-shot" title="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}"><img src="{{ shot }}" alt="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}" loading="lazy"></a>
-                        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'feedbackimage'}) }}">
-                            <input type="hidden" name="_token" value="{{ token }}">
-                            <input type="hidden" name="index" value="{{ index }}">
-                            <button name="remove" value="1" class="pilot-btn pilot-btn-ghost pilot-btn-delete pilot-feedback-shot-remove" title="{{ 'label.feedback_image_remove'|trans({}, 'pilot') }}" aria-label="{{ 'label.feedback_image_remove'|trans({}, 'pilot') }}">{{ pilot_icon('xmark') }}</button>
-                        </form>
-                    {% endif %}
-                    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'feedbackimage'}) }}" enctype="multipart/form-data">
-                        <input type="hidden" name="_token" value="{{ token }}">
-                        <input type="hidden" name="index" value="{{ index }}">
-                        <label class="pilot-btn pilot-btn-ghost pilot-feedback-shot-send" title="{{ 'label.feedback_image'|trans({}, 'pilot') }}">{{ pilot_icon('image') }}
-                            <input type="file" name="image" accept="image/png, image/jpeg, image/webp, image/gif" hidden data-pilot-autosubmit aria-label="{{ 'label.feedback_image'|trans({}, 'pilot') }}">
-                        </label>
-                    </form>
-                    {% include '@c975LPilot/pilot/_line_delete.html.twig' with {running: false} %}
-                    {% include '@c975LPilot/pilot/_ai_share.html.twig' with {ai_image: step.img is defined ? url('pilot_feedback_image', {name: step.img}) : null, ai_context: 'pilot-ai-brief-' ~ card.id} %}
+            {% for part in card.feedbackParts %}
+                {% if part.folded %}
+                <li class="pilot-steps-done pilot-mb-xs">
+                    <details>
+                        <summary class="pilot-small">{{ 'label.feedback_ticked'|trans({'%count%': part.steps|length}, 'pilot') }}</summary>
+                        <ul class="pilot-bare-list pilot-mb-xs pilot-mt-xs">
+                        {% for index, step in part.steps %}{% include '@c975LPilot/pilot/_feedback.html.twig' %}{% endfor %}
+                        </ul>
+                    </details>
                 </li>
+                {% else %}
+                {% for index, step in part.steps %}{% include '@c975LPilot/pilot/_feedback.html.twig' %}{% endfor %}
+                {% endif %}
             {% endfor %}
         </ul>
-        {# A screenshot pasted or dropped on the field, or chosen by its button, goes with the line #}
-        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'feedbackadd'}) }}" enctype="multipart/form-data" class="pilot-mb pilot-row pilot-row-nowrap pilot-feedback-add" data-controller="pilot-paste-image">
+        {# Up to the most screenshots allowed, pasted or dropped on the field one after the other, or chosen together by its button, go with the line #}
+        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'feedbackadd'}) }}" enctype="multipart/form-data" class="pilot-mb pilot-row pilot-row-nowrap pilot-feedback-add" data-controller="pilot-paste-image" data-pilot-paste-image-max-value="{{ constant('c975L\\PilotBundle\\Entity\\Card::MAX_FEEDBACK_IMAGES') }}">
             <input type="hidden" name="_token" value="{{ token }}">
             <input name="text" maxlength="500" class="pilot-grow" placeholder="{{ 'label.info_feedback_add'|trans({}, 'pilot') }}" aria-label="{{ 'label.feedback_add'|trans({}, 'pilot') }}" required data-pilot-refocus data-action="paste->pilot-paste-image#paste drop->pilot-paste-image#drop dragover->pilot-paste-image#over">
-            <img alt="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}" hidden class="pilot-feedback-shot-preview" data-pilot-paste-image-target="preview">
+            <span hidden class="pilot-row pilot-row-nowrap pilot-fixed" data-pilot-paste-image-target="preview" data-alt="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}"></span>
             <label class="pilot-btn pilot-btn-icon pilot-fixed" title="{{ 'label.feedback_image'|trans({}, 'pilot') }}">{{ pilot_icon('image') }}
-                <input type="file" name="image" accept="image/png, image/jpeg, image/webp, image/gif" hidden data-pilot-paste-image-target="file" data-action="change->pilot-paste-image#chosen" aria-label="{{ 'label.feedback_image'|trans({}, 'pilot') }}">
+                <input type="file" name="image[]" multiple accept="image/png, image/jpeg, image/webp, image/gif" hidden data-pilot-paste-image-target="file" data-action="change->pilot-paste-image#chosen" aria-label="{{ 'label.feedback_image'|trans({}, 'pilot') }}">
             </label>
         </form>
 

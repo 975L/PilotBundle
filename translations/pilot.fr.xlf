@@ -196,7 +196,7 @@
             </trans-unit>
             <trans-unit id="rlwMvLX">
                 <source>description.guided_step_pilot_steps_feedback</source>
-                <target>Une correction ou une idée après les étapes, une capture collée sur le champ au besoin.</target>
+                <target>Une correction ou une idée après les étapes, jusqu'à trois captures collées sur le champ au besoin ; ceux déjà cochés en tête se replient sous un seul titre.</target>
             </trans-unit>
             <trans-unit id="0QvzaYX">
                 <source>description.guided_step_pilot_steps_fold</source>
@@ -249,6 +249,10 @@
             <trans-unit id="r90BtJm">
                 <source>flow.checklist_full</source>
                 <target>Une carte compte au plus %max% étapes et commentaires.</target>
+            </trans-unit>
+            <trans-unit id="pO0Jasn">
+                <source>flow.feedback_images_full</source>
+                <target>Un commentaire porte au plus %max% captures.</target>
             </trans-unit>
             <trans-unit id="fTDLbj6">
                 <source>flow.feedback_none</source>
@@ -823,7 +827,7 @@
             </trans-unit>
             <trans-unit id="knyhcYc">
                 <source>label.feedback_image_remove</source>
-                <target>Retirer la capture</target>
+                <target>Retirer cette capture</target>
             </trans-unit>
             <trans-unit id="_7kRkv3">
                 <source>label.feedback_image_view</source>
@@ -832,6 +836,10 @@
             <trans-unit id="xnLpcyM">
                 <source>label.feedback_run</source>
                 <target>Confier à la machine</target>
+            </trans-unit>
+            <trans-unit id="ia33Qgi">
+                <source>label.feedback_ticked</source>
+                <target>Traités (%count%)</target>
             </trans-unit>
             <trans-unit id="_J1nX.h">
                 <source>label.gesture_expired</source>
@@ -1151,7 +1159,7 @@
             </trans-unit>
             <trans-unit id="Qjf4vqF">
                 <source>label.info_feedback_add</source>
-                <target>Une correction ou une idée ; une capture se colle ici</target>
+                <target>Une correction ou une idée ; jusqu'à trois captures se collent ici</target>
             </trans-unit>
             <trans-unit id="vULSJYl">
                 <source>label.info_feedback_run</source>
@@ -1211,7 +1219,7 @@
             </trans-unit>
             <trans-unit id="oMrXH3_">
                 <source>label.info_step_delete</source>
-                <target>La ligne et sa capture sont supprimées, sans retour possible.</target>
+                <target>La ligne et ses captures sont supprimées, sans retour possible.</target>
             </trans-unit>
             <trans-unit id="dUHOSNA">
                 <source>label.info_step_edit</source>

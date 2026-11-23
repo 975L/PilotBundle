@@ -252,7 +252,7 @@ class PilotControllerEditTest extends TestCase
         $this->assertCount(1, $session->getFlashBag()->peek('danger'));
     }
 
-    // A feedback's screenshot replaced by the one sent, removed by « remove », a step taking none
+    // A feedback's screenshots added one by one up to the most allowed, a fourth refused before its file is kept, the one named taken off by « remove », a step taking none
     public function testFeedbackImageSetAndRemoved(): void
     {
         $root = sys_get_temp_dir() . '/pilot-shot-' . bin2hex(random_bytes(4));
@@ -260,18 +260,65 @@ class PilotControllerEditTest extends TestCase
         $card = $this->card()->addStep('step-1')->addFeedback('feedback-1');
         $index = array_key_last($card->getChecklist());
 
-        $this->gesture($controller, 'feedbackImage', $card, ['index' => (string) $index], $this->png());
-        $this->assertCount(1, $card->getFeedbackImages());
+        for ($sent = 0; $sent < Card::MAX_FEEDBACK_IMAGES; ++$sent) {
+            $this->gesture($controller, 'feedbackImage', $card, ['index' => (string) $index], $this->png());
+        }
+        $this->assertCount(Card::MAX_FEEDBACK_IMAGES, $card->getFeedbackImages());
+        try {
+            $this->gesture($controller, 'feedbackImage', $card, ['index' => (string) $index], $this->png());
+            $this->fail('A feedback took one screenshot too many.');
+        } catch (FlowException $exception) {
+            $this->assertSame('flow.feedback_images_full', $exception->getMessage());
+        }
+        $this->assertCount(Card::MAX_FEEDBACK_IMAGES, glob($root . '/' . Card::FEEDBACK_IMAGE_DIRECTORY . '/*') ?: []);
         $this->gesture($controller, 'feedbackImage', $card, ['index' => '0'], $this->png());
         $this->assertArrayNotHasKey('img', $card->getChecklist()[0]);
-        $this->gesture($controller, 'feedbackImage', $card, ['index' => (string) $index, 'remove' => '1']);
-        $this->assertSame([], $card->getFeedbackImages());
+
+        [$first, $second, $third] = $card->getFeedbackImages();
+        $this->gesture($controller, 'feedbackImage', $card, ['index' => (string) $index, 'remove' => $second]);
+        $this->assertSame([$first, $third], $card->getFeedbackImages());
         new Filesystem()->remove($root);
     }
 
-    // A private feedback gesture run on the posted fields and the picture sent
-    /** @param array<string, string> $fields */
-    private function gesture(PilotController $controller, string $method, Card $card, array $fields, ?UploadedFile $file = null): void
+    // A feedback added with several screenshots keeps the most allowed, the others left aside
+    public function testFeedbackAddedWithSeveralScreenshots(): void
+    {
+        $root = sys_get_temp_dir() . '/pilot-shot-' . bin2hex(random_bytes(4));
+        $controller = $this->controller(images: new CardImages($root));
+        $card = $this->card();
+
+        $this->gesture($controller, 'feedbackAdd', $card, ['text' => 'feedback-1'], [$this->png(), $this->png(), $this->png(), $this->png()]);
+
+        $this->assertCount(Card::MAX_FEEDBACK_IMAGES, $card->getFeedbackImages());
+        $this->assertCount(Card::MAX_FEEDBACK_IMAGES, glob($root . '/' . Card::FEEDBACK_IMAGE_DIRECTORY . '/*') ?: []);
+        new Filesystem()->remove($root);
+    }
+
+    // A picture refused among several adds no feedback and takes the ones already kept off the disk
+    public function testFeedbackRefusedAmongSeveralKeepsNoScreenshot(): void
+    {
+        $root = sys_get_temp_dir() . '/pilot-shot-' . bin2hex(random_bytes(4));
+        $controller = $this->controller(images: new CardImages($root));
+        $card = $this->card();
+
+        try {
+            $this->gesture($controller, 'feedbackAdd', $card, ['text' => 'feedback-1'], [$this->png(), new UploadedFile(__FILE__, 'item-1.png', null, null, true)]);
+            $this->fail('A feedback took a file that is no picture.');
+        } catch (FlowException $exception) {
+            $this->assertSame('label.card_image_refused', $exception->getMessage());
+        }
+
+        $this->assertSame([], $card->getFeedback());
+        $this->assertSame([], glob($root . '/' . Card::FEEDBACK_IMAGE_DIRECTORY . '/*') ?: []);
+        new Filesystem()->remove($root);
+    }
+
+    // A private feedback gesture run on the posted fields and the pictures sent
+    /**
+     * @param array<string, string>                $fields
+     * @param UploadedFile|list<UploadedFile>|null $file
+     */
+    private function gesture(PilotController $controller, string $method, Card $card, array $fields, UploadedFile | array | null $file = null): void
     {
         new \ReflectionMethod($controller, $method)->invoke($controller, $card, new Request(request: $fields, files: null === $file ? [] : ['image' => $file]));
     }

@@ -171,12 +171,12 @@ class ShareControllerTest extends TestCase
         $this->assertSame(['step-2', 'step-1'], array_column($this->card->getChecklist(), 't'));
     }
 
-    // The editing link adds a feedback, a « ? » first now part of its text
+    // The editing link adds a feedback, a « ? » first now part of its text, marked as written from outside the account
     public function testEditLinkAddsFeedback(): void
     {
         $this->controller()->gesture((string) $this->card->getEditToken(), 'feedback', new Request(request: ['text' => '? feedback-1']));
 
-        $this->assertSame([2 => ['t' => '? feedback-1', 'feedback' => true]], $this->card->getFeedback());
+        $this->assertSame([2 => ['t' => '? feedback-1', 'feedback' => true, 's' => true]], $this->card->getFeedback());
     }
 
     // An action the project does not offer right now is refused, the card left as it was
