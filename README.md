@@ -4,11 +4,15 @@
 [![Packagist Version](https://img.shields.io/packagist/v/c975l/pilot-bundle)](https://packagist.org/packages/c975l/pilot-bundle)
 [![PHP Version](https://img.shields.io/packagist/php-v/c975l/pilot-bundle)](https://packagist.org/packages/c975l/pilot-bundle)
 
-![PilotBundle](.github/images/PilotBundle.svg)
+<p align="center"><img src=".github/images/PilotBundle.svg" alt="PilotBundle"></p>
 
 **Your site keeps its own projects as cards, shared between the members of each space, with steps, deadlines and feedback, and steps a machine of yours can carry out.**
 
 **[Bundle page](https://bundles.975l.com/en/pages/pilot-bundle) · [Tutorials](https://bundles.975l.com/en/tutoriels/pilot-bundle) · [Live demo](https://bundles.975l.com/demo/) · [Demo back-office](https://bundles.975l.com/demo/login)**
+
+[![Watch the PilotBundle film](.github/images/showcase.jpg)](https://youtu.be/b76Z3SRX0vw)
+
+▶ [Watch the film](https://youtu.be/b76Z3SRX0vw) · [PilotBundle's page](https://bundles.975l.com/en/pages/pilot-bundle)
 
 > **BUNDLE UNDER DEVELOPMENT — USE AT YOUR OWN RISK**
 
@@ -42,19 +46,24 @@ Then follow the full [installation](#installation) section below: migration, pub
 
 > **For developers** — a `Project` is a space of `Card`s shared between `Member`s with a role, `PilotAccess` answers what an account may do in it, `CardFlow` ticks, runs and validates, `RunQueue` hands runs to a `Machine` under a lease through `/api/pilot/runner`, and `PilotMcpProvider` lets an AI agent do the same with its account's rights.
 
-<details>
-<summary>Contents</summary>
+### Contents
 
 - **Setup** — [requirements](#requirements) · [installation](#installation)
 - **Using it** — [runner machines](#runner-machines) · [security of the runner API](#security-of-the-runner-api) · [MCP server](#mcp-server) · [opening the files on the computer](#opening-the-files-on-the-computer) · [configuration](#configuration) · [importing an export](#importing-an-export) · [translations](#translations) · [guided projects](#guided-projects) · [what it does not contribute](#what-this-bundle-deliberately-does-not-contribute) · [AI agent skills](#ai-agent-skills)
-
-</details>
 
 ---
 
 ## Why PilotBundle
 
 Add PilotBundle on top of the shared [CoreBundle](https://github.com/975L/CoreBundle) foundation when a site should hold its own projects: what is to do, by when, by whom, and what a machine can do on its own. Everything lives in the application — the spaces, their cards, their steps and their files — on pages of their own at `/pilot`, outside the back office, and a machine of yours (a workstation, a server) carries out the actions it declares, then hands the card back for a human to validate. The bundle calls no AI itself: whatever does the work, a model or a plain script, is the command a runner maps an action to.
+
+> [!TIP]
+> If this project **helps you save development time**:
+>
+> - [**star** it on GitHub](https://github.com/975L/PilotBundle) — helps others find it
+> - [**open an issue**](https://github.com/975L/PilotBundle/issues/new) to share how you use it — genuinely useful feedback
+>
+> And if you'd like to support the work directly, the **Sponsor** button at the top of the GitHub page is there for that. Thank you!
 
 ---
 
@@ -271,13 +280,3 @@ ln -s ../../vendor/c975l/pilot-bundle/skills/c975l-pilot .claude/skills/c975l-pi
 ## License
 
 MIT, see `LICENSE`. The icons of `public/icons/` are [Font Awesome Free](https://fontawesome.com) 6.5.1 (CC BY 4.0), each file keeping its notice.
-
----
-
-> [!TIP]
-> If this project **helps you save development time**:
->
-> - [**star** it on GitHub](https://github.com/975L/PilotBundle) — helps others find it
-> - [**open an issue**](https://github.com/975L/PilotBundle/issues/new) to share how you use it — genuinely useful feedback
->
-> And if you'd like to support the work directly, the **Sponsor** button at the top of the GitHub page is there for that. Thank you!

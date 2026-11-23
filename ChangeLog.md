@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.4.1
+
+README banner centred, showcase film shown
+
+- The contents of the README shown as a plain list again under its reference (23/11/2026)
+- README banner centred, the showcase film's poster under the links, opening its YouTube video (23/11/2026)
+- README support tip moved under its "Why" section (23/11/2026)
+
 ## v1.4.0
 
 Up to three screenshots per comment, ticked comments folded
