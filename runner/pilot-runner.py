@@ -8,7 +8,6 @@
 # Reference runner of c975l/pilot-bundle, claiming the runs queued for this machine and running them from the allowlist of $PILOT_RUNNER_CONFIG (default ~/.config/pilot-runner): polling loop, --once, --install (systemd user service) or --demo-hello <file> <text> [comment]; the site sends only an action key and values checked against their pattern, never a command, a "PROGRESS n message" line the command prints shows on the card a "TITLE text" line renames it, a "RESULT url" line sets its result address, a "FEEDBACK n reason" line leaves the feedback numbered n open a "SPENT credit amount" line tells what the run spent on that credit and a "FILE /path" line names a file it wrote, shown on its step, and a "LINK url [words]" line leaves a link under its step
 
 import glob
-import json
 import os
 import re
 import shutil

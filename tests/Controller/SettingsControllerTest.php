@@ -33,11 +33,28 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SettingsControllerTest extends TestCase
 {
     use PilotTestStubs;
+
+    // A remembered login opens the piloting pages but not the settings, which ask for a login typed in this session
+    public function testRememberedLoginKeptOutOfSettings(): void
+    {
+        $controller = $this->controller($this->createStub(EntityManagerInterface::class), $this->createStub(UrlGeneratorInterface::class), new Session(new MockArraySessionStorage()));
+        $checker = $this->createStub(AuthorizationCheckerInterface::class);
+        $checker->method('isGranted')->willReturnCallback(static fn (mixed $attribute): bool => 'IS_AUTHENTICATED_FULLY' !== $attribute);
+        $container = $this->grantedContainer($this->createStub(UrlGeneratorInterface::class));
+        $container->set('security.authorization_checker', $checker);
+        $controller->setContainer($container);
+
+        new \ReflectionMethod($controller, 'denyAccess')->invoke($controller);
+        $this->expectException(AccessDeniedException::class);
+        $controller->index();
+    }
 
     // A credit naming a service is read as it is saved, its balance written with it
     public function testCreditReadOnSave(): void

@@ -53,7 +53,7 @@ class SettingsController extends AbstractController
     #[Route('/pilot/settings', name: 'pilot_settings')]
     public function index(): RedirectResponse
     {
-        $this->denyUnlessAdmin();
+        $this->denyUnlessAdmin(fully: true);
 
         return $this->redirectToRoute(self::LIST_ROUTE, ['kind' => 'template']);
     }
@@ -62,7 +62,7 @@ class SettingsController extends AbstractController
     #[Route('/pilot/settings/{kind}', name: self::LIST_ROUTE, requirements: ['kind' => self::KINDS])]
     public function list(string $kind): Response
     {
-        $this->denyUnlessAdmin();
+        $this->denyUnlessAdmin(fully: true);
         $settings = $this->settingsKinds->get($kind);
 
         return $this->page('@c975LPilot/pilot/settings/list.html.twig', [
@@ -76,7 +76,7 @@ class SettingsController extends AbstractController
     #[Route('/pilot/settings/{kind}/new', name: 'pilot_settings_new', requirements: ['kind' => 'space|template|machine|credit'], methods: ['GET', 'POST'])]
     public function new(string $kind, Request $request): Response
     {
-        $this->denyUnlessAdmin();
+        $this->denyUnlessAdmin(fully: true);
         $settings = $this->settingsKinds->get($kind);
         $form = $this->createForm($settings['form'])->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -96,7 +96,7 @@ class SettingsController extends AbstractController
     #[Route('/pilot/settings/{kind}/{id}', name: 'pilot_settings_edit', requirements: ['kind' => self::KINDS, 'id' => '\d+'], methods: ['GET', 'POST'])]
     public function edit(string $kind, int $id, Request $request, StepOrder $stepOrder): Response
     {
-        $this->denyUnlessAdmin();
+        $this->denyUnlessAdmin(fully: true);
         $settings = $this->settingsKinds->get($kind);
         $row = $this->entityManager->find($settings['class'], $id) ?? throw $this->createNotFoundException();
         $previous = $row instanceof PlanTemplate ? $row->getSteps() : [];
@@ -134,7 +134,7 @@ class SettingsController extends AbstractController
     #[Route('/pilot/settings/{kind}/{id}/delete', name: 'pilot_settings_delete', requirements: ['kind' => self::KINDS, 'id' => '\d+'], methods: ['POST'])]
     public function delete(string $kind, int $id, Request $request): RedirectResponse
     {
-        $this->denyUnlessAdmin();
+        $this->denyUnlessAdmin(fully: true);
         $row = $this->entityManager->find($this->settingsKinds->get($kind)['class'], $id);
         if (null !== $row && $this->isCsrfTokenValid('pilot_settings_delete' . $kind . $id, $request->request->getString('_token'))) {
             $this->entityManager->remove($row);

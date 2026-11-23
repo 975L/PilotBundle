@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.5.0
+
+Pages opened by a remembered login, Codacy grade shown
+
+- `.markdownlint.json` allows only the `p` and `img` elements the centred banner uses (23/11/2026)
+- README shows the Codacy grade badge (23/11/2026)
+- Runner drops its unused `json` import (23/11/2026)
+- Piloting pages opened by a remembered login, the settings still asking for a typed one (23/11/2026)
+
 ## v1.4.1
 
 README banner centred, showcase film shown

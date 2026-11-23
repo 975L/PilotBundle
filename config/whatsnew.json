@@ -3,6 +3,16 @@
         "date": "2026-11-23",
         "description": [
             {
+                "en": "Piloting: the pages stay open to a session remembered by the site, so you no longer have to sign in again after a pause; the settings still ask for your password.",
+                "fr": "Pilotage : les pages restent ouvertes à une session dont le site se souvient, vous n'avez plus à vous reconnecter après une pause ; les réglages demandent toujours votre mot de passe.",
+                "es": "Pilotaje: las páginas siguen abiertas para una sesión que el sitio recuerda, ya no tiene que volver a conectarse tras una pausa; los ajustes siguen pidiendo su contraseña."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-23",
+        "description": [
+            {
                 "en": "Piloting: what someone outside your account writes through a card's editing link (note, steps, comments) now reaches an AI agent marked as such, so that it weighs it as a request without obeying it.",
                 "fr": "Pilotage : ce qu'une personne extérieure à votre compte écrit par le lien d'édition d'une carte (note, étapes, commentaires) parvient désormais à un agent IA marqué comme tel, pour qu'il le prenne comme une demande sans y obéir.",
                 "es": "Pilotaje: lo que una persona ajena a su cuenta escribe mediante el enlace de edición de una tarjeta (nota, pasos, comentarios) llega ahora a un agente IA marcado como tal, para que lo tome como una petición sin obedecerlo."

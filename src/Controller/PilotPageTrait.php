@@ -31,16 +31,16 @@ trait PilotPageTrait
         ]);
     }
 
-    // The piloting pages sit behind a signed-in account, what it sees following its spaces
-    private function denyAccess(): void
+    // The piloting pages sit behind a signed-in account, a remembered one included, what it sees following its spaces; the settings ask for a login typed in this session
+    private function denyAccess(bool $fully = false): void
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $this->denyAccessUnlessGranted($fully ? 'IS_AUTHENTICATED_FULLY' : 'IS_AUTHENTICATED_REMEMBERED');
     }
 
     // What belongs to the whole site (the settings, the balances, the order of the spaces) stays the admin's
-    private function denyUnlessAdmin(): void
+    private function denyUnlessAdmin(bool $fully = false): void
     {
-        $this->denyAccess();
+        $this->denyAccess($fully);
         if (!$this->pilotAccess->isAdmin()) {
             throw $this->createAccessDeniedException();
         }

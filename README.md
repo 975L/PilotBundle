@@ -3,6 +3,7 @@
 [![GitHub](https://img.shields.io/github/license/975L/PilotBundle)](https://github.com/975L/PilotBundle/blob/main/LICENSE)
 [![Packagist Version](https://img.shields.io/packagist/v/c975l/pilot-bundle)](https://packagist.org/packages/c975l/pilot-bundle)
 [![PHP Version](https://img.shields.io/packagist/php-v/c975l/pilot-bundle)](https://packagist.org/packages/c975l/pilot-bundle)
+[![Codacy Grade](https://app.codacy.com/project/badge/Grade/31500f477a104dcd9a9dead479f70865)](https://app.codacy.com/gh/975L/PilotBundle/dashboard)
 
 <p align="center"><img src=".github/images/PilotBundle.svg" alt="PilotBundle"></p>
 
@@ -137,8 +138,8 @@ c975_l_pilot:
 # config/packages/security.yaml, access_control, above the catch-all rule
 - { path: ^/api/pilot/runner/, roles: PUBLIC_ACCESS }
 - { path: ^/pilot/share/, roles: PUBLIC_ACCESS }
-# The piloting pages, after the shared cards, for any signed-in account: each page then checks what its role in the space holds
-- { path: ^/pilot, roles: IS_AUTHENTICATED_FULLY }
+# The piloting pages, after the shared cards, for any signed-in account, a remembered one included: each page then checks what its role in the space holds, the settings asking for a login typed in this session
+- { path: ^/pilot, roles: IS_AUTHENTICATED_REMEMBERED }
 ```
 
 ## Importing an export
