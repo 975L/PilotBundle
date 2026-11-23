@@ -132,10 +132,10 @@ class PilotTools
         return ['id' => $card->getId(), 'url' => $this->url($card)];
     }
 
-    // A step of a card ticked, or unticked, a step already in that state left as it is so a call repeated changes nothing
+    // A step or a comment of a card ticked, or unticked, as its page ticks them, one already in that state left as it is so a call repeated changes nothing
     /**
      * @param int  $card id of the card
-     * @param int  $step index of the step, as the card tool gives it
+     * @param int  $step index of the step or comment, as the card tool gives it
      * @param bool $done false to untick it
      *
      * @return array{done: bool}
@@ -143,8 +143,8 @@ class PilotTools
     public function tickStep(int $card, int $step, bool $done = true): array
     {
         $found = $this->served($card, PilotAccess::WORK);
-        if (!isset($found->getSteps()[$step])) {
-            throw new ToolCallException(sprintf('The card has no step %d.', $step));
+        if (!isset($found->getChecklist()[$step])) {
+            throw new ToolCallException(sprintf('The card has no step or comment %d.', $step));
         }
         if ($done !== ($found->getChecklist()[$step]['done'] ?? false)) {
             $this->cardFlow->tick($found, $step);
@@ -270,7 +270,38 @@ class PilotTools
         return ['run' => $run->getId(), 'status' => $run->getStatus()->value];
     }
 
-    // A card merged into another one and deleted: its note, steps (ticked ones staying so) and feedback carried over; refused while a machine works on either
+    // A run of a card withdrawn as its page does, the given one or else the last: one still queued never leaves, one a machine holds stopped at its next sign of life; refused when none is queued or under way
+    /**
+     * @param int  $card id of the card
+     * @param ?int $run  id of the run, as pilot_run_step gives it, the card's last run without one
+     *
+     * @return array{url: string, run: ?int, status: string, cardStatus: string}
+     */
+    public function cancelRun(int $card, ?int $run = null): array
+    {
+        $found = $this->served($card, PilotAccess::RUN);
+        $cancelled = $this->flow(fn (): Run => $this->cardFlow->cancel($found, $run));
+        $this->entityManager->flush();
+
+        return ['url' => $this->url($found), 'run' => $cancelled->getId(), 'status' => $cancelled->getStatus()->value, 'cardStatus' => $found->getStatus()->value];
+    }
+
+    // What a machine produced accepted as its page does: a run started by a checklist step ticks that step, any other closes the card; refused when nothing waits for validation
+    /**
+     * @param int $card id of the card, its status review
+     *
+     * @return array{url: string, status: string}
+     */
+    public function validateRun(int $card): array
+    {
+        $found = $this->served($card, PilotAccess::RUN);
+        $this->flow(fn (): Card => $this->cardFlow->validate($found));
+        $this->entityManager->flush();
+
+        return ['url' => $this->url($found), 'status' => $found->getStatus()->value];
+    }
+
+    // A card merged into another one and deleted: its note, steps (ticked ones staying so) and feedback carried over; refused while a machine works on either or past the checklist's ceiling
     /**
      * @param int $card id of the card merged and deleted
      * @param int $into id of the card it is merged into
@@ -292,7 +323,7 @@ class PilotTools
         if (!$kept->takesStepsByHand() && [] !== $from->getSteps()) {
             throw new ToolCallException('The card follows a checklist template: add the steps to its template.');
         }
-        $kept->absorb($from);
+        $this->flow(static fn (): Card => $kept->absorb($from));
         $this->cardRemoval->remove($from);
 
         return ['url' => $this->url($kept), 'steps' => $this->indexed($kept->getSteps())];

@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-11-23",
+        "description": [
+            {
+                "en": "Piloting: an AI agent connected to the site can now cancel a card's run, validate what a machine produced and tick a comment, as you do on the card.",
+                "fr": "Pilotage : un agent IA connecté au site peut désormais annuler l'exécution d'une carte, valider ce qu'une machine a produit et cocher un commentaire, comme vous le faites sur la carte.",
+                "es": "Pilotaje: un agente IA conectado al sitio ahora puede cancelar la ejecución de una tarjeta, validar lo que una máquina produjo y marcar un comentario, como usted lo hace en la tarjeta."
+            }
+        ]
+    },
+    {
         "date": "2026-11-21",
         "description": [
             {

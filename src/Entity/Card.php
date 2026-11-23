@@ -830,12 +830,13 @@ class Card implements \Stringable
         return $this;
     }
 
-    // Another card merged into this one: its note under this one's, its steps after these, its feedback after this one's with their screenshots, it left without any so its removal deletes none; a done card opens again
+    // Another card merged into this one: its note under this one's, its steps after these, its feedback after this one's with their screenshots, it left without any so its removal deletes none; a done card opens again - refused past the checklist's ceiling
     public function absorb(self $other): static
     {
         if ($other === $this) {
             return $this;
         }
+        self::expectRoom(\count($this->checklist) + \count($other->checklist));
         $note = implode("\n\n", array_filter([trim((string) $this->note), trim((string) $other->getNote())], static fn (string $text): bool => '' !== $text));
         $this->note = '' === $note ? null : $note;
         $this->checklist = [...array_values($this->getSteps()), ...array_values($other->getSteps()), ...array_values($this->getFeedback()), ...array_values($other->getFeedback())];

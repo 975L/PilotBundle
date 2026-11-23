@@ -18,6 +18,9 @@ use c975L\PilotBundle\Entity\CardSet;
 use c975L\PilotBundle\Entity\Doc;
 use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
+use c975L\PilotBundle\Enum\CardKind;
+use c975L\PilotBundle\Enum\CardStatus;
+use c975L\PilotBundle\Enum\Executor;
 use c975L\PilotBundle\Mcp\PilotDocTools;
 use c975L\PilotBundle\Mcp\PilotMcpProvider;
 use c975L\PilotBundle\Mcp\PilotTools;
@@ -99,7 +102,7 @@ class PilotMcpProviderTest extends TestCase
         $this->assertStringContainsString('Cards are tasks grouped in spaces', $initialized['result']['instructions']);
 
         $tools = array_column($this->call(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'])['result']['tools'], null, 'name');
-        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_add_card', 'pilot_tick_step', 'pilot_comment', 'pilot_edit_card', 'pilot_add_steps', 'pilot_close_card', 'pilot_run_step', 'pilot_merge_cards', 'pilot_delete_card', 'pilot_docs', 'pilot_doc', 'pilot_write_doc'], array_keys($tools));
+        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_add_card', 'pilot_tick_step', 'pilot_comment', 'pilot_edit_card', 'pilot_add_steps', 'pilot_close_card', 'pilot_run_step', 'pilot_cancel_run', 'pilot_validate_run', 'pilot_merge_cards', 'pilot_delete_card', 'pilot_docs', 'pilot_doc', 'pilot_write_doc'], array_keys($tools));
         $this->assertTrue($tools['pilot_card']['annotations']['readOnlyHint']);
         $this->assertFalse($tools['pilot_add_card']['annotations']['readOnlyHint']);
         $this->assertFalse($tools['pilot_edit_card']['annotations']['destructiveHint']);
@@ -133,10 +136,12 @@ class PilotMcpProviderTest extends TestCase
         $this->assertSame(['done' => true], $this->tool('pilot_tick_step', ['card' => $this->card->getId(), 'step' => 1]));
         $this->assertSame(['done' => false], $this->tool('pilot_tick_step', ['card' => $this->card->getId(), 'step' => 0, 'done' => false]));
         $this->assertSame(['index' => 2], $this->tool('pilot_comment', ['card' => $this->card->getId(), 'text' => 'comment-1']));
+        $this->assertSame(['done' => true], $this->tool('pilot_tick_step', ['card' => $this->card->getId(), 'step' => 2]));
         $this->entityManager->clear();
         $card = $this->entityManager->find(Card::class, $this->card->getId());
         $this->assertTrue($card->getChecklist()[1]['done']);
         $this->assertSame('comment-1', $card->getFeedback()[2]['t']);
+        $this->assertTrue($card->getFeedback()[2]['done']);
     }
 
     // A card added to a served space with its note and day, a malformed day or an unserved space refused as a tool error
@@ -210,6 +215,19 @@ class PilotMcpProviderTest extends TestCase
         $this->assertSame('The card follows a checklist template: add the steps to its template.', $this->toolError('pilot_merge_cards', ['card' => (int) $twin->getId(), 'into' => (int) $this->card->getId()]));
     }
 
+    // Two cards whose checklists would pass the ceiling together are not merged, the card merged away kept
+    public function testMergeRefusedPastTheCeiling(): void
+    {
+        $twin = new Card($this->catalog, 'item-1 bis')->setChecklist(array_fill(0, Card::MAX_CHECKLIST, ['t' => 'step-9']));
+        $this->entityManager->persist($twin);
+        $this->entityManager->flush();
+        $twinId = (int) $twin->getId();
+
+        $this->assertSame('flow.checklist_full', $this->toolError('pilot_merge_cards', ['card' => $twinId, 'into' => (int) $this->card->getId()]));
+        $this->entityManager->clear();
+        $this->assertNotNull($this->entityManager->find(Card::class, $twinId));
+    }
+
     // A step naming an action queued for a machine, its run then read on the step; a step naming none or already queued refused
     public function testRunStep(): void
     {
@@ -219,6 +237,37 @@ class PilotMcpProviderTest extends TestCase
         $this->assertSame('flow.not_now', $this->toolError('pilot_run_step', ['card' => $id, 'step' => 0]));
         $steps = $this->tool('pilot_card', ['card' => $id])['steps'];
         $this->assertSame(['index' => 0, 'text' => 'step-1', 'done' => false, 'action' => 'action-1', 'run' => 'queued'], $steps[0]);
+    }
+
+    // A run queued then withdrawn, the card back to do; nothing left to withdraw refused, as is an account that may not run
+    public function testCancelRun(): void
+    {
+        $id = (int) $this->card->getId();
+        $run = $this->tool('pilot_run_step', ['card' => $id, 'step' => 0])['run'];
+
+        $this->assertSame(['url' => 'https://site.example/pilot/catalog#card-' . $id, 'run' => $run, 'status' => 'cancelled', 'cardStatus' => 'ready'], $this->tool('pilot_cancel_run', ['card' => $id, 'run' => $run]));
+        $this->assertSame('flow.not_now', $this->toolError('pilot_cancel_run', ['card' => $id]));
+        $this->assertSame('cancelled', $this->tool('pilot_card', ['card' => $id])['steps'][0]['run']);
+
+        $this->denied = [PilotAccess::RUN];
+        $this->assertSame('This account may not do that on card ' . $id . '.', $this->toolError('pilot_cancel_run', ['card' => $id]));
+    }
+
+    // What a machine produced on a card under review accepted, the step naming its action ticked; a card with nothing to validate refused, as is an account that may not run
+    public function testValidateRun(): void
+    {
+        $id = (int) $this->card->getId();
+        $this->assertSame('flow.not_now', $this->toolError('pilot_validate_run', ['card' => $id]));
+        $this->card->assign(Executor::Runner, CardKind::Task, 'action-1', [])->setStatus(CardStatus::Review);
+        $this->entityManager->flush();
+
+        $this->denied = [PilotAccess::RUN];
+        $this->assertSame('This account may not do that on card ' . $id . '.', $this->toolError('pilot_validate_run', ['card' => $id]));
+        $this->denied = [];
+        $this->assertSame(['url' => 'https://site.example/pilot/catalog#card-' . $id, 'status' => 'ready'], $this->tool('pilot_validate_run', ['card' => $id]));
+        $this->entityManager->clear();
+        $this->assertTrue($this->entityManager->find(Card::class, $id)->getChecklist()[0]['done']);
+        $this->assertSame('No card ' . $this->hidden->getId() . '.', $this->toolError('pilot_validate_run', ['card' => $this->hidden->getId()]));
     }
 
     // Files listed and read within the spaces served, one added, one rewritten floor by floor and attached to a card
@@ -256,7 +305,7 @@ class PilotMcpProviderTest extends TestCase
         $message = 'No card ' . $this->hidden->getId() . '.';
         $this->assertSame($message, $this->toolError('pilot_card', ['card' => $this->hidden->getId()]));
         $this->assertSame($message, $this->toolError('pilot_comment', ['card' => $this->hidden->getId(), 'text' => 'comment-1']));
-        $this->assertSame('The card has no step 5.', $this->toolError('pilot_tick_step', ['card' => $this->card->getId(), 'step' => 5]));
+        $this->assertSame('The card has no step or comment 5.', $this->toolError('pilot_tick_step', ['card' => $this->card->getId(), 'step' => 5]));
 
         $this->denied = [PilotAccess::DELETE];
         $this->assertSame('This account may not do that on card ' . $this->card->getId() . '.', $this->toolError('pilot_delete_card', ['card' => $this->card->getId()]));

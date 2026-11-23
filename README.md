@@ -141,7 +141,7 @@ The runner API is a door into the site, so its key and its lock hold as follows.
 
 ## MCP server
 
-The piloting brings its tools to the site's MCP endpoint, `/api/mcp`, which c975l/core-bundle serves and opens (see its README, "Opening the site to AI agents"): `PilotMcpProvider`, under the `pilot` key of the agent tokens. They act with the rights of the token's account, as the piloting pages give them (`PilotAccess`): the spaces it sees, a card its role may change, a guest only on the cards given to it and on none of the files, opened from contributor up as on their page; a reading token gets the reading tools only.
+The piloting brings its tools to the site's MCP endpoint, `/api/mcp`, which c975l/core-bundle serves and opens (see its README, "Opening the site to AI agents"): `PilotMcpProvider`, under the `pilot` key of the agent tokens. They act with the rights of the token's account, as the piloting pages give them (`PilotAccess`): the spaces it sees, a card its role may change, a guest only on the cards given to it, the file attached to such a card read with it as on its page but no other file, files opened from contributor up as on their page; a reading token gets the reading tools only.
 
 | Tool | Does |
 | --- | --- |
@@ -149,12 +149,14 @@ The piloting brings its tools to the site's MCP endpoint, `/api/mcp`, which c975
 | `pilot_cards` | The cards holding the `search` words, else the open cards of a `space`, else every open card due today or late |
 | `pilot_card` | A card as markdown, with its address and the index of each step and comment, the action a step names and where its last run stands |
 | `pilot_add_card` | A card added to a `space`, with a `title`, an optional `note` and `due` day (`YYYY-MM-DD`) |
-| `pilot_tick_step` | A step of a `card` ticked by its index, or unticked with `done` false, a call repeated changing nothing |
+| `pilot_tick_step` | A step or a comment of a `card` ticked by its index, or unticked with `done` false, a call repeated changing nothing |
 | `pilot_comment` | A comment left at the end of a `card` |
 | `pilot_edit_card` | Only the fields given: `title`, `note` (empty clears it), `due` (empty for the backlog), `space` (slug), `collection` (name) and `doc` (slug of a file of its space, empty to detach it) |
 | `pilot_add_steps` | `steps` added after the card's last one, refused on a card following a checklist template |
 | `pilot_close_card` | A `card` marked done, or opened again with `done` false |
 | `pilot_run_step` | The machine action a `step` names queued for a machine of its space, its run then read on the step |
+| `pilot_cancel_run` | A `run` of a `card` queued or under way withdrawn, the card's last without one, a machine holding it stopping at its next sign of life |
+| `pilot_validate_run` | What a machine produced on a `card` under review accepted: the step that ran it ticked, else the card closed |
 | `pilot_merge_cards` | A `card` merged `into` another (note, steps and comments carried over), then deleted |
 | `pilot_delete_card` | A `card` deleted for good with its runs and their files |
 | `pilot_docs` | The files holding the `search` words, else those of a `space`, else every file the account sees |

@@ -463,6 +463,22 @@ class CardTest extends TestCase
         $this->assertSame($card, $card->absorb($card));
     }
 
+    // Two checklists that would pass the ceiling together are not merged, both left as they were
+    public function testAbsorbKeepsToTheCeiling(): void
+    {
+        $lines = array_fill(0, Card::MAX_CHECKLIST / 2 + 1, ['t' => 'step-1']);
+        $card = new Card($this->project, 'item-1')->setChecklist($lines);
+        $other = new Card($this->project, 'item-2')->setChecklist($lines);
+
+        $this->expectException(FlowException::class);
+        try {
+            $card->absorb($other);
+        } finally {
+            $this->assertCount(Card::MAX_CHECKLIST / 2 + 1, $card->getChecklist());
+            $this->assertCount(Card::MAX_CHECKLIST / 2 + 1, $other->getChecklist());
+        }
+    }
+
     // A card goes only into a collection of its own space, leaves it and a file of the space it leaves when moved, a shared file staying
     public function testCollectionAndMove(): void
     {

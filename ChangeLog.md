@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.3.0
+
+Runs cancelled and validated by MCP, merges kept under the ceiling
+
+- `pilot_merge_cards` refuses two cards whose checklists would pass 300 lines together (23/11/2026)
+- The README says a guest reads the file attached to a card given to it (23/11/2026)
+- `pilot_cancel_run` withdraws a run queued or under way, as the card's cancel gesture (23/11/2026)
+- `pilot_validate_run` accepts what a machine produced on a card under review, as the card's validate gesture (23/11/2026)
+- `pilot_tick_step` ticks a comment too, by its index from `pilot_card` (23/11/2026)
+
 ## v1.2.2
 
 Comment added by Enter sent once

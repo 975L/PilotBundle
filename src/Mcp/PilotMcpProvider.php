@@ -38,12 +38,14 @@ class PilotMcpProvider implements McpToolProviderInterface
         yield new McpTool('pilot_cards', 'Cards', 'Cards whose title or note holds the search words, else the open cards of a space, else every open card due today or late.', $this->pilotTools->cards(...));
         yield new McpTool('pilot_card', 'Card', 'A card as markdown, with the index of each step and comment.', $this->pilotTools->card(...));
         yield new McpTool('pilot_add_card', 'Add a card', 'Adds a card to a space, with an optional note and day (YYYY-MM-DD).', $this->pilotTools->addCard(...), true);
-        yield new McpTool('pilot_tick_step', 'Tick a step', 'Ticks a step of a card by its index, or unticks it with done false; a step already in that state is left as it is.', $this->pilotTools->tickStep(...), true);
+        yield new McpTool('pilot_tick_step', 'Tick a step', 'Ticks a step or a comment of a card by its index, or unticks it with done false; one already in that state is left as it is.', $this->pilotTools->tickStep(...), true);
         yield new McpTool('pilot_comment', 'Comment a card', 'Leaves a comment at the end of a card, a done card opening again.', $this->pilotTools->comment(...), true);
         yield new McpTool('pilot_edit_card', 'Edit a card', 'Changes only the fields given: title, note (empty clears it), day (YYYY-MM-DD, empty for the backlog), space (slug), collection (name, in the card\'s space once moved) and doc (slug of a file of its space, empty to detach it).', $this->pilotTools->editCard(...), true);
         yield new McpTool('pilot_add_steps', 'Add steps', 'Adds steps after the last one of a card, before its comments.', $this->pilotTools->addSteps(...), true);
         yield new McpTool('pilot_close_card', 'Close a card', 'Marks a card done, or opens it again with done false.', $this->pilotTools->closeCard(...), true);
         yield new McpTool('pilot_run_step', 'Run a step', 'Queues the machine action a step names for a machine of its space; its run then shows on the step in pilot_card.', $this->pilotTools->runStep(...), true);
+        yield new McpTool('pilot_cancel_run', 'Cancel a run', 'Withdraws a run queued or under way on a card, the run given (its id from pilot_run_step) or else the card\'s last; a machine holding it stops at its next sign of life.', $this->pilotTools->cancelRun(...), true);
+        yield new McpTool('pilot_validate_run', 'Validate a run', 'Accepts what a machine produced on a card waiting for review: the step that ran it is ticked, otherwise the card is closed.', $this->pilotTools->validateRun(...), true);
         yield new McpTool('pilot_merge_cards', 'Merge two cards', 'Merges card into the card into: its note, steps and comments carried over, then card deleted.', $this->pilotTools->mergeCards(...), true, true);
         yield new McpTool('pilot_delete_card', 'Delete a card', 'Deletes a card permanently, with its runs and their files.', $this->pilotTools->deleteCard(...), true, true);
         yield new McpTool('pilot_docs', 'Files', 'Files whose title or text holds the search words, else those of a space, else every file the account sees.', $this->pilotDocTools->docs(...));
