@@ -27,7 +27,7 @@ class MenuProviderTest extends TestCase
         $this->assertSame([], $this->provider()->getMenus());
     }
 
-    // The piloting pages, outside the back office, opened from the shared links in their own tab
+    // The piloting pages, outside the back office, opened in their own tab
     public function testThePlanningIsALink(): void
     {
         $links = $this->provider()->getLinks();

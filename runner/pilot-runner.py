@@ -140,7 +140,7 @@ def execute(site, actions, run):
     workdir.mkdir(parents=True, exist_ok=True)
 
     # The card's context as {title}, {note}, {due}, {project}, {doc}, a parameter of the same name winning
-    context = {key: str(run.get(key) or '') for key in ('title', 'note', 'due', 'project', 'doc')}
+    context = {key: str(run.get(key) or '') for key in ('title', 'note', 'due', 'project', 'doc', 'requester')}
     values = {**context, **params, 'workdir': str(workdir)}
     argv = [os.path.expanduser(fill(arg, values)) for arg in action['argv']]
     outputs = [('?' if o.startswith('?') else '') + os.path.expanduser(fill(o.removeprefix('?'), values)) for o in action.get('outputs', [])]

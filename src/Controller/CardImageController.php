@@ -55,7 +55,7 @@ class CardImageController extends AbstractController
         return new BinaryFileResponse($path, Response::HTTP_OK, ['Content-Type' => $type, 'X-Content-Type-Options' => 'nosniff']);
     }
 
-    // A feedback's screenshot read without signing in, its random name being the permission (under /pilot/share/, public as the share links are), kept out of indexes and shared caches
+    // A feedback's screenshot read without signing in, its random name being the permission (under /pilot/share/, public so that an agent handed the card's markdown reads it), kept out of indexes and shared caches
     #[Route('/pilot/share/image/{name}', name: self::FEEDBACK_ROUTE, requirements: ['name' => CardImages::FEEDBACK_NAME], methods: ['GET'])]
     public function feedback(string $name): BinaryFileResponse
     {

@@ -32,7 +32,7 @@ use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 
 class RunnerControllerTest extends TestCase
 {
-    // A claimed run carries its card's context, its date included, empty for a card of the backlog
+    // A claimed run carries its card's context, its date included, empty for a card of the backlog, and its requester, empty when nobody signed in asked
     public function testClaimCarriesTheCardsDate(): void
     {
         $this->assertSame('', $this->claimed(new Card(new Project('catalog', 'Catalog'), 'item-1'))['due']);
@@ -40,6 +40,7 @@ class RunnerControllerTest extends TestCase
         $claimed = $this->claimed(new Card(new Project('catalog', 'Catalog'), 'item-1')->setDue(new \DateTimeImmutable('2026-12-03')));
         $this->assertSame('2026-12-03', $claimed['due']);
         $this->assertSame('item-1', $claimed['title']);
+        $this->assertSame('', $claimed['requester']);
     }
 
     // Every claim answer tells how many runs the machine takes at once, the actions the runner can start now handed to the queue

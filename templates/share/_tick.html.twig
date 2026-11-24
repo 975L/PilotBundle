@@ -1,7 +1,0 @@
-{# A step's or a feedback's box, ticked through the editing link, shown only through the read-only one #}
-{% if editable %}
-    <form method="post" action="{{ path('pilot_share_gesture', {token: token, gesture: 'step'}) }}" class="pilot-share-inline">
-        <input type="hidden" name="page" value="1"><input type="hidden" name="index" value="{{ index }}">
-        <button title="{{ 'label.done'|trans({}, 'pilot') }}" aria-label="{{ 'label.done'|trans({}, 'pilot') }}">{{ done ? '☑' : '☐' }}</button>
-    </form>
-{% else %}{{ done ? '☑' : '☐' }}{% endif %}

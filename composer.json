@@ -1,7 +1,7 @@
 {
     "name": "c975l/pilot-bundle",
     "type": "symfony-bundle",
-    "description": "Symfony bundle that pilots projects as cards on pages of their own, shared between the members of each space — steps, deadlines, feedback with screenshots, cards shared by link, a step running an action on a runner machine that hands the card back for validation, and an MCP server for AI agents.",
+    "description": "Symfony bundle that pilots projects as cards on pages of their own, shared between the members of each space — steps, deadlines, feedback with screenshots, a step running an action on a runner machine that hands the card back for validation, and an MCP server for AI agents.",
     "keywords": [
         "symfony",
         "bundle",

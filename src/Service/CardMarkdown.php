@@ -12,21 +12,15 @@ namespace c975L\PilotBundle\Service;
 
 use c975L\PilotBundle\Controller\CardImageController;
 use c975L\PilotBundle\Entity\Card;
-use c975L\PilotBundle\Exception\FlowException;
-use c975L\PilotBundle\Repository\DocRepository;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-use function Symfony\Component\Translation\t;
-
-// A card as one markdown text, read and rewritten through its editing link: title, date and awaited answer, note, steps, feedback, then its reference in full
+// A card as one markdown text, read by an agent or downloaded: title, date and awaited answer, note, steps, feedback, then its reference in full
 class CardMarkdown
 {
     public const string STEPS_HEADING = '## Steps';
     public const string FEEDBACK_HEADING = '## Feedback';
 
     public const string REFERENCE_HEADING = '## Reference';
-
-    public const string SHARED_TAG = 'shared';
 
     private const string DUE = 'Due';
 
@@ -37,13 +31,12 @@ class CardMarkdown
     private const string RESULT = 'Result';
 
     public function __construct(
-        private readonly DocRepository $docRepository,
         private readonly UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
-    // The card, project and status in its header for reading only, its source and result links when it has them; framed for an agent, what the editing link wrote held between <shared> tags
-    public function write(Card $card, bool $framed = false): string
+    // The card, project and status in its header for reading only, its source and result links when it has them
+    public function write(Card $card): string
     {
         $lines = ['# ' . $card->getTitle(), '', '- Project: ' . $card->getProject()->getName(), '- Status: ' . $card->getStatus()->value, '- ' . self::DUE . ': ' . $card->getDue()?->format('Y-m-d'), '- ' . self::WAITING_ON . ': ' . $card->getWaitingOn()];
         foreach ([self::SOURCE => $card->getSourceUrl(), self::RESULT => $card->getResultUrl()] as $name => $url) {
@@ -52,202 +45,15 @@ class CardMarkdown
             }
         }
         if (null !== $card->getNote()) {
-            array_push($lines, '', self::framed($card->getNote(), $framed && $card->isNoteShared()));
+            array_push($lines, '', $card->getNote());
         }
 
-        return implode("\n", [...$lines, ...$this->steps($card, $framed), ...$this->reference($card)]) . "\n";
-    }
-
-    // A text written through the editing link held between <shared> tags, its own angle brackets neutralised so it never closes them, any other text as it is
-    public static function framed(string $text, bool $shared): string
-    {
-        return $shared ? '<' . self::SHARED_TAG . '>' . str_replace(['<', '>'], ['&lt;', '&gt;'], $text) . '</' . self::SHARED_TAG . '>' : $text;
-    }
-
-    // A text shaped as write() gives it laid back on the card: a part left out keeps what the card had, a part written replaces it
-    public function read(Card $card, string $markdown, \DateTimeImmutable $day): Card
-    {
-        $parts = preg_split('/^(?=' . self::STEPS_HEADING . '$|' . self::FEEDBACK_HEADING . '$|' . self::REFERENCE_HEADING . '$)/m', trim(str_replace("\r\n", "\n", $markdown))) ?: [];
-        $head = trim((string) array_shift($parts));
-        if ('' !== $head) {
-            $this->readHead($card, $head);
-        }
-        $lists = [];
-        foreach ($parts as $part) {
-            if (str_starts_with($part, self::REFERENCE_HEADING)) {
-                $this->readReference($card, substr($part, \strlen(self::REFERENCE_HEADING)));
-                continue;
-            }
-            $heading = str_starts_with($part, self::FEEDBACK_HEADING) ? self::FEEDBACK_HEADING : self::STEPS_HEADING;
-            $lists[$heading] = substr($part, \strlen($heading));
-        }
-        if ([] !== $lists) {
-            $this->readChecklist($card, $lists[self::STEPS_HEADING] ?? null, $lists[self::FEEDBACK_HEADING] ?? null, $day);
-        }
-
-        return $card;
-    }
-
-    // The title on the first line, then the date, the awaited answer and the links (a line left out keeping its value, an empty one clearing it), the rest from the first other line as the note, headings and fields included, marked as the link's once it changes
-    private function readHead(Card $card, string $head): void
-    {
-        $lines = explode("\n", $head);
-        if (1 === preg_match('/^# (.+)$/', $lines[0], $title)) {
-            $card->setTitle(trim($title[1]));
-            array_shift($lines);
-        }
-        while ([] !== $lines && $this->readHeadLine($card, $lines[0])) {
-            array_shift($lines);
-        }
-        $text = trim(implode("\n", $lines));
-        $note = '' !== $text ? $text : null;
-        if ($note !== $card->getNote()) {
-            $card->setNote($note)->shareNote();
-        }
-    }
-
-    // A field or a blank line of the header read, false for the first line of the note
-    private function readHeadLine(Card $card, string $line): bool
-    {
-        if (1 === preg_match('/^- (' . self::DUE . '|' . self::WAITING_ON . '|' . self::SOURCE . '|' . self::RESULT . '):\s*(.*)$/', $line, $field)) {
-            $this->readField($card, $field[1], trim($field[2]));
-
-            return true;
-        }
-
-        return '' === trim($line) || 1 === preg_match('/^- (Project|Status):/', $line);
-    }
-
-    // A date that is not one leaves the card's as it was; a link that is not one is dropped
-    private function readField(Card $card, string $name, string $value): void
-    {
-        match ($name) {
-            self::WAITING_ON => $card->setWaitingOn($value),
-            self::SOURCE => $card->setSourceUrl($value),
-            self::RESULT => $card->setResultUrl($value),
-            default => $this->readDue($card, $value),
-        };
-    }
-
-    // The date read, one that is not a date leaving the card's as it was
-    private function readDue(Card $card, string $value): void
-    {
-        $due = '' === $value ? null : \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
-        if (false !== $due) {
-            $card->setDue($due);
-        }
-    }
-
-    // The task lists replacing the checklist, the steps then the feedback, a list left out keeping what the card had; a step the card does not have refused on a card following a checklist template, which takes its steps from the template alone, and more lines than a card holds refused
-    private function readChecklist(Card $card, ?string $steps, ?string $feedback, \DateTimeImmutable $day): void
-    {
-        $laid = [];
-        $from = [];
-        foreach ([[false, $steps, $card->getSteps()], [true, $feedback, $card->getFeedback()]] as [$isFeedback, $text, $own]) {
-            [$items, $indices] = null === $text ? [array_values($own), array_keys($own)] : $this->readList($text, $own, $isFeedback, $day);
-            if (!$isFeedback && !$card->takesStepsByHand() && \in_array(null, $indices, true)) {
-                throw new FlowException(t('flow.template_steps', [], 'pilot'));
-            }
-            $laid = [...$laid, ...$items];
-            $from = [...$from, ...$indices];
-        }
-        Card::expectRoom(\count($laid));
-        $card->restep($laid, $from, $day);
-    }
-
-    // One task list read against the items of its kind the card has: an item kept by its text (each one once, in order) keeping what it spends, its run and the action it names (shown after it, read back as its own), a new or reworded one marked as the link's; a step in the group of the « ### » heading above it
-    /**
-     * @param array<int, array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string|list<string>, s?: bool}> $own
-     *
-     * @return array{list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string|list<string>, s?: bool}>, list<?int>}
-     */
-    private function readList(string $text, array $own, bool $feedback, \DateTimeImmutable $day): array
-    {
-        $free = array_map(static fn (array $step): string => $step['t'], $own);
-        $shots = array_merge(...array_values(array_map(static fn (array $step): array => (array) ($step['img'] ?? []), $own)));
-        $steps = [];
-        $from = [];
-        $group = null;
-        preg_match_all('/^(?:### (.+)|- \[([ xX])\] (.+)|\s+!\[[^\]]*\]\(\S*\/(' . CardImages::FEEDBACK_NAME . ')\))$/m', $text, $items, \PREG_SET_ORDER);
-        foreach ($items as $item) {
-            // The screenshot written under a feedback is its own, its file kept by its name, only one the card already holds
-            if ('' !== ($item[4] ?? '')) {
-                $steps = self::withImage($steps, $feedback && \in_array($item[4], $shots, true), $item[4]);
-
-                continue;
-            }
-            if ('' !== $item[1]) {
-                // « ### - » closes a group, the steps under it in none
-                $name = trim($item[1]);
-                $group = $feedback || '-' === $name ? null : mb_substr($name, 0, 50);
-
-                continue;
-            }
-            [, , $mark, $title] = $item;
-            // The machine action write() shows after a step is its own, never part of the text
-            $title = trim((string) preg_replace('/ `[\w-]+`$/', '', trim($title)));
-            $index = StepOrder::take($free, $title);
-            $from[] = $index;
-            $step = null === $index ? ['t' => mb_substr($title, 0, 500), 's' => true] : $own[$index];
-            unset($step['img']);
-            $steps[] = $this->mark($feedback ? $step : StepOrder::grouped($step, ['group' => $group ?? '']), ' ' !== $mark, $feedback, $day);
-        }
-
-        return [$steps, $from];
-    }
-
-    // A screenshot added to the feedback read just before it, when it may take it and holds fewer than MAX_FEEDBACK_IMAGES, a step or nothing above it taking none
-    /**
-     * @param list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string|list<string>, s?: bool}> $steps
-     *
-     * @return list<array{t: string, done?: bool, doneAt?: string, feedback?: bool, img?: string|list<string>, s?: bool}>
-     */
-    private static function withImage(array $steps, bool $allowed, string $name): array
-    {
-        $last = \count($steps) - 1;
-        $shots = (array) ($steps[$last]['img'] ?? []);
-        if ($allowed && $last >= 0 && \count($shots) < Card::MAX_FEEDBACK_IMAGES && !\in_array($name, $shots, true)) {
-            $steps[$last]['img'] = [...$shots, $name];
-        }
-
-        return $steps;
-    }
-
-    // An item ticked or not, dated to the minute it is ticked, a feedback kept as such
-    /**
-     * @param array{t: string, done?: bool, doneAt?: string, doneBy?: string, feedback?: bool, img?: string|list<string>, s?: bool} $step
-     *
-     * @return array{t: string, done?: bool, doneAt?: string, doneBy?: string, feedback?: bool, img?: string|list<string>, s?: bool}
-     */
-    private function mark(array $step, bool $done, bool $feedback, \DateTimeImmutable $day): array
-    {
-        if (!$done) {
-            unset($step['done'], $step['doneAt'], $step['doneBy']);
-        } elseif (!($step['done'] ?? false)) {
-            $step['done'] = true;
-            $step['doneAt'] = $day->format('Y-m-d H:i');
-        }
-        if ($feedback) {
-            $step['feedback'] = true;
-        }
-
-        return $step;
-    }
-
-    // The reference rewritten, created in the card's project when it had none, an empty part or a file other cards cite leaving it as it was, so the card's markdown never rewrites a reference of the whole space
-    private function readReference(Card $card, string $text): void
-    {
-        $doc = $card->getDoc();
-        if ('' === trim($text) || (null !== $doc && $this->docRepository->isCitedByAnotherCard($doc, $card))) {
-            return;
-        }
-        $doc ??= $this->docRepository->newFile($card->getProject(), $card->getTitle());
-        $card->setDoc($doc->fromMarkdown($text));
+        return implode("\n", [...$lines, ...$this->steps($card), ...$this->reference($card)]) . "\n";
     }
 
     // The steps as task list items under the « ### » heading of their group, then the feedback, its screenshots as images on the indented lines under it
     /** @return list<string> */
-    private function steps(Card $card, bool $framed): array
+    private function steps(Card $card): array
     {
         $lines = [];
         foreach ([self::STEPS_HEADING => $card->getSteps(), self::FEEDBACK_HEADING => $card->getFeedback()] as $heading => $steps) {
@@ -261,7 +67,7 @@ class CardMarkdown
                     $group = $step['g'] ?? null;
                     array_push($lines, '', '### ' . ($group ?? '-'), '');
                 }
-                $lines[] = '- [' . (($step['done'] ?? false) ? 'x' : ' ') . '] ' . self::framed($step['t'], $framed && ($step['s'] ?? false)) . (isset($step['action']) ? ' `' . $step['action'] . '`' : '');
+                $lines[] = '- [' . (($step['done'] ?? false) ? 'x' : ' ') . '] ' . $step['t'] . (isset($step['action']) ? ' `' . $step['action'] . '`' : '');
                 foreach ((array) ($step['img'] ?? []) as $name) {
                     $lines[] = '  ![screenshot](' . $this->imageUrl($name) . ')';
                 }

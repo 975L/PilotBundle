@@ -31,7 +31,7 @@ class MenuProvider implements MenuProviderInterface
         return [];
     }
 
-    // The piloting pages themselves, on their own shell outside the back office, opened in their own tab from the shared links
+    // The piloting pages themselves, on their own shell outside the back office, opened in their own tab
     public function getLinks(): array
     {
         return [

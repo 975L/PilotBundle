@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.6.0
+
+Share links removed, card number shown, runs named after who asked
+
+- [BC-Break] The read-only and editing links of a card removed with `ShareController`, its `pilot_share*` routes, the `share`, `unshare`, `lend` and `unlend` gestures and the `c975l_pilot_share_write` limiter, an agent reading a card by its number instead (24/11/2026)
+- [BC-Break] `Card::share()`, `unshare()`, `getShareToken()`, `lend()`, `unlend()`, `getEditToken()`, `isNoteShared()`, `shareNote()` and the second argument of `addFeedback()` removed, with the `share_token`, `edit_token` and `note_shared` columns (24/11/2026)
+- [BC-Break] `CardMarkdown::read()`, `framed()`, `SHARED_TAG` and the second argument of `write()` removed, its constructor no longer taking a `DocRepository` (24/11/2026)
+- [BC-Break] `CardImages::renewFeedback()`, `DocRepository::isCitedByAnotherCard()` and `PilotController::SHARE_HEADER` removed (24/11/2026)
+- `pilot_card` and the MCP server's instructions no longer frame text between `<shared>` tags (24/11/2026)
+- The card's number shown above its title in its dialog, copied by a click (24/11/2026)
+- The guided project `pilot-share` replaced by `pilot-number`, copying a card's number (24/11/2026)
+- A run keeps the name of the member who asked for it (`Run::getRequester()`, `CardFlow::displayName()`), handed to the runner as `requester` and to its commands as `{requester}`, empty when nobody signed in asked (24/11/2026)
+- A step whose machine action is edited in a card's dialog saved again instead of answering a 404 page (24/11/2026)
+
 ## v1.5.0
 
 Pages opened by a remembered login, Codacy grade shown

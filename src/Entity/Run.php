@@ -91,6 +91,11 @@ class Run
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $params;
 
+    // Name of the member who asked for the run, null when nobody signed in did (a scheduled task)
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
+    private ?string $requester = null;
+
     // A queued run of a card, doing the given action of one of its steps or, without one, the card's own action with its comment
     /** @param array<string, string> $params */
     public function __construct(
@@ -119,6 +124,19 @@ class Run
     public function getParams(): array
     {
         return $this->params ?? $this->card->getParams() + (null !== $this->card->getComment() ? ['comment' => $this->card->getComment()] : []);
+    }
+
+    public function getRequester(): ?string
+    {
+        return $this->requester;
+    }
+
+    // Names who asked for the run, cut to what the column holds
+    public function setRequester(?string $requester): static
+    {
+        $this->requester = null !== $requester ? mb_substr($requester, 0, 100) : null;
+
+        return $this;
     }
 
     // Index of the checklist step the run does, null for the card's own action

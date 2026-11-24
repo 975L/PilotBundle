@@ -126,7 +126,8 @@ export default class extends Controller {
         this.refocus = form.querySelector("[data-pilot-refocus]")?.contains(document.activeElement) ? form.getAttribute("action") : null;
         let next = null;
         let gone = false;
-        this.pending = fetch(form.action, { method: "POST", headers: { "X-Pilot-Dialog": "1" }, body: new FormData(form) })
+        // The attribute rather than form.action, which a field named "action" (a step's machine action) shadows
+        this.pending = fetch(form.getAttribute("action"), { method: "POST", headers: { "X-Pilot-Dialog": "1" }, body: new FormData(form) })
             .then((response) => {
                 // A gesture that made another card (a copy) names it, the dialog then showing it; a card deleted closes the dialog
                 next = response.headers.get("X-Pilot-Location");

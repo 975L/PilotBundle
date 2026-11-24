@@ -9,6 +9,9 @@
         {% if card.activeRuns is not empty %}
             <div hidden data-controller="pilot-run-watch" data-pilot-run-watch-url-value="{{ pilot_card_path(card) }}" data-pilot-run-watch-state-value="{{ card.activeRuns|map(run => run.id ~ ':' ~ run.status.value ~ ':' ~ pilot_run_progress(run).value ~ ':' ~ run.message)|join('|') }}"></div>
         {% endif %}
+        {# The card's number, its id, to name it to an agent; a click copies it #}
+        {% set number = 'label.card_number'|trans({'%id%': card.id}, 'pilot') %}
+        <button type="button" class="pilot-btn pilot-btn-ghost pilot-small pilot-card-number" data-controller="pilot-copy" data-action="pilot-copy#copy" data-pilot-copy-text-value="{{ number }}" title="{{ 'label.card_number_copy'|trans({}, 'pilot') }}">{{ number }}</button>
         {# Each field edited in place: its text clicked shows the form beside it, saved when left (pilot-inline-edit); read only without the right to write the card #}
         {% if can.edit %}
         <div data-controller="pilot-inline-edit">
@@ -64,7 +67,7 @@
                 {# The template the card comes from, its plan's or the one it was laid from, where its steps are kept for every card built from it #}
                 <a href="{{ path('pilot_settings_edit', {kind: 'template', id: card.template.id}) }}" class="pilot-tag pilot-card-template">{{ pilot_icon('list-ol') }}{{ 'label.card_template'|trans({'%name%': card.template.name}, 'pilot') }}</a>
             {% endif %}
-            {# Whom the card waits on, shown and edited only once set (by the markdown or an editing link) #}
+            {# Whom the card waits on, shown and edited only once set #}
             {% if card.waitingOn %}
             <span data-controller="pilot-inline-edit">
                 <span class="pilot-tag pilot-tag-info pilot-inline-view" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}">{{ 'label.waiting_on'|trans({'%who%': card.waitingOn}, 'pilot') }}</span>
@@ -104,7 +107,7 @@
         {% if card.sourceUrl or card.resultUrl or can.edit %}
         <div class="pilot-small pilot-mb pilot-card-links">
             {% for field, url in {sourceUrl: card.sourceUrl, resultUrl: card.resultUrl} %}
-                {% set label = (field == 'sourceUrl' ? 'label.card_source' : 'label.card_result')|trans({}, 'pilot') %}
+                {% set label = field == 'sourceUrl' ? 'label.card_source'|trans({}, 'pilot') : 'label.card_result'|trans({}, 'pilot') %}
                 {% if url or can.edit %}
                 <div data-controller="pilot-inline-edit" class="pilot-card-{{ field == 'sourceUrl' ? 'source' : 'result' }}">
                     <span class="pilot-inline-view" data-pilot-inline-edit-target="view"{% if can.edit %} data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}"{% endif %}>
@@ -172,18 +175,6 @@
                 <input type="hidden" name="_token" value="{{ token }}">
                 <button class="pilot-btn pilot-btn-icon pilot-duplicate" title="{{ 'label.card_duplicate'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_duplicate'|trans({}, 'pilot') }}">{{ pilot_icon('clone') }}</button>
             </form>
-            {# The read-only link and the editing one, the latter for who may hand the card to a machine since its holder may: a click copies it, made the first time and kept; the cross beside stops it #}
-            {% set links = [{gesture: 'share', stop: 'unshare', class: 'pilot-share', token: card.shareToken, icon: 'eye', label: 'label.share'|trans({}, 'pilot'), stop_label: 'label.share_stop'|trans({}, 'pilot')}] %}
-            {% if can.run %}{% set links = links|merge([{gesture: 'lend', stop: 'unlend', class: 'pilot-lend', token: card.editToken, icon: 'pen-to-square', label: 'label.share_edit'|trans({}, 'pilot'), stop_label: 'label.share_edit_stop'|trans({}, 'pilot')}]) %}{% endif %}
-            {% for link in links %}
-                <button type="button" class="pilot-btn pilot-btn-icon{{ link.token ? ' pilot-btn-secondary' }} {{ link.class }}" data-controller="pilot-copy" data-action="pilot-copy#copy" data-pilot-copy-text-value="{{ link.token ? url('pilot_share', {token: link.token}) }}" data-pilot-copy-url-value="{{ path('pilot_card_gesture', {id: card.id, gesture: link.gesture}) }}" data-pilot-copy-token-value="{{ token }}" title="{{ link.label }}" aria-label="{{ link.label }}">{{ pilot_icon(link.icon) }}</button>
-                {% if link.token %}
-                    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: link.stop}) }}">
-                        <input type="hidden" name="_token" value="{{ token }}">
-                        <button class="pilot-btn pilot-btn-ghost pilot-btn-delete pilot-{{ link.stop }}" title="{{ link.stop_label }}" aria-label="{{ link.stop_label }}">{{ pilot_icon('xmark') }}</button>
-                    </form>
-                {% endif %}
-            {% endfor %}
             {{ exports }}
         </div>
         {% endif %}

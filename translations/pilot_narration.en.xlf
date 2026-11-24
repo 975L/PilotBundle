@@ -98,6 +98,22 @@
                 <source>narration.guided_step_pilot_machine_projects</source>
                 <target>Tick the spaces whose cards it takes.</target>
             </trans-unit>
+            <trans-unit id="ZzinfSm">
+                <source>narration.guided_step_pilot_number_card</source>
+                <target>Click a card's tile: it opens over the page.</target>
+            </trans-unit>
+            <trans-unit id="9T4QoUs">
+                <source>narration.guided_step_pilot_number_number</source>
+                <target>Click the number above the title: it is copied, ready to paste.</target>
+            </trans-unit>
+            <trans-unit id="3qzpfpd">
+                <source>narration.guided_step_pilot_number_open</source>
+                <target>Open the piloting pages, on their dashboard.</target>
+            </trans-unit>
+            <trans-unit id="fCBuxbo">
+                <source>narration.guided_step_pilot_number_space</source>
+                <target>Click the space of the card, in the left column.</target>
+            </trans-unit>
             <trans-unit id="6Z6IMzN">
                 <source>narration.guided_step_pilot_run_card</source>
                 <target>Click a card's tile: it opens over the page.</target>
@@ -116,22 +132,6 @@
             </trans-unit>
             <trans-unit id="zJeSfvc">
                 <source>narration.guided_step_pilot_run_space</source>
-                <target>Click the space of the card, in the left column.</target>
-            </trans-unit>
-            <trans-unit id="0to.xu_">
-                <source>narration.guided_step_pilot_share_card</source>
-                <target>Click a card's tile: it opens over the page.</target>
-            </trans-unit>
-            <trans-unit id="YtbeBG9">
-                <source>narration.guided_step_pilot_share_link</source>
-                <target>Click the eye: the reading link is copied, ready to paste.</target>
-            </trans-unit>
-            <trans-unit id="s2_ACN2">
-                <source>narration.guided_step_pilot_share_open</source>
-                <target>Open the piloting pages, on their dashboard.</target>
-            </trans-unit>
-            <trans-unit id="UMNjv5R">
-                <source>narration.guided_step_pilot_share_space</source>
                 <target>Click the space of the card, in the left column.</target>
             </trans-unit>
             <trans-unit id="ErmIV1o">

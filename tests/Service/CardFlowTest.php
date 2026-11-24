@@ -21,7 +21,9 @@ use c975L\PilotBundle\Exception\FlowException;
 use c975L\PilotBundle\Repository\ActionRepository;
 use c975L\PilotBundle\Service\CardFlow;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Clock\MockClock;
+use Symfony\Component\Security\Core\User\InMemoryUser;
 
 class CardFlowTest extends TestCase
 {
@@ -42,6 +44,28 @@ class CardFlowTest extends TestCase
         $this->assertSame('ÉT', CardFlow::initials('élan-two'));
         $this->assertNull(CardFlow::initials(null));
         $this->assertNull(CardFlow::initials('@example.com'));
+    }
+
+    // A display name comes from the name part of an identifier, each word capitalised, nothing giving none
+    public function testDisplayName(): void
+    {
+        $this->assertSame('Item One', CardFlow::displayName('item.one@example.com'));
+        $this->assertSame('Élan Two', CardFlow::displayName('élan-two'));
+        $this->assertNull(CardFlow::displayName(null));
+        $this->assertNull(CardFlow::displayName('@example.com'));
+    }
+
+    // A run names the member who asked for it, by the card or by a step, and nobody when no one signed in did
+    public function testRunNamesItsRequester(): void
+    {
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn(new InMemoryUser('item.one@example.com', null));
+        $flow = new CardFlow(new MockClock('2026-11-24 10:00'), $security);
+        $this->card->addStep('item-2')->setStepAction(0, 'hello');
+
+        $this->assertSame('Item One', $flow->runStep($this->card, 0)->getRequester());
+        $this->assertSame('Item One', $flow->entrust(new Card($this->card->getProject(), 'item-3'), 'hello', [])->getRequester());
+        $this->assertNull($this->flow->entrust(new Card($this->card->getProject(), 'item-4'), 'hello', [])->getRequester());
     }
 
     // Handing a card to a machine makes it a runner card with its action and a queued run

@@ -30,7 +30,7 @@ class PilotGuidedProjectProviderTest extends TestCase
     {
         $projects = $this->guidedProjects();
 
-        $this->assertSame(['pilot-space', 'pilot-card', 'pilot-steps', 'pilot-share', 'pilot-machine', 'pilot-template', 'pilot-run', 'pilot-credits', 'pilot-agent'], array_column($projects, 'slug'));
+        $this->assertSame(['pilot-space', 'pilot-card', 'pilot-steps', 'pilot-number', 'pilot-machine', 'pilot-template', 'pilot-run', 'pilot-credits', 'pilot-agent'], array_column($projects, 'slug'));
         $this->assertSame([12010, 12020, 12030, 12040, 12050, 12060, 12070, 12080, 12090], array_column($projects, 'order'));
         foreach ($projects as $project) {
             $this->assertSame('pilot', $project['translation_domain']);
@@ -41,7 +41,7 @@ class PilotGuidedProjectProviderTest extends TestCase
         foreach (['pilot-space', 'pilot-machine', 'pilot-template', 'pilot-credits'] as $slug) {
             $this->assertSame('ROLE_ADMIN', $roles[$slug], $slug);
         }
-        foreach (['pilot-card', 'pilot-steps', 'pilot-share', 'pilot-run', 'pilot-agent'] as $slug) {
+        foreach (['pilot-card', 'pilot-steps', 'pilot-number', 'pilot-run', 'pilot-agent'] as $slug) {
             $this->assertNull($roles[$slug], $slug);
         }
     }
@@ -125,10 +125,10 @@ class PilotGuidedProjectProviderTest extends TestCase
     {
         $step = $this->guidedProjects()[3]['steps'][3];
 
-        $this->assertSame('label.guided_step_pilot_share_link', $step['label']);
-        $this->assertSame('description.guided_step_pilot_share_link', $step['description']);
-        $this->assertSame('narration.guided_step_pilot_share_link', $step['narration']);
-        $this->assertSame('.pilot-share', $step['highlight']);
+        $this->assertSame('label.guided_step_pilot_number_number', $step['label']);
+        $this->assertSame('description.guided_step_pilot_number_number', $step['description']);
+        $this->assertSame('narration.guided_step_pilot_number_number', $step['narration']);
+        $this->assertSame('.pilot-card-number', $step['highlight']);
     }
 
     // The keys a translation file carries

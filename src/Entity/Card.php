@@ -70,10 +70,6 @@ class Card implements \Stringable
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $note = null;
 
-    // Whether the note was last written through the card's editing link, by someone outside the account
-    #[ORM\Column(options: ['default' => false])]
-    private bool $noteShared = false;
-
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $due = null;
 
@@ -99,7 +95,7 @@ class Card implements \Stringable
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $comment = null;
 
-    // Sub-steps ticked one by one: text, the group gathering it with its neighbours, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), the machine action a step leaves for once the one before is ticked; the feedback (a fix, an idea, the file name of a screenshot, why the machine left it open) after the steps, a line written through the editing link marked
+    // Sub-steps ticked one by one: text, the group gathering it with its neighbours, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), the machine action a step leaves for once the one before is ticked; the feedback (a fix, an idea, the file name of a screenshot, why the machine left it open) after the steps
     /** @var list<array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string|list<string>, r?: string, s?: bool}> */
     #[ORM\Column(type: Types::JSON)]
     private array $checklist = [];
@@ -134,16 +130,6 @@ class Card implements \Stringable
     #[ORM\Column(length: 100, nullable: true)]
     #[Assert\Length(max: 100)]
     private ?string $image = null;
-
-    // The secret of the read-only link sharing the card outside the back office, none while it is not shared
-    #[ORM\Column(length: 32, unique: true, nullable: true)]
-    #[Assert\Length(max: 32)]
-    private ?string $shareToken = null;
-
-    // The secret of the link letting whoever holds it read and rewrite the card, none while it is not given
-    #[ORM\Column(length: 32, unique: true, nullable: true)]
-    #[Assert\Length(max: 32)]
-    private ?string $editToken = null;
 
     // Project and id of the card in the source it was imported from ("catalog:item-1"), so a second import updates instead of duplicating
     #[ORM\Column(length: 100, unique: true, nullable: true)]
@@ -313,26 +299,9 @@ class Card implements \Stringable
         return $this->note;
     }
 
-    // The note, written by a member: a note that changes is no longer the editing link's
     public function setNote(?string $note): static
     {
-        if ($note !== $this->note) {
-            $this->noteShared = false;
-        }
         $this->note = $note;
-
-        return $this;
-    }
-
-    public function isNoteShared(): bool
-    {
-        return $this->noteShared;
-    }
-
-    // Marks the note as written through the editing link
-    public function shareNote(): static
-    {
-        $this->noteShared = true;
 
         return $this;
     }
@@ -463,15 +432,15 @@ class Card implements \Stringable
         return $this->reopen();
     }
 
-    // Adds a feedback at the end (a fix, an idea), marked when it comes through the editing link, an empty text adding nothing, a full checklist refusing it; a done card opens again
-    public function addFeedback(string $text, bool $shared = false): static
+    // Adds a feedback at the end (a fix, an idea), an empty text adding nothing, a full checklist refusing it; a done card opens again
+    public function addFeedback(string $text): static
     {
         $text = mb_substr(trim($text), 0, 500);
         if ('' === $text) {
             return $this;
         }
         self::expectRoom(\count($this->checklist) + 1);
-        $this->checklist[] = ['t' => $text, 'feedback' => true] + ($shared ? ['s' => true] : []);
+        $this->checklist[] = ['t' => $text, 'feedback' => true];
 
         return $this->reopen();
     }
@@ -678,7 +647,7 @@ class Card implements \Stringable
         return $this;
     }
 
-    // Rewrites the text of a step, keeping what it spends, names and whether it is done, a text that changes no longer the editing link's; an empty text removes it, its run under way withdrawn
+    // Rewrites the text of a step, keeping what it spends, names and whether it is done; an empty text removes it, its run under way withdrawn
     public function renameStep(int $index, string $text, \DateTimeImmutable $now): static
     {
         if (!isset($this->checklist[$index])) {
@@ -692,9 +661,8 @@ class Card implements \Stringable
             return $this->restep(array_values($steps), array_keys($steps), $now);
         }
         $before = self::stepKey($this->checklist[$index]);
-        if ($text !== $this->checklist[$index]['t']) {
-            unset($this->checklist[$index]['s']);
-        }
+        // The mark of a line once written through a shared link, which no longer exists
+        unset($this->checklist[$index]['s']);
         $this->checklist[$index]['t'] = $text;
         $this->renameNeed($before, self::stepKey($this->checklist[$index]));
 
@@ -906,7 +874,7 @@ class Card implements \Stringable
         return $this;
     }
 
-    // Another card merged into this one: its note under this one's, the link's once either was, its steps after these, its feedback after this one's with their screenshots, it left without any so its removal deletes none; a done card opens again - refused past the checklist's ceiling
+    // Another card merged into this one: its note under this one's, its steps after these, its feedback after this one's with their screenshots, it left without any so its removal deletes none; a done card opens again - refused past the checklist's ceiling
     public function absorb(self $other): static
     {
         if ($other === $this) {
@@ -915,7 +883,6 @@ class Card implements \Stringable
         self::expectRoom(\count($this->checklist) + \count($other->checklist));
         $note = implode("\n\n", array_filter([trim((string) $this->note), trim((string) $other->getNote())], static fn (string $text): bool => '' !== $text));
         $this->note = '' === $note ? null : $note;
-        $this->noteShared = $this->noteShared || ($other->isNoteShared() && null !== $other->getNote());
         $this->checklist = [...array_values($this->getSteps()), ...array_values($other->getSteps()), ...array_values($this->getFeedback()), ...array_values($other->getFeedback())];
         $other->setChecklist([]);
 
@@ -927,12 +894,12 @@ class Card implements \Stringable
     {
         $steps = array_map(static function (array $step): array {
             // A screenshot belongs to the card it was sent on, the copy never sharing its file, nor who ticked a step or why a machine left a feedback open
-            unset($step['done'], $step['doneAt'], $step['doneBy'], $step['img'], $step['r']);
+            unset($step['done'], $step['doneAt'], $step['doneBy'], $step['img'], $step['r'], $step['s']);
 
             return $step;
         }, $this->checklist);
 
-        $copy = new self($this->project, mb_substr($this->title . $suffix, 0, 500))
+        return new self($this->project, mb_substr($this->title . $suffix, 0, 500))
             ->setNote($this->note)
             ->setDue($this->due)
             ->setDoc($this->doc)
@@ -941,8 +908,6 @@ class Card implements \Stringable
             ->follow($this->template)
             ->assign($this->executor, $this->kind, $this->action, $this->params)
             ->setChecklist($steps);
-
-        return $this->noteShared ? $copy->shareNote() : $copy;
     }
 
     public function getImage(): ?string
@@ -961,54 +926,6 @@ class Card implements \Stringable
     public function isSheet(): bool
     {
         return null !== $this->cardSet && $this->cardSet->isSheets();
-    }
-
-    public function getShareToken(): ?string
-    {
-        return $this->shareToken;
-    }
-
-    // Shares the card read-only, its secret made once and kept: the link stays the same until sharing stops
-    public function share(): static
-    {
-        $this->shareToken ??= self::newToken();
-
-        return $this;
-    }
-
-    // Stops sharing: the old link answers nothing, a later share gets a new one
-    public function unshare(): static
-    {
-        $this->shareToken = null;
-
-        return $this;
-    }
-
-    public function getEditToken(): ?string
-    {
-        return $this->editToken;
-    }
-
-    // Gives the card's editing link, its secret made once and kept until it is taken back
-    public function lend(): static
-    {
-        $this->editToken ??= self::newToken();
-
-        return $this;
-    }
-
-    // Takes the editing link back: the old one answers nothing
-    public function unlend(): static
-    {
-        $this->editToken = null;
-
-        return $this;
-    }
-
-    // A secret of 32 hex characters
-    private static function newToken(): string
-    {
-        return bin2hex(random_bytes(16));
     }
 
     public function getDoneAt(): ?\DateTimeImmutable

@@ -10,9 +10,9 @@
 
 namespace c975L\PilotBundle\Tests\Controller;
 
+use c975L\PilotBundle\Controller\CardImageController;
 use c975L\PilotBundle\Controller\PilotController;
 use c975L\PilotBundle\Controller\SettingsController;
-use c975L\PilotBundle\Controller\ShareController;
 use c975L\PilotBundle\Entity\Project;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -39,7 +39,7 @@ class PilotRoutesTest extends TestCase
         yield 'card by its number' => ['/pilot/card/12', 'pilot_card'];
         yield 'file' => ['/pilot/doc/catalog-file', 'pilot_doc'];
         yield 'card as markdown' => ['/pilot/card/12.md', 'pilot_card_markdown'];
-        yield 'shared card' => ['/pilot/share/' . str_repeat('a', 32), 'pilot_share'];
+        yield 'feedback screenshot' => ['/pilot/share/image/' . str_repeat('a', 32) . '.png', CardImageController::FEEDBACK_ROUTE];
     }
 
     // Each address reaches its own page
@@ -62,7 +62,7 @@ class PilotRoutesTest extends TestCase
     {
         $loader = new AttributeRouteControllerLoader();
         $routes = new RouteCollection();
-        foreach ([PilotController::class, SettingsController::class, ShareController::class] as $controller) {
+        foreach ([PilotController::class, SettingsController::class, CardImageController::class] as $controller) {
             $routes->addCollection($loader->load($controller));
         }
 

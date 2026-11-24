@@ -75,7 +75,7 @@ class CardFlow
         $this->expectOffered($card, (string) $card->getAction());
         $card->setStatus(CardStatus::Running);
 
-        return new Run($card);
+        return new Run($card)->setRequester($this->requester());
     }
 
     // Accepts what the machine produced: a run started by a checklist step ticks that step, any other closes the card
@@ -155,13 +155,29 @@ class CardFlow
     // Initials of whoever ticks, from the name part of their identifier: the first letter of its first two words, else its first two letters
     public static function initials(?string $identifier): ?string
     {
-        $name = explode('@', (string) $identifier)[0];
-        $words = preg_split('/[^\p{L}\p{N}]+/u', $name, -1, \PREG_SPLIT_NO_EMPTY) ?: [];
+        $words = self::nameWords($identifier);
         if ([] === $words) {
             return null;
         }
 
         return mb_strtoupper(isset($words[1]) ? mb_substr($words[0], 0, 1) . mb_substr($words[1], 0, 1) : mb_substr($words[0], 0, 2));
+    }
+
+    // Name of whoever asks, from the name part of their identifier, each word capitalised ("item.one@example.com" gives "Item One")
+    public static function displayName(?string $identifier): ?string
+    {
+        $words = self::nameWords($identifier);
+
+        return [] !== $words ? implode(' ', array_map(static fn (string $word): string => mb_convert_case($word, \MB_CASE_TITLE), $words)) : null;
+    }
+
+    // Words of the name part of an identifier, the domain of an email left out
+    /** @return list<string> */
+    private static function nameWords(?string $identifier): array
+    {
+        $name = explode('@', (string) $identifier)[0];
+
+        return preg_split('/[^\p{L}\p{N}]+/u', $name, -1, \PREG_SPLIT_NO_EMPTY) ?: [];
     }
 
     // Queues the action a step names, after the ones already queued on the card, when that step is still to do and not already under way
@@ -239,7 +255,13 @@ class CardFlow
         $this->expectOffered($card, $action);
         $card->setStatus(CardStatus::Running);
 
-        return new Run($card, $action, $params, $step);
+        return new Run($card, $action, $params, $step)->setRequester($this->requester());
+    }
+
+    // Name of whoever signed in asks for a run, null when nobody did
+    private function requester(): ?string
+    {
+        return self::displayName($this->security?->getUser()?->getUserIdentifier());
     }
 
     // Refuses an action the card's space is not offered, whoever names it (a step written by hand, a link, an agent, a report), so no machine runs what the admin kept for other spaces

@@ -68,25 +68,6 @@ class CardImages
         return 1 === preg_match('/^' . self::FEEDBACK_NAME . '$/', $name) && is_file($path) ? $path : null;
     }
 
-    // The card's screenshots copied under fresh names its feedback now holds, a missing file dropped and one that could not be copied keeping its name, so the addresses a revoked link handed out die once the caller forgets the old names after writing the card
-    public function renewFeedback(Card $card): Card
-    {
-        foreach ($card->getFeedback() as $index => $feedback) {
-            $names = [];
-            foreach ($feedback['img'] ?? [] as $old) {
-                $path = $this->feedbackPath($old);
-                if (null === $path) {
-                    continue;
-                }
-                $name = bin2hex(random_bytes(16)) . '.' . pathinfo($path, \PATHINFO_EXTENSION);
-                $names[] = copy($path, \dirname($path) . '/' . $name) ? $name : $old;
-            }
-            $card->setFeedbackImages($index, $names);
-        }
-
-        return $card;
-    }
-
     // The screenshots no longer held by any feedback removed from the disk
     /** @param list<string> $names */
     public function forget(array $names): void

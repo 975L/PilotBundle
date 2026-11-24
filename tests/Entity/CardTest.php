@@ -144,33 +144,7 @@ class CardTest extends TestCase
         $this->assertNull($card->setWaitingOn(' ')->getWaitingOn());
     }
 
-    // Shared under a 32 hex secret kept from one share to the next, a new one only after sharing stopped
-    public function testShare(): void
-    {
-        $card = new Card(new Project('catalog', 'Catalog'), 'item-1');
-        $this->assertNull($card->getShareToken());
-
-        $first = $card->share()->getShareToken();
-        $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', (string) $first);
-        $this->assertSame($first, $card->share()->getShareToken());
-        $this->assertNull($card->unshare()->getShareToken());
-        $this->assertNotSame($first, $card->share()->getShareToken());
-    }
-
-    // The editing link is a secret of its own, kept until taken back, apart from the read-only one
-    public function testLend(): void
-    {
-        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->share()->lend();
-        $edit = $card->getEditToken();
-
-        $this->assertMatchesRegularExpression('/^[0-9a-f]{32}$/', (string) $edit);
-        $this->assertNotSame($card->getShareToken(), $edit);
-        $this->assertSame($edit, $card->lend()->getEditToken());
-        $this->assertNull($card->unlend()->getEditToken());
-        $this->assertNotNull($card->getShareToken());
-    }
-
-    // The copy keeps what the card says and its steps unticked, not what it has lived (done, shared, waiting)
+    // The copy keeps what the card says and its steps unticked, not what it has lived (done, waiting)
     public function testDuplicate(): void
     {
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1')
@@ -178,7 +152,6 @@ class CardTest extends TestCase
             ->setDue(new \DateTimeImmutable('2026-11-20'))
             ->setWaitingOn('someone')
             ->setChecklist([['t' => 'step-1', 'done' => true, 'doneAt' => '2026-11-01', 'doneBy' => 'AB', 'cost' => ['credit' => 'item-1', 'amount' => 2]], ['t' => 'feedback-1', 'feedback' => true, 'r' => 'reason-1']])
-            ->share()
             ->markDone(new \DateTimeImmutable('2026-11-18'));
 
         $copy = $card->duplicate(' (copy)');
@@ -189,7 +162,6 @@ class CardTest extends TestCase
         $this->assertSame('2026-11-20', $copy->getDue()?->format('Y-m-d'));
         $this->assertSame([['t' => 'step-1', 'cost' => ['credit' => 'item-1', 'amount' => 2]], ['t' => 'feedback-1', 'feedback' => true]], $copy->getChecklist());
         $this->assertNull($copy->getWaitingOn());
-        $this->assertNull($copy->getShareToken());
         $this->assertNull($copy->getDoneAt());
         $this->assertNotSame('done', $copy->getStatus()->value);
     }
@@ -483,23 +455,14 @@ class CardTest extends TestCase
         $this->assertSame([3, 4], array_keys($parts[1]['steps']));
     }
 
-    // What the editing link wrote stays marked until a member rewrites it: the note once it changes, a step once its text does; a merge or a copy carrying the mark along
-    public function testSharedMarkFollowsTheText(): void
+    // The mark an old shared link left on a line goes once the line is renamed, and stays off a copy
+    public function testOldSharedMarkDropped(): void
     {
-        $card = new Card($this->project, 'item-1')->setNote('note-1')->shareNote()->setChecklist([['t' => 'step-1', 's' => true]])->addFeedback('feedback-1', true);
-        $card->setNote('note-1')->renameStep(0, 'step-1', new \DateTimeImmutable('2026-11-20'));
-        $this->assertTrue($card->isNoteShared());
-        $this->assertTrue($card->getChecklist()[0]['s'] ?? false);
-        $this->assertTrue($card->duplicate(' (copy)')->isNoteShared());
-        $this->assertTrue($card->duplicate(' (copy)')->getChecklist()[1]['s'] ?? false);
+        $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1', 's' => true], ['t' => 'step-2', 's' => true]]);
+        $this->assertArrayNotHasKey('s', $card->duplicate(' (copy)')->getChecklist()[1]);
 
-        $card->setNote('note-2')->renameStep(0, 'step-2', new \DateTimeImmutable('2026-11-20'));
-        $this->assertFalse($card->isNoteShared());
+        $card->renameStep(0, 'step-1', new \DateTimeImmutable('2026-11-24'));
         $this->assertArrayNotHasKey('s', $card->getChecklist()[0]);
-
-        $card->absorb(new Card($this->project, 'item-2')->setNote('note-3')->shareNote());
-        $this->assertTrue($card->isNoteShared());
-        $this->assertFalse(new Card($this->project, 'item-3')->absorb(new Card($this->project, 'item-4')->shareNote())->isNoteShared());
     }
 
     // A card merged takes the other's note under its own, its steps after its own and its feedback after its own, the other left empty; a done card opens again

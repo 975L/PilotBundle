@@ -55,7 +55,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function Symfony\Component\Translation\t;
@@ -77,7 +76,6 @@ class PilotController extends AbstractController
     public const string DONE_ROUTE = 'pilot_project_done';
     public const string DIALOG_HEADER = 'X-Pilot-Dialog';
     public const string LOCATION_HEADER = 'X-Pilot-Location';
-    public const string SHARE_HEADER = 'X-Pilot-Share';
     public const string GONE_HEADER = 'X-Pilot-Gone';
 
     // What the card's page asks the account may do, to show only the gestures it may make
@@ -94,8 +92,6 @@ class PilotController extends AbstractController
         'cancel' => PilotAccess::RUN,
         'validate' => PilotAccess::RUN,
         'feedbackrun' => PilotAccess::RUN,
-        'lend' => PilotAccess::RUN,
-        'unlend' => PilotAccess::RUN,
     ];
     public const string CARDS_ORDER_ROUTE = 'pilot_cards_order';
 
@@ -556,8 +552,8 @@ class PilotController extends AbstractController
         return new BinaryFileResponse($path, Response::HTTP_OK, $headers, true, null === $media ? ResponseHeaderBag::DISPOSITION_ATTACHMENT : null);
     }
 
-    // Done, back to do, a date (empty sends it back to the backlog), another space, its title and note, a feedback added (with its screenshot), its screenshot set or removed, its steps reordered, shared or given to edit or no longer, a step ticked or run, or a machine gesture; then back where the gesture came from
-    #[Route('/pilot/card/{id}/{gesture}', name: 'pilot_card_gesture', requirements: ['id' => '\d+', 'gesture' => 'done|reopen|schedule|move|edit|assign|unassign|stepadd|feedbackadd|feedbackimage|stepedit|steporder|share|unshare|lend|unlend|step|runstep|entrust|launch|cancel|validate|feedbackrun'], methods: ['POST'])]
+    // Done, back to do, a date (empty sends it back to the backlog), another space, its title and note, a feedback added (with its screenshot), its screenshot set or removed, its steps reordered, a step ticked or run, or a machine gesture; then back where the gesture came from
+    #[Route('/pilot/card/{id}/{gesture}', name: 'pilot_card_gesture', requirements: ['id' => '\d+', 'gesture' => 'done|reopen|schedule|move|edit|assign|unassign|stepadd|feedbackadd|feedbackimage|stepedit|steporder|step|runstep|entrust|launch|cancel|validate|feedbackrun'], methods: ['POST'])]
     public function gesture(Card $card, string $gesture, Request $request): Response
     {
         $this->guard($card, PilotAccess::VIEW);
@@ -580,7 +576,7 @@ class PilotController extends AbstractController
 
         // A gesture made in the card's dialog gets its answer as such, the dialog showing a refusal and reading the card again
         if ($request->headers->has(self::DIALOG_HEADER)) {
-            return new Response($refusal, null === $refusal ? Response::HTTP_NO_CONTENT : Response::HTTP_UNPROCESSABLE_ENTITY, null === $refusal ? $this->shareHeader($card, $gesture) : []);
+            return new Response($refusal, null === $refusal ? Response::HTTP_NO_CONTENT : Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         if (null !== $refusal) {
             $this->addFlash('danger', $refusal);
@@ -655,19 +651,6 @@ class PilotController extends AbstractController
         return $this->redirectToRoute(self::PROJECT_ROUTE, ['slug' => $project->getSlug()]);
     }
 
-    // The link a share or a lend gave, sent back for the page to copy it
-    /** @return array<string, string> */
-    private function shareHeader(Card $card, string $gesture): array
-    {
-        $token = match ($gesture) {
-            'share' => $card->getShareToken(),
-            'lend' => $card->getEditToken(),
-            default => null,
-        };
-
-        return null === $token ? [] : [self::SHARE_HEADER => $this->generateUrl(ShareController::ROUTE, ['token' => $token], UrlGeneratorInterface::ABSOLUTE_URL)];
-    }
-
     // One gesture on a card, a run it creates being persisted
     private function apply(Card $card, string $gesture, Request $request): void
     {
@@ -683,10 +666,6 @@ class PilotController extends AbstractController
             'feedbackimage' => $this->feedbackImage($card, $request),
             'stepedit' => $this->stepEdit($card, $request),
             'steporder' => $this->stepOrder->reorder($card, array_values(array_map(intval(...), array_filter($request->request->all('order'), is_numeric(...))))),
-            'share' => $card->share(),
-            'unshare' => $this->cardImages->renewFeedback($card->unshare()),
-            'lend' => $card->lend(),
-            'unlend' => $this->cardImages->renewFeedback($card->unlend()),
             'step' => $this->cardFlow->tick($card, $request->request->getInt('index', -1)),
             'runstep' => $this->cardFlow->runStep($card, $request->request->getInt('index', -1)),
             'entrust' => $this->cardFlow->entrust($card, $request->request->getString('action'), $this->params($request)),

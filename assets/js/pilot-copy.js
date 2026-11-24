@@ -7,16 +7,14 @@
  */
 import { Controller } from "@hotwired/stimulus";
 
-// Copies a card's link to the clipboard (the one it has, or the one a gesture makes the first time, sent back in X-Pilot-Share), or a text followed by the context an element holds; its button turning green or red for a moment to tell whether it worked
+// Copies a text to the clipboard (a card's number, a step handed to an AI) followed by the context an element holds; its button turning green or red for a moment to tell whether it worked
 export default class extends Controller {
-    static values = { text: String, url: String, token: String, context: String };
+    static values = { text: String, context: String };
 
-    // The text handed to the clipboard as a promise, so that the browser still counts the click while the link is being made
+    // The text handed to the clipboard
     copy(event) {
         event.stopPropagation();
-        const text = this.textValue ? Promise.resolve(this.textValue + this.attached()) : this.make();
-        const item = new ClipboardItem({ "text/plain": text.then((value) => new Blob([value], { type: "text/plain" })) });
-        navigator.clipboard.write([item]).then(() => this.flash("pilot-copied"), () => this.flash("pilot-copy-failed"));
+        navigator.clipboard.writeText(this.textValue + this.attached()).then(() => this.flash("pilot-copied"), () => this.flash("pilot-copy-failed"));
     }
 
     // The text of the element the context names (a card's markdown), after a blank line, none without one
@@ -24,19 +22,6 @@ export default class extends Controller {
         const source = this.contextValue ? document.getElementById(this.contextValue) : null;
 
         return source ? "\n\n" + source.value : "";
-    }
-
-    // The gesture making the link, the same link kept for the next clicks
-    make() {
-        const body = new URLSearchParams({ _token: this.tokenValue });
-
-        return fetch(this.urlValue, { method: "POST", headers: { "X-Pilot-Dialog": "1" }, body }).then((response) => {
-            const link = response.headers.get("X-Pilot-Share");
-            if (!response.ok || !link) throw new Error(response.statusText);
-            this.textValue = link;
-
-            return link;
-        });
     }
 
     // The button marked copied or failed for a moment

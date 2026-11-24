@@ -59,11 +59,11 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
                 ['key' => 'fold', 'highlight' => '[data-action="pilot-fold-all#toggle"]'],
                 ['key' => 'feedback', 'highlight' => '.pilot-feedback-add'],
             ]),
-            self::project('pilot_share', 12040, null, [
+            self::project('pilot_number', 12040, null, [
                 ['key' => 'open', 'url' => $this->dashboard()],
                 ['key' => 'space', 'highlight' => self::SPACE],
                 ['key' => 'card', 'highlight' => self::CARD],
-                ['key' => 'link', 'highlight' => '.pilot-share'],
+                ['key' => 'number', 'highlight' => '.pilot-card-number'],
             ]),
             self::project('pilot_machine', 12050, $admin, [
                 ['key' => 'open', 'url' => $this->urlGenerator->generate('pilot_settings_new', ['kind' => 'machine'])],

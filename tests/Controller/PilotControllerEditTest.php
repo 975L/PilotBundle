@@ -147,16 +147,6 @@ class PilotControllerEditTest extends TestCase
         $add->invoke($controller, $card, 'step-2');
     }
 
-    // The editing link lets its holder hand the card to a machine, so lending it asks as much; the read-only link asks writing the card
-    public function testLendAsksRun(): void
-    {
-        $levels = new \ReflectionClassConstant(PilotController::class, 'GESTURE_LEVELS')->getValue();
-
-        $this->assertSame(PilotAccess::RUN, $levels['lend']);
-        $this->assertSame(PilotAccess::RUN, $levels['unlend']);
-        $this->assertArrayNotHasKey('share', $levels);
-    }
-
     // A report's card goes to the page's space only when the report shows there the row, or for the whole table any row
     public function testReportProject(): void
     {
@@ -212,26 +202,6 @@ class PilotControllerEditTest extends TestCase
             $this->assertSame('flow.checklist_full', $exception->getMessage());
         }
         $this->assertSame([], glob($root . '/' . Card::FEEDBACK_IMAGE_DIRECTORY . '/*') ?: []);
-        new Filesystem()->remove($root);
-    }
-
-    // Taking a link back renames the screenshots its holder could read, the gesture forgetting the old files once the card is written
-    public function testUnshareRenewsTheScreenshots(): void
-    {
-        $root = sys_get_temp_dir() . '/pilot-shot-' . bin2hex(random_bytes(4));
-        $images = new CardImages($root);
-        $controller = $this->controller(images: $images);
-        foreach (['unshare', 'unlend'] as $gesture) {
-            $card = $this->card()->share()->lend();
-            $this->gesture($controller, 'feedbackAdd', $card, ['text' => 'feedback-1'], $this->png());
-            $old = $card->getFeedbackImages();
-
-            new \ReflectionMethod($controller, 'apply')->invoke($controller, $card, $gesture, new Request());
-
-            $this->assertCount(1, $card->getFeedbackImages());
-            $this->assertNotSame($old, $card->getFeedbackImages());
-            $this->assertNotNull($images->feedbackPath($card->getFeedbackImages()[0]));
-        }
         new Filesystem()->remove($root);
     }
 
@@ -380,7 +350,7 @@ class PilotControllerEditTest extends TestCase
     {
         $card = $this->card();
         new \ReflectionProperty(Card::class, 'id')->setValue($card, 7);
-        $cardMarkdown = new CardMarkdown($this->createStub(DocRepository::class), $this->createStub(UrlGeneratorInterface::class));
+        $cardMarkdown = new CardMarkdown($this->createStub(UrlGeneratorInterface::class));
         $controller = $this->routed($this->controller(access: $this->allowing()), true);
 
         $response = $controller->cardMarkdown($card, $cardMarkdown);

@@ -1,5 +1,13 @@
 # UPGRADE
 
+## v1.6.0
+
+Share links removed, runs named after who asked.
+
+- The read-only and editing links of a card are gone: `ShareController`, its routes `pilot_share*`, the `share`, `unshare`, `lend` and `unlend` gestures and the `c975l_pilot_share_write` limiter are removed. An agent reads a card by its number through `pilot_card`. Run `doctrine:migrations:diff` then `migrate`, which drops `pilot_card.share_token`, `pilot_card.edit_token` and `pilot_card.note_shared`, and adds `pilot_run.requester` (nullable). Keep the `^/pilot/share/` rule of `access_control`: the feedback's screenshots are still served under `/pilot/share/image/`.
+- `Card::share()`, `unshare()`, `getShareToken()`, `lend()`, `unlend()`, `getEditToken()`, `isNoteShared()` and `shareNote()`, the second argument of `Card::addFeedback()`, `CardMarkdown::read()`, `CardMarkdown::framed()`, `CardMarkdown::SHARED_TAG`, the second argument of `CardMarkdown::write()`, `CardImages::renewFeedback()`, `DocRepository::isCitedByAnotherCard()` and `PilotController::SHARE_HEADER` are removed; `CardMarkdown`'s constructor no longer takes a `DocRepository`.
+- A custom runner reads who asked for a run in the `requester` of the claim answer, empty when nobody signed in did.
+
 ## v1.4.0
 
 What the editing link writes kept apart for agents.
