@@ -1,22 +1,26 @@
-{# A card as a tile in the project's colour, opened by a click anywhere on it, dragged with the mouse to another day, to the backlog or onto another space (on a space's page only while it has no date): title, project (left out on the project's own page), date coloured by its nearness, steps ticked, feedback still open, status, the next action, one gesture; on a tint of that colour while open, a grey background once done. The rest is on its page #}
+{# A card as a tile in the project's colour, opened by a click anywhere on it, dragged with the mouse to another day, to the backlog or onto another space (on a space's page only while it has no date): title, number, project (left out on the project's own page), date coloured by its nearness, steps ticked, feedback still open, status, the next action, one gesture; on a tint of that colour while open, a grey background once done. The rest is on its page #}
 {% import '@c975LPilot/pilot/_due.html.twig' as due %}
 {% set next = card.steps|filter(step => not (step.done ?? false))|first %}
-{% set ticked = card.steps|filter(step => step.done ?? false)|length %}
+{% set ticked = card.steps|filter(step => (step.done ?? false))|length %}
 {% set feedback_open = card.feedback|filter(step => not (step.done ?? false))|length %}
 <div class="pilot-card{{ card.sheet ? ' pilot-sheet' }}{{ card.done ? ' pilot-card-done' }} pilot-ink-{{ card.project.slug }}" {% if not card.done and (project is not defined or not card.due) %} data-pilot-card-drag-target="card"{% endif %} data-card-id="{{ card.id }}" data-project-id="{{ card.project.id }}" data-schedule-url="{{ path('pilot_card_gesture', {id: card.id, gesture: 'schedule'}) }}" data-move-url="{{ path('pilot_card_gesture', {id: card.id, gesture: 'move'}) }}" data-edit-url="{{ path('pilot_card_gesture', {id: card.id, gesture: 'edit'}) }}" data-token="{{ csrf_token('pilot_card_gesture' ~ card.id) }}">
-    {# A sheet shows its picture, or its initial without one, then its title and the first line of its pitch #}
+    {# A sheet shows its picture, or its initial without one, then its title, its number and the first line of its pitch #}
     {% if card.sheet %}
         {% if card.image %}<img src="{{ path('pilot_card_image', {id: card.id}) }}" alt="{{ card.title }}" class="pilot-sheet-image" loading="lazy" draggable="false">{% else %}<div class="pilot-sheet-image pilot-sheet-initial">{{ card.title|first|upper }}</div>{% endif %}
     {% endif %}
     <div class="pilot-box-body pilot-stack pilot-grow">
         <a href="{{ pilot_card_path(card) }}" draggable="false" data-pilot-dialog="card-{{ card.id }}" class="pilot-strong pilot-plain pilot-stretched pilot-card-open">{{ card.title }}</a>
         {% if card.sheet %}
+            {# Its number under its title, to name the sheet to an agent without opening it #}
+            <div class="pilot-small pilot-muted">{{ 'label.card_number_short'|trans({'%id%': card.id}, 'pilot') }}</div>
             {% if card.note %}<div class="pilot-small pilot-muted">{{ card.note|split("\n")|first }}</div>{% endif %}
         {% else %}
         {% if next %}
             <div class="pilot-small pilot-muted">{{ 'label.next'|trans({}, 'pilot') }} {{ next.t }}</div>
         {% endif %}
         <div class="pilot-row pilot-row-tight pilot-small pilot-card-foot">
+            {# Its number, to name the card to an agent without opening it #}
+            <span class="pilot-muted">{{ 'label.card_number_short'|trans({'%id%': card.id}, 'pilot') }}</span>
             {# Its space's badge, above the link opening the card, leads to that space #}
             {% if project is not defined %}<a href="{{ path('pilot_project', {slug: card.project.slug}) }}" draggable="false" class="pilot-tag pilot-badge pilot-card-gesture pilot-color-{{ card.project.slug }}">{{ card.project.name }}</a>{% endif %}
             {% if card.due %}

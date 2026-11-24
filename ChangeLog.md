@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.6.1
+
+Card number shown on its tile
+
+- The card's number shown on its tile, named to an agent without opening it (24/11/2026)
+
 ## v1.6.0
 
 Share links removed, card number shown, runs named after who asked

@@ -204,7 +204,7 @@ The piloting brings its tools to the site's MCP endpoint, `/api/mcp`, which c975
 | `pilot_doc` | A file as markdown: title, summary, then detail |
 | `pilot_write_doc` | A file added to a `space` with its `title`, or the one named by `doc` rewritten, only the `summary` or `detail` given changing |
 
-A card is named to an agent by its number, shown in its dialog and copied by a click: `pilot_card` takes that id.
+A card is named to an agent by its number, shown on its tile and in its dialog, where a click copies it: `pilot_card` takes that id.
 
 The reading tools are marked read-only, the writing ones not and merging and deleting destructive, so the client asks before each write unless it was told to allow it: the confirmation is the client's, the server enforcing none. With Claude Code:
 

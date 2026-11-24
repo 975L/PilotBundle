@@ -3,6 +3,16 @@
         "date": "2026-11-24",
         "description": [
             {
+                "en": "Piloting: a card's number now shows on its tile too, so you can name it without opening it.",
+                "fr": "Pilotage : le numéro d'une carte s'affiche désormais aussi sur sa vignette, pour la désigner sans l'ouvrir.",
+                "es": "Pilotaje: el número de una tarjeta aparece ahora también en su miniatura, para nombrarla sin abrirla."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-24",
+        "description": [
+            {
                 "en": "Piloting: a card's links for people without an account are gone, an AI agent reading a card by the number now shown above its title (a click copies it); a task handed to a machine also says who asked for it, and editing a step in a card's window works again.",
                 "fr": "Pilotage : les liens d'une carte pour une personne sans compte disparaissent, un agent IA lisant une carte par le numéro désormais affiché au-dessus de son titre (un clic le copie) ; une tâche confiée à une machine dit aussi qui l'a demandée, et la modification d'une étape dans la fenêtre d'une carte fonctionne de nouveau.",
                 "es": "Pilotaje: los enlaces de una tarjeta para una persona sin cuenta desaparecen, y un agente IA lee una tarjeta por el número ahora mostrado encima de su título (un clic lo copia); una tarea confiada a una máquina indica también quién la pidió, y la edición de un paso en la ventana de una tarjeta vuelve a funcionar."

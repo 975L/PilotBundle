@@ -136,7 +136,7 @@
             </trans-unit>
             <trans-unit id="suU7fru">
                 <source>description.guided_step_pilot_number_card</source>
-                <target>Un clic en su mosaico la abre sobre la página.</target>
+                <target>Su mosaico muestra su número; un clic en él abre la tarjeta sobre la página.</target>
             </trans-unit>
             <trans-unit id="vqCn_pw">
                 <source>description.guided_step_pilot_number_number</source>
@@ -413,6 +413,10 @@
             <trans-unit id="pVlD.Px">
                 <source>label.card_number_copy</source>
                 <target>Copiar el número de la tarjeta</target>
+            </trans-unit>
+            <trans-unit id="p23QvIf">
+                <source>label.card_number_short</source>
+                <target>N.º %id%</target>
             </trans-unit>
             <trans-unit id="vaqVCcB">
                 <source>label.card_result</source>

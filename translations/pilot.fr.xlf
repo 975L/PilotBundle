@@ -136,7 +136,7 @@
             </trans-unit>
             <trans-unit id="suU7fru">
                 <source>description.guided_step_pilot_number_card</source>
-                <target>Un clic sur sa tuile l'ouvre par-dessus la page.</target>
+                <target>Sa tuile montre son numéro ; un clic dessus ouvre la carte par-dessus la page.</target>
             </trans-unit>
             <trans-unit id="vqCn_pw">
                 <source>description.guided_step_pilot_number_number</source>
@@ -413,6 +413,10 @@
             <trans-unit id="pVlD.Px">
                 <source>label.card_number_copy</source>
                 <target>Copier le numéro de la carte</target>
+            </trans-unit>
+            <trans-unit id="p23QvIf">
+                <source>label.card_number_short</source>
+                <target>n° %id%</target>
             </trans-unit>
             <trans-unit id="vaqVCcB">
                 <source>label.card_result</source>
