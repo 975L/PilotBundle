@@ -116,7 +116,7 @@
             </trans-unit>
             <trans-unit id="DE9JdQx">
                 <source>description.guided_step_pilot_machine_done</source>
-                <target>Son jeton s'affiche une seule fois : écrivez-le dans le runner.yaml du runner, sur la machine.</target>
+                <target>Son jeton s'affiche une seule fois : écrivez-le dans le secrets.yaml du dossier Pilot de la machine.</target>
             </trans-unit>
             <trans-unit id="pdfYjbv">
                 <source>description.guided_step_pilot_machine_name</source>

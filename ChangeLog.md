@@ -1,5 +1,28 @@
 # Changelog
 
+## v1.7.0
+
+Recipes followed by the runner's agent, pilot home folder
+
+- Runner reads its files in a pilot home, `~/Pilot` by default or `$PILOT_HOME`, an older `~/.config/pilot-runner` still read (`runner/pilot_home.py`) (24/11/2026)
+- Pilot home given a `.gitignore` keeping `secrets.yaml` and `work/` out of git, an existing one completed, the work folders under `work/` by default (24/11/2026)
+- Sites' tokens read in `secrets.yaml`, a token in `runner.yaml` still accepted (24/11/2026)
+- Recipes: `recipes/<key>.md` declared as actions, their text followed by the agent `runner.yaml` names, the prompt on its standard input (24/11/2026)
+- A recipe left aside is reported once in the log, not at every round (24/11/2026)
+- A `FAILED: <reason>` line fails a run with that reason, whatever its exit code (24/11/2026)
+- A run whose command cannot start fails with the reason instead of staying under way (24/11/2026)
+- An unreadable recipe or `actions.yaml` no longer stops the runner, the last readable `actions.yaml` kept (24/11/2026)
+- A `timeout` that is no positive number refused for a recipe, ignored for a script (24/11/2026)
+- A recipe with `browser: true` runs alone unless it sets `exclusive: false` (24/11/2026)
+- A token still in `runner.yaml` pointed out at start (24/11/2026)
+- Guided step of a new machine names `secrets.yaml` for its token (24/11/2026)
+- `actions.yaml` and `recipes/` read again at each round, an action added offered without restarting (24/11/2026)
+- `pilot-open.py` reads its folders in the same pilot home (24/11/2026)
+- Who asked for a run handed to its command as `PILOT_REQUESTER` (24/11/2026)
+- `timeout` of an action, or of the agent for a recipe, stops its command past it and fails the run (24/11/2026)
+- Runner tests in `runner/tests`, run by `composer runner-test` and the CI (24/11/2026)
+- README shows how a step runs and the pilot home as diagrams (24/11/2026)
+
 ## v1.6.1
 
 Card number shown on its tile

@@ -3,6 +3,21 @@
         "date": "2026-11-24",
         "description": [
             {
+                "en": "Piloting: a machine can now follow recipes, texts written on the machine that tell its AI agent what to do for a step, next to its scripts; everything it can do lives in one folder, ~/Pilot, to back up and version.",
+                "fr": "Pilotage : une machine peut désormais suivre des recettes, des textes écrits sur la machine qui disent à son agent IA quoi faire pour une étape, à côté de ses scripts ; tout ce qu'elle sait faire tient dans un seul dossier, ~/Pilot, à sauvegarder et versionner.",
+                "es": "Pilotaje: una máquina puede ahora seguir recetas, textos escritos en la máquina que indican a su agente de IA qué hacer en un paso, junto a sus scripts; todo lo que sabe hacer cabe en una sola carpeta, ~/Pilot, para respaldar y versionar."
+            },
+            {
+                "en": "Piloting: a run whose machine cannot start its agent now fails with the reason instead of staying under way.",
+                "fr": "Pilotage : une exécution dont la machine ne peut pas lancer son agent échoue désormais avec la raison, au lieu de rester en cours.",
+                "es": "Pilotaje: una ejecución cuya máquina no puede iniciar su agente falla ahora con el motivo, en lugar de quedarse en curso."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-24",
+        "description": [
+            {
                 "en": "Piloting: a card's number now shows on its tile too, so you can name it without opening it.",
                 "fr": "Pilotage : le numéro d'une carte s'affiche désormais aussi sur sa vignette, pour la désigner sans l'ouvrir.",
                 "es": "Pilotaje: el número de una tarjeta aparece ahora también en su miniatura, para nombrarla sin abrirla."

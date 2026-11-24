@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Opening handler of c975l/pilot-bundle: a "pilot-open:///path" link clicked under a step opens that folder in the file manager or that file in its usual application, on the computer of whoever clicks it, only under one of the folders the "open:" list of runner.yaml names ($PILOT_RUNNER_CONFIG, default ~/.config/pilot-runner), never a program or a script; --install declares the handler to the desktop for the current user.
+# Opening handler of c975l/pilot-bundle: a "pilot-open:///path" link clicked under a step opens that folder in the file manager or that file in its usual application, on the computer of whoever clicks it, only under one of the folders the "open:" list of runner.yaml names, in the pilot home (pilot_home.py: $PILOT_HOME, default ~/Pilot), never a program or a script; --install declares the handler to the desktop for the current user.
 
 import os
 import subprocess
@@ -9,7 +9,9 @@ from urllib.parse import unquote, urlparse
 
 import yaml
 
-CONFIG = Path(os.path.expanduser(os.environ.get('PILOT_RUNNER_CONFIG', '~/.config/pilot-runner')))
+from pilot_home import pilot_home
+
+CONFIG = pilot_home()
 SCHEME = 'pilot-open'
 DESKTOP = Path.home() / '.local/share/applications/pilot-open.desktop'
 # Files that would run something rather than show it
@@ -55,7 +57,7 @@ def install():
         '[Desktop Entry]',
         'Type=Application',
         'Name=Pilot open',
-        f'Exec=env PILOT_RUNNER_CONFIG={CONFIG} python3 {Path(__file__).resolve()} %u',
+        f'Exec=env PILOT_HOME={CONFIG} python3 {Path(__file__).resolve()} %u',
         'NoDisplay=true',
         f'MimeType=x-scheme-handler/{SCHEME};',
     ]) + '\n', encoding='utf-8')

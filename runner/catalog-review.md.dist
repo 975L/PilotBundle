@@ -1,0 +1,13 @@
+---
+label: Review the catalog item
+help: The agent reads the item's sheet and writes what to fix, without changing anything
+params: { item: 'item-\d+' }
+---
+
+Review the item named by the parameter in the catalog folder ~/catalog/<item>.
+
+1. Read its sheet, sheet.md, and its pictures.
+2. List what is missing or wrong: a field left empty, a picture under 800 px, a price without its currency.
+3. Write the list in review.md in the card's folder, one line per point, and name that file with a FILE line.
+
+Change nothing in the catalog: fixing it is a person's job.

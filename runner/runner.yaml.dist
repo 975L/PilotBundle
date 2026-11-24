@@ -1,13 +1,19 @@
-# Sites this machine serves, each with the token printed by c975l:pilot:machine-add on that site
+# Sites this machine serves, their tokens kept apart in secrets.yaml so that this file can be versioned
 sites:
   - url: https://pilot.example.com
-    token: change-me
   # A second site, a local copy for instance, served in the same loop
   # - url: http://127.0.0.1:8000
-  #   token: change-me
 
-# Root of the work folders, one per site and per card
-workdir: ~/.local/share/pilot-runner
+# Root of the work folders, one per site and per card (default: work/ in the pilot home, left out of git and of backups)
+# workdir: ~/Pilot/work
+
+# The AI agent following the recipes of recipes/: a command reading the prompt on its standard input, {workdir} being the card's folder; browser is added when a recipe asks for one
+# No permission bypass here: allow the agent only what its recipes need, in the folders they name
+agent:
+  argv: [claude, -p, --add-dir, '{workdir}']
+  browser: [--chrome]
+  # Seconds after which a recipe's run is stopped, unless its front matter sets its own timeout
+  timeout: 3600
 
 # Folders whose files and subfolders a pilot-open:// link may open on this computer (runner/pilot-open.py, installed by python3 runner/pilot-open.py --install), the paths a step names living under them
 open:

@@ -84,6 +84,7 @@
             "@lizard-nloc"
         ],
         "test": "phpunit",
+        "runner-test": "python3 -m unittest discover -s runner/tests",
         "qa": [
             "@audit-deps",
             "@cs",
@@ -91,7 +92,8 @@
             "@stan",
             "@rector",
             "@lizard",
-            "@test"
+            "@test",
+            "@runner-test"
         ]
     },
     "scripts-descriptions": {
@@ -102,6 +104,7 @@
         "rector": "Modernisation du code, en simulation (rector)",
         "lizard": "Complexité cyclomatique et longueur des méthodes (lizard)",
         "test": "Suite PHPUnit",
+        "runner-test": "Tests du runner de référence (Python, requests et PyYAML requis)",
         "qa": "Tous les contrôles de la CI, dans l'ordre - voir bin/ci.sh pour les rejouer sur des dépendances fraîches"
     },
     "support": {

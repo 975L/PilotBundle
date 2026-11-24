@@ -116,7 +116,7 @@
             </trans-unit>
             <trans-unit id="DE9JdQx">
                 <source>description.guided_step_pilot_machine_done</source>
-                <target>Its token shows once: write it in the runner's runner.yaml on the machine.</target>
+                <target>Its token shows once: write it in secrets.yaml, in the pilot home of the machine.</target>
             </trans-unit>
             <trans-unit id="pdfYjbv">
                 <source>description.guided_step_pilot_machine_name</source>

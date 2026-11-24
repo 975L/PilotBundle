@@ -152,7 +152,43 @@ Brings in the projects, tasks and files of a piloting kept elsewhere before, exp
 
 ## Runner machines
 
-A runner is any program, on a workstation or a server, that polls `/api/pilot/runner/claim` with its machine's token: any language able to send HTTP and read JSON will do, and the site never sends a command, only an action key and the values of its parameters. The link between an action and a runner is that key: at each call the machine declares the keys it can run, which fills the Actions screen; a card or a step names a key (picked in the step's form on the card), and the queue gives a run only to a machine that declared it, and takes one only for an action offered to the card's space (refused otherwise, whoever names it: a step, an agent, a report). The reference runner ships in `runner/` (Python 3 with `requests` and `PyYAML`): copy the folder to the machine, write `runner.yaml` from `runner.yaml.dist` (the sites served, each with its token, and an optional command printing the balances) and `actions.yaml` from `actions.yaml.dist` in `~/.config/pilot-runner` (or `$PILOT_RUNNER_CONFIG`), then run `pilot-runner.py --once` to try it and `pilot-runner.py --install` for a systemd user service. It is generic: its `actions.yaml` maps each key to a command (bash, Python or anything else), so writing an action means writing a script and declaring it there. A machine takes as many runs at once as its « Runs in parallel » setting allows (Machines screen, 1 by default, told at every claim in the `X-Pilot-Parallel` header); an action marked `exclusive: true` in `actions.yaml` (a driven browser, a heavy export) starts only on an idle machine and runs alone, the runner asking for the others alone (`only` in the claim) while runs are under way, and the site giving none of them while an exclusive one waits, so that the machine empties for it. A run under way shows the progress its command reports, or, when that lags, an estimate (« ≈ 40 % ») from the median time of the action's last runs, never past 95 %. A `FILE /absolute/path` line of a command names a file it wrote, never sent: the step shows those paths under it once its run is done, each folder once with its file names (`files` in `runs/{id}/finish`, 50 at most). With the config `pilot-open-scheme` (`pilot-open` by default), each folder and file is a `pilot-open:///path` link opening it on the computer of whoever clicks: `runner/pilot-open.py --install` declares that handler for the current user, and it opens only the paths under the folders its `runner.yaml` lists under `open:`, never a program, so each machine keeps its own layout:
+A step of a card is carried out by a machine, never by the site:
+
+```mermaid
+flowchart TD
+  A["1. A card step names an action"] --> B["2. The site queues a run<br/>with the action's key only"]
+  B --> C["3. A machine declaring that key takes it"]
+  C --> D["4. Its runner follows the recipe<br/>or runs the script of that key"]
+  D --> E["5. The step is ticked on the card"]
+```
+
+What a machine can do lives on the machine, in its pilot home: `~/Pilot` on Linux and macOS, `C:\Users\<name>\Pilot` on Windows, moved by `$PILOT_HOME` (under a folder already backed up, for instance). It is the heart of the work of the cards: back it up and version it with git, the `.gitignore` the runner writes keeping the tokens and the work folders out (a token still in `runner.yaml` is pointed out at start: move it to `secrets.yaml` first).
+
+```mermaid
+flowchart TD
+  P["~/Pilot"] --> R["recipes/<br/>one .md per action, its name the key"]
+  P --> A["actions.yaml<br/>the script actions"]
+  P --> C["runner.yaml<br/>sites, agent, folders to open"]
+  P --> S["secrets.yaml<br/>the sites' tokens, out of git"]
+  P --> W["work/<br/>one folder per card, out of git"]
+```
+
+An action that needs judgment (writing, generating an image, laying out a page, preparing a publication) is a **recipe**: a markdown file of `recipes/`, named after its key, whose front matter declares it as `actions.yaml` would and whose text is what the agent follows. The runner declares the recipes with the scripts, so the site offers only what the machine knows how to do, and still sends nothing but a key; the agent is a command of `runner.yaml` (`agent: argv`, `browser` added when a recipe sets `browser: true`), reading the prompt on its standard input: the recipe, then the card as data (title, note, date, space, who asked, parameters, its file, the feedback to handle), then the lines to answer with. A recipe always takes the card's feedback as its `comment`, runs alone when it sets `browser: true` (unless it says `exclusive: false`), and a `FAILED: <reason>` line fails its run with that reason, an agent ending without error when it gives up.
+
+```markdown
+---
+label: Review the catalog item
+help: The agent reads the item's sheet and writes what to fix
+params: { item: 'item-\d+' }
+browser: false
+---
+
+Review the item named by the parameter in ~/catalog/<item>, write the list of fixes in review.md and name it with a FILE line.
+```
+
+A mechanical action (an export, a build, a push) stays a script of `actions.yaml`. Since the card's title, note and feedback now reach an agent with rights on the machine, the prompt frames them as data, and the `runner.yaml.dist` grants no permission bypass: allow the agent only what its recipes need.
+
+A runner is any program, on a workstation or a server, that polls `/api/pilot/runner/claim` with its machine's token: any language able to send HTTP and read JSON will do, and the site never sends a command, only an action key and the values of its parameters. The link between an action and a runner is that key: at each call the machine declares the keys it can run, which fills the Actions screen; a card or a step names a key (picked in the step's form on the card), and the queue gives a run only to a machine that declared it, and takes one only for an action offered to the card's space (refused otherwise, whoever names it: a step, an agent, a report). The reference runner ships in `runner/` (Python 3 with `requests` and `PyYAML`): copy the folder to the machine, write in the pilot home `runner.yaml` from `runner.yaml.dist` (the sites served and the agent), `secrets.yaml` from `secrets.yaml.dist` (their tokens), `actions.yaml` from `actions.yaml.dist` and, for a first recipe, `recipes/catalog-review.md` from `catalog-review.md.dist` (an older install keeps `~/.config/pilot-runner`, or `$PILOT_RUNNER_CONFIG`, as long as it holds its `runner.yaml`), then run `pilot-runner.py --once` to try it and `pilot-runner.py --install` for a systemd user service. It is generic: its `actions.yaml` maps each key to a command (bash, Python or anything else), and its `recipes/` to texts its agent follows, `actions.yaml` and `recipes/` being read again at each round so that an action added is offered without restarting. A machine takes as many runs at once as its « Runs in parallel » setting allows (Machines screen, 1 by default, told at every claim in the `X-Pilot-Parallel` header); an action given `timeout: <seconds>` is stopped past it and fails (a recipe falling back on the `timeout` of `agent:`), each command reads the site's address and who asked for the run in `PILOT_URL` and `PILOT_REQUESTER`; an action marked `exclusive: true` in `actions.yaml` (a driven browser, a heavy export), or a recipe with `browser: true` unless it sets `exclusive: false`, starts only on an idle machine and runs alone, the runner asking for the others alone (`only` in the claim) while runs are under way, and the site giving none of them while an exclusive one waits, so that the machine empties for it. A run under way shows the progress its command reports, or, when that lags, an estimate (« ≈ 40 % ») from the median time of the action's last runs, never past 95 %. A `FILE /absolute/path` line of a command names a file it wrote, never sent: the step shows those paths under it once its run is done, each folder once with its file names (`files` in `runs/{id}/finish`, 50 at most). With the config `pilot-open-scheme` (`pilot-open` by default), each folder and file is a `pilot-open:///path` link opening it on the computer of whoever clicks: `runner/pilot-open.py --install` declares that handler for the current user, and it opens only the paths under the folders its `runner.yaml` lists under `open:`, never a program, so each machine keeps its own layout:
 
 ```yaml
 catalog-build:
@@ -218,7 +254,7 @@ A command that prints `FILE /absolute/path` lines names the files it wrote: they
 
 1. Keep the config `pilot-open-scheme` at `pilot-open`, its default (set to `none`, the folders and files stay plain text, an emptied field taking the default back).
 2. On each computer, list under `open:` in the runner's `runner.yaml` the folders whose files may be opened (`~/Documents`, the work folders…); a path outside them, a program or a script is never opened.
-3. Declare the handler for the current user: `PILOT_RUNNER_CONFIG=<config folder> python3 runner/pilot-open.py --install` (Linux, `xdg-mime`).
+3. Declare the handler for the current user: `PILOT_HOME=<pilot home> python3 runner/pilot-open.py --install` (Linux, `xdg-mime`).
 
 A click on a folder then opens it in the file manager, on a file in its usual application, Chrome asking once to allow `pilot-open://` links.
 

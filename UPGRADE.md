@@ -1,5 +1,13 @@
 # UPGRADE
 
+## v1.7.0
+
+Recipes followed by the runner's agent, pilot home folder.
+
+- Without a `workdir` in `runner.yaml`, the reference runner now keeps the card folders under `work/` of its pilot home instead of `~/.local/share/pilot-runner`: move `~/.local/share/pilot-runner/*` to `<pilot home>/work/`, or write `workdir: ~/.local/share/pilot-runner` in `runner.yaml`, so that a run reading earlier work and the `pilot-open://` links of earlier runs still find it.
+- The sites' tokens go to `secrets.yaml` (`tokens: {url: token}`), kept out of git by the pilot home's `.gitignore`; a token still in `runner.yaml` is read, and pointed out at start: move it before versioning the pilot home.
+- A recipe with `browser: true` now runs alone on its machine: write `exclusive: false` in its front matter to let it share the machine.
+
 ## v1.6.0
 
 Share links removed, runs named after who asked.

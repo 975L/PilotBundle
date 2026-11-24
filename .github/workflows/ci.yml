@@ -80,6 +80,12 @@ jobs:
             - name: Tests
               run: composer test -- --coverage-clover clover.xml
 
+            # The reference runner is Python: its tests need the two libraries it imports
+            - name: Tests du runner
+              run: |
+                  pip install requests pyyaml
+                  composer runner-test
+
             # Without the secret, the upload is skipped rather than failing the CI
             - name: Couverture vers Codacy
               if: env.CODACY_PROJECT_TOKEN != ''
