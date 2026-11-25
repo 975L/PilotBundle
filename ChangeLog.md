@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.9.0
+
+Credits toned by their renewal, outlook by card, title box
+
+- Dashboard's coming days stretched to their row's height, their cards' feet lined up (25/11/2026)
+- Credit tiles thickly bordered by the time left before their renewal, the shortfall said in the tile (25/11/2026)
+- Late cards and credits outlook headed larger, the outlook shown as card tiles, the one spending most of the credit renewing first ahead (25/11/2026)
+- `pilot_credit_outlook` gives each credit's tone (25/11/2026)
+- Card title edited in a growing box, kept on one line (25/11/2026)
+
 ## v1.8.0
 
 Step-only machine actions, credits outlook, tile progress bar

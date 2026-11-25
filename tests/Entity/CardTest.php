@@ -228,6 +228,12 @@ class CardTest extends TestCase
         $this->assertSame(500, mb_strlen(new Card(new Project('catalog', 'Catalog'), 'item-1')->setTitle(str_repeat('é', 600))->getTitle()));
     }
 
+    // A title pasted on several lines kept on one
+    public function testTitleOnOneLine(): void
+    {
+        $this->assertSame('item-1 item-2', new Card(new Project('catalog', 'Catalog'), 'item-1')->setTitle("item-1 \r\n  item-2")->getTitle());
+    }
+
     // A step removed by an empty text moves the runs of the steps after it, its own run leaving with it, withdrawn and the card to do again
     public function testRemovedStepMovesTheRuns(): void
     {

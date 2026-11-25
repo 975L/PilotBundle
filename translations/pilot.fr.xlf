@@ -104,7 +104,7 @@
             </trans-unit>
             <trans-unit id="co8a7N_">
                 <source>description.guided_step_pilot_credits_outlook</source>
-                <target>Ce qu'un crédit garde avant son renouvellement, et les étapes de cartes plus tardives qui pourraient le dépenser, avec ce qu'il faut faire avant.</target>
+                <target>La bordure d'un crédit vire à l'orange passé la moitié du mois avant son renouvellement, au rouge la dernière semaine s'il en reste ; dessous, les cartes plus tardives qui pourraient le dépenser, avec ce qu'il faut faire avant.</target>
             </trans-unit>
             <trans-unit id="ISH1E0_">
                 <source>description.guided_step_pilot_credits_provider</source>
@@ -947,7 +947,7 @@
             </trans-unit>
             <trans-unit id="iH8yMlq">
                 <source>label.guided_step_pilot_credits_outlook</source>
-                <target>Lisez les crédits à placer</target>
+                <target>Lisez les cartes à avancer</target>
             </trans-unit>
             <trans-unit id="zde.F46">
                 <source>label.guided_step_pilot_credits_provider</source>
@@ -1323,23 +1323,15 @@
             </trans-unit>
             <trans-unit id="XMh7qy2">
                 <source>label.outlook</source>
-                <target>Crédits à utiliser avant leur renouvellement</target>
+                <target>Cartes à avancer pour utiliser les crédits</target>
             </trans-unit>
             <trans-unit id="Ml6DPsg">
                 <source>label.outlook_awaits</source>
                 <target>Avant : %steps%</target>
             </trans-unit>
-            <trans-unit id="Hjcm8oQ">
-                <source>label.outlook_left</source>
-                <target>%credit% : %amount% %unit% à placer avant le %date%</target>
-            </trans-unit>
-            <trans-unit id="mt0RTVS">
-                <source>label.outlook_none</source>
-                <target>aucune étape plus tardive à avancer</target>
-            </trans-unit>
             <trans-unit id="OCsVeNE">
                 <source>label.outlook_short</source>
-                <target>%credit% : il manque %amount% %unit% avant le %date%</target>
+                <target>Il manque %amount% %unit% avant le %date%</target>
             </trans-unit>
             <trans-unit id="fKU3y1e">
                 <source>label.output_elsewhere</source>

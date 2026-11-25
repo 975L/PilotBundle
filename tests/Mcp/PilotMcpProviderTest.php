@@ -127,7 +127,7 @@ class PilotMcpProviderTest extends TestCase
         $this->admin = true;
         $outlook = $this->tool('pilot_credit_outlook');
 
-        $this->assertSame(['item-1', '2026-12-08', 10], [$outlook[0]['credit'], $outlook[0]['renews'], $outlook[0]['left']]);
+        $this->assertSame(['item-1', '2026-12-08', 10, 'fine'], [$outlook[0]['credit'], $outlook[0]['renews'], $outlook[0]['left'], $outlook[0]['tone']]);
         $this->assertSame([$later->getId(), 'step-1', 4, []], [$outlook[0]['steps'][0]['card'], $outlook[0]['steps'][0]['text'], $outlook[0]['steps'][0]['amount'], $outlook[0]['steps'][0]['awaits']]);
     }
 

@@ -3,6 +3,16 @@
         "date": "2026-11-25",
         "description": [
             {
+                "en": "Piloting: each credit of the dashboard is bordered green, orange past half the month before its renewal and red in its last week while some is left to use; below, the cards that could spend them are shown as cards, the one spending most of the credit renewing first ahead, with their steps and what they cost.",
+                "fr": "Pilotage : chaque crédit du tableau de bord est bordé de vert, d'orange passé la moitié du mois avant son renouvellement et de rouge sa dernière semaine tant qu'il en reste à utiliser ; dessous, les cartes qui pourraient les dépenser sont affichées en cartes, celle qui dépense le plus du crédit renouvelé en premier en tête, avec leurs étapes et ce qu'elles coûtent.",
+                "es": "Pilotaje: cada crédito del panel lleva un borde verde, naranja pasada la mitad del mes antes de su renovación y rojo en su última semana mientras quede algo por usar; debajo, las tarjetas que podrían gastarlos se muestran como tarjetas, la que más gasta del crédito que se renueva antes en cabeza, con sus pasos y lo que cuestan."
+            },
+            {
+                "en": "Piloting: a card's title is edited in a box that grows with it, Enter saving it.",
+                "fr": "Pilotage : le titre d'une carte se modifie dans une zone qui s'agrandit avec lui, Entrée l'enregistrant.",
+                "es": "Pilotaje: el título de una tarjeta se edita en un cuadro que crece con él, Intro guardándolo."
+            },
+            {
                 "en": "Piloting: a machine action now leaves only from the step naming it; the card no longer lists every action of its space at its foot, and a step's line takes the values its action asks, typed name=value; name=value; the buttons of a space's page and the actions of a report also give their card a step, ticked when its run ends.",
                 "fr": "Pilotage : une action de machine part désormais uniquement de l'étape qui la nomme ; la carte ne liste plus en bas toutes les actions de son espace, et la ligne d'une étape prend les valeurs que son action demande, saisies nom=valeur ; nom=valeur ; les boutons de la page d'un espace et les actions d'un rapport donnent eux aussi une étape à leur carte, cochée à la fin de son exécution.",
                 "es": "Pilotaje: una acción de máquina sale ahora solo del paso que la nombra; la tarjeta ya no lista abajo todas las acciones de su espacio, y la línea de un paso recibe los valores que pide su acción, escritos nombre=valor; nombre=valor; los botones de la página de un espacio y las acciones de un informe también dan un paso a su tarjeta, marcado al terminar su ejecución."

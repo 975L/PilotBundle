@@ -18,7 +18,7 @@
             <h1 class="pilot-inline-view pilot-card-title" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.card_edit'|trans({}, 'pilot') }}">{{ card.title }}</h1>
             <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'edit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-mb-sm">
                 <input type="hidden" name="_token" value="{{ token }}">
-                <input name="title" value="{{ card.title }}" class="pilot-input-lg" required aria-label="{{ 'label.card_title'|trans({}, 'pilot') }}">
+                <textarea name="title" rows="1" maxlength="500" class="pilot-input-lg pilot-textarea-line" required data-pilot-inline-edit-line aria-label="{{ 'label.card_title'|trans({}, 'pilot') }}">{{ card.title }}</textarea>
             </form>
         </div>
         {# The pitch right under the title, written in markdown, shown laid out and edited in place #}

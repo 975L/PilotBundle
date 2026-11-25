@@ -68,7 +68,7 @@
             </trans-unit>
             <trans-unit id="vNhPzQZ">
                 <source>narration.guided_step_pilot_credits_outlook</source>
-                <target>Aquí, lo que se perdería en la renovación y los pasos que adelantar para usarlo.</target>
+                <target>Aquí, el color de cada crédito según el tiempo que queda antes de su renovación, y las tarjetas que adelantar para usarlo.</target>
             </trans-unit>
             <trans-unit id="drE.Alo">
                 <source>narration.guided_step_pilot_credits_provider</source>

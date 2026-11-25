@@ -113,7 +113,7 @@ class PilotController extends AbstractController
     ) {
     }
 
-    // Late cards, the coming days up to the horizon, then the later ones by month, the credits to spend before their renewal above them
+    // Late cards, the coming days up to the horizon, then the later ones by month, the credits toned by their renewal and the cards that could spend them above them
     #[Route('/pilot', name: 'pilot_dashboard')]
     public function dashboard(Planning $planning, CreditRepository $creditRepository, RunRepository $runRepository, CreditOutlook $creditOutlook): Response
     {
@@ -121,10 +121,13 @@ class PilotController extends AbstractController
         $scope = $this->pilotAccess->scope();
         $plan = $planning->build($scope);
         $credits = $scope->all ? $creditRepository->findOrdered() : [];
+        $outlook = $creditOutlook->build($credits, Planning::cardsOf($plan), $plan['today']);
 
         return $this->page('@c975LPilot/pilot/dashboard.html.twig', $plan + [
             'credits' => $credits,
-            'outlook' => $creditOutlook->build($credits, Planning::cardsOf($plan), $plan['today']),
+            'outlook' => $outlook,
+            'tones' => $creditOutlook->tones($credits, $outlook, $plan['today']),
+            'outlookCards' => $creditOutlook->byCard($outlook),
             'runs' => $runRepository->findActive($scope),
             'reports' => $this->reportRepository->findShownOn(null, $scope),
             'waiting' => $this->cardRepository->findWaiting($scope),

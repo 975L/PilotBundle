@@ -31,8 +31,14 @@ export default class extends Controller {
         this.formTarget.requestSubmit();
     }
 
-    // Escape restores the values and the text; Enter in a one-line field saves it, the browser's own submit
+    // Escape restores the values and the text; Enter in a one-line field saves it, the browser's own submit, as in a box holding one line
     key(event) {
+        if ("Enter" === event.key && !event.shiftKey && event.target.matches("textarea[data-pilot-inline-edit-line]")) {
+            event.preventDefault();
+            if (this.changed()) return this.formTarget.requestSubmit();
+
+            return this.close();
+        }
         if ("Escape" !== event.key) return;
 
         event.preventDefault();

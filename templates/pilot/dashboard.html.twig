@@ -13,9 +13,11 @@
             <input type="hidden" name="_token" value="{{ csrf_token('pilot_credits_refresh') }}">
             <button class="pilot-btn pilot-btn-ghost">{{ pilot_icon('rotate') }}{{ 'label.credits_refresh'|trans({}, 'pilot') }}</button>
         </form>
+        {# Each tile bordered by the time left to place its credit before the renewal, what the planned steps overspend said in it #}
         <div class="pilot-mb-lg pilot-credits">
             {% for credit in credits %}
-                <div class="pilot-credit{{ credit.empty ? ' pilot-credit-empty' }}">
+                {% set short = outlook|filter(line => line.credit.key == credit.key and line.left < 0)|first %}
+                <div class="pilot-credit{{ tones[credit.key] is defined ? ' pilot-credit-' ~ tones[credit.key] }}{{ credit.empty ? ' pilot-credit-empty' }}">
                         <div class="pilot-small pilot-muted pilot-upper">{{ credit.label }}</div>
                         {% if credit.manual %}
                             <form method="post" action="{{ path('pilot_credit', {id: credit.id}) }}" class="pilot-row pilot-row-tight pilot-row-nowrap">
@@ -31,6 +33,7 @@
                             {% if credit.note %} · {{ credit.note }}{% endif %}
                             {% if credit.updatedAt %} · {{ credit.updatedAt|format_date('short') }}{% endif %}
                         </div>
+                        {% if short %}<div class="pilot-small pilot-danger-text">{{ 'label.outlook_short'|trans({'%amount%': short.left|abs|format_number, '%unit%': credit.unit, '%date%': short.renewsOn|format_date('short')}, 'pilot') }}</div>{% endif %}
                 </div>
             {% endfor %}
         </div>
@@ -50,7 +53,7 @@
 
     {% if late is not empty %}
         <section class="pilot-mb-lg">
-            <h2 class="pilot-title pilot-danger-text">{{ 'label.late'|trans({}, 'pilot') }}</h2>
+            <h2 class="pilot-heading pilot-danger-text">{{ 'label.late'|trans({}, 'pilot') }}</h2>
             <div class="pilot-cards">
                 {% for card in late %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% endfor %}
             </div>
@@ -71,7 +74,7 @@
     {% if days is not empty %}
         <div class="pilot-days pilot-mb-lg">
             {% for day, cards in days %}
-                <section>
+                <section class="pilot-day">
                     <h2 class="pilot-title">{{ day|format_date('full') }}</h2>
                     <div class="pilot-cards pilot-drop" data-pilot-card-drag-target="zone" data-due="{{ day }}">
                         {% for card in cards %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% endfor %}

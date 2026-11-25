@@ -1,26 +1,9 @@
-{# Each credit the steps planned before its renewal leave unspent, with the later steps that could spend it and what they wait for, or the credit they overspend #}
-{% if outlook is not empty %}
+{# The later cards whose steps could spend the credits left before their renewal, as tiles, each with its steps' cost and what it waits for first #}
+{% if outlookCards is not empty %}
     <section class="pilot-mb-lg pilot-outlook">
-        <h2 class="pilot-subtitle">{{ 'label.outlook'|trans({}, 'pilot') }}</h2>
-        {% for line in outlook %}
-            <div class="pilot-outlook-credit">
-                {% if line.left < 0 %}
-                    <p class="pilot-danger-text">{{ 'label.outlook_short'|trans({'%credit%': line.credit.label, '%amount%': line.left|abs|format_number, '%unit%': line.credit.unit, '%date%': line.renewsOn|format_date('short')}, 'pilot') }}</p>
-                {% else %}
-                    <p><span class="pilot-tag">{{ 'label.outlook_left'|trans({'%credit%': line.credit.label, '%amount%': line.left|abs|format_number, '%unit%': line.credit.unit, '%date%': line.renewsOn|format_date('short')}, 'pilot') }}</span>{% if line.steps is empty %} <span class="pilot-small pilot-muted">{{ 'label.outlook_none'|trans({}, 'pilot') }}</span>{% endif %}</p>
-                    {% if line.steps is not empty %}
-                        <ul class="pilot-outlook-steps pilot-small">
-                            {% for offer in line.steps %}
-                                <li>
-                                    <a href="{{ pilot_card_path(offer.card) }}" data-pilot-dialog="card-{{ offer.card.id }}" class="pilot-strong">{{ offer.card.title }}</a>
-                                    · {{ offer.card.checklist[offer.index].t }} · {{ offer.amount|format_number }} {{ line.credit.unit }} · {{ offer.card.due|format_date('short') }}
-                                    {% if offer.awaits is not empty %}<div class="pilot-muted">{{ 'label.outlook_awaits'|trans({'%steps%': offer.awaits|join(', ')}, 'pilot') }}</div>{% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                {% endif %}
-            </div>
-        {% endfor %}
+        <h2 class="pilot-heading pilot-warning-text">{{ 'label.outlook'|trans({}, 'pilot') }}</h2>
+        <div class="pilot-cards">
+            {% for offer in outlookCards %}{% include '@c975LPilot/pilot/_card.html.twig' with {card: offer.card} %}{% endfor %}
+        </div>
     </section>
 {% endif %}

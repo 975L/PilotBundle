@@ -104,7 +104,7 @@
             </trans-unit>
             <trans-unit id="co8a7N_">
                 <source>description.guided_step_pilot_credits_outlook</source>
-                <target>What a credit keeps before it renews, and the steps of later cards that could spend it, with what to do first.</target>
+                <target>A credit's border turns orange past half the month before its renewal, red in the last week if some is left; below, the later cards that could spend it, with what to do first.</target>
             </trans-unit>
             <trans-unit id="ISH1E0_">
                 <source>description.guided_step_pilot_credits_provider</source>
@@ -947,7 +947,7 @@
             </trans-unit>
             <trans-unit id="iH8yMlq">
                 <source>label.guided_step_pilot_credits_outlook</source>
-                <target>Read the credits to spend</target>
+                <target>Read the cards to bring forward</target>
             </trans-unit>
             <trans-unit id="zde.F46">
                 <source>label.guided_step_pilot_credits_provider</source>
@@ -1323,23 +1323,15 @@
             </trans-unit>
             <trans-unit id="XMh7qy2">
                 <source>label.outlook</source>
-                <target>Credits to spend before they renew</target>
+                <target>Cards to bring forward to spend the credits</target>
             </trans-unit>
             <trans-unit id="Ml6DPsg">
                 <source>label.outlook_awaits</source>
                 <target>First: %steps%</target>
             </trans-unit>
-            <trans-unit id="Hjcm8oQ">
-                <source>label.outlook_left</source>
-                <target>%credit%: %amount% %unit% to spend before %date%</target>
-            </trans-unit>
-            <trans-unit id="mt0RTVS">
-                <source>label.outlook_none</source>
-                <target>no later step to bring forward</target>
-            </trans-unit>
             <trans-unit id="OCsVeNE">
                 <source>label.outlook_short</source>
-                <target>%credit%: %amount% %unit% short before %date%</target>
+                <target>%amount% %unit% short before %date%</target>
             </trans-unit>
             <trans-unit id="fKU3y1e">
                 <source>label.output_elsewhere</source>

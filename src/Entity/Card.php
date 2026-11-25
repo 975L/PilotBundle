@@ -172,10 +172,10 @@ class Card implements \Stringable
         return $this->title;
     }
 
-    // The title, cut to the length of its column
+    // The title on one line, its line breaks pasted in turned to spaces, cut to the length of its column
     public function setTitle(string $title): static
     {
-        $this->title = mb_substr($title, 0, 500);
+        $this->title = mb_substr((string) preg_replace('/\s*\R\s*/u', ' ', $title), 0, 500);
 
         return $this;
     }

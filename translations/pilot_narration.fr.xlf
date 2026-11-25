@@ -68,7 +68,7 @@
             </trans-unit>
             <trans-unit id="vNhPzQZ">
                 <source>narration.guided_step_pilot_credits_outlook</source>
-                <target>Ici, ce qui sera perdu au renouvellement et les étapes à avancer pour l'utiliser.</target>
+                <target>Ici, la couleur de chaque crédit selon le temps qui reste avant son renouvellement, et les cartes à avancer pour l'utiliser.</target>
             </trans-unit>
             <trans-unit id="drE.Alo">
                 <source>narration.guided_step_pilot_credits_provider</source>

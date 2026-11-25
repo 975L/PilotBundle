@@ -37,7 +37,7 @@ class PilotCreditTools
 
     // Each credit the steps planned before its renewal leave unspent, or overspend, with the later steps that could spend it and the steps they wait for
     /**
-     * @return list<array{credit: string, label: string, unit: ?string, renews: string, left: int, steps: list<array{card: ?int, title: string, url: string, due: ?string, step: int, text: string, amount: int, awaits: list<string>}>}>
+     * @return list<array{credit: string, label: string, unit: ?string, renews: string, left: int, tone: string, steps: list<array{card: ?int, title: string, url: string, due: ?string, step: int, text: string, amount: int, awaits: list<string>}>}>
      */
     public function outlook(): array
     {
@@ -51,6 +51,7 @@ class PilotCreditTools
                 'unit' => $line['credit']->getUnit(),
                 'renews' => $line['renewsOn']->format('Y-m-d'),
                 'left' => $line['left'],
+                'tone' => $this->creditOutlook->tone($line, $plan['today']),
                 'steps' => array_map(fn (array $offer): array => [
                     'card' => $offer['card']->getId(),
                     'title' => $offer['card']->getTitle(),

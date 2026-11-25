@@ -34,12 +34,22 @@ class CardTileTemplateTest extends TestCase
         $this->assertStringContainsString('No. 7', $this->render(true));
     }
 
-    // The tile rendered alone, routes, tokens and dates stubbed
-    private function render(bool $sheet): string
+    // In the credits outlook, a tile shows the steps that could spend a credit with their cost, then the first step awaited and how many more, all of them in its tooltip
+    public function testTileShowsOffer(): void
+    {
+        $html = $this->render(false, ['steps' => [['index' => 1, 'amount' => 600, 'credit' => ['unit' => 'units', 'label' => 'Item 2']]], 'awaits' => ['step-a', 'step-b']]);
+
+        $this->assertStringContainsString('step-2 <span class="pilot-tag">600 units · Item 2</span>', $html);
+        $this->assertStringContainsString('title="step-a, step-b">First: step-a +1', $html);
+    }
+
+    // The tile rendered alone, routes, tokens, dates and numbers stubbed, with its outlook offer when given
+    /** @param array<string, mixed>|null $offer */
+    private function render(bool $sheet, ?array $offer = null): string
     {
         $translator = new Translator('en');
         $translator->addLoader('array', new ArrayLoader());
-        $translator->addResource('array', ['label.card_number_short' => 'No. %id%'], 'en', 'pilot');
+        $translator->addResource('array', ['label.card_number_short' => 'No. %id%', 'label.outlook_awaits' => 'First: %steps%'], 'en', 'pilot');
 
         $loader = new FilesystemLoader();
         $loader->addPath(\dirname(__DIR__, 2) . '/templates', 'c975LPilot');
@@ -49,9 +59,10 @@ class CardTileTemplateTest extends TestCase
         $twig->addFunction(new TwigFunction('path', static fn (string $route): string => '/' . $route));
         $twig->addFunction(new TwigFunction('csrf_token', static fn (string $id): string => 'token'));
         $twig->addFilter(new TwigFilter('format_date', static fn (mixed $date): string => 'date'));
+        $twig->addFilter(new TwigFilter('format_number', static fn (int $number): string => (string) $number));
         $twig->addFunction(new TwigFunction('pilot_card_path', static fn (array $card): string => '/card/' . $card['id']));
 
-        return $twig->render('@c975LPilot/pilot/_card.html.twig', ['card' => [
+        return $twig->render('@c975LPilot/pilot/_card.html.twig', (null === $offer ? [] : ['offer' => $offer]) + ['card' => [
             'id' => 7,
             'title' => 'item-1',
             'sheet' => $sheet,
@@ -60,6 +71,7 @@ class CardTileTemplateTest extends TestCase
             'note' => null,
             'due' => null,
             'steps' => [],
+            'checklist' => [['t' => 'step-1'], ['t' => 'step-2']],
             'feedback' => [],
             'waitingOn' => null,
             'resultUrl' => null,

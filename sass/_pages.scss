@@ -71,6 +71,16 @@
     width: 14rem;
 }
 
+// A day stretched to its row's height, its cards with it so their feet line up
+.pilot-day {
+    display: flex;
+    flex-direction: column;
+}
+
+.pilot-day > .pilot-cards {
+    flex: 1;
+}
+
 .pilot-reference {
     --pilot-ink: var(--pilot-neutral);
     border-left: 4px solid var(--pilot-ink);
@@ -581,6 +591,13 @@ a.pilot-badge:hover {
     font-size: 1.25rem;
 }
 
+// A one-line text typed in a box growing with it, wrapped rather than scrolled
+.pilot-textarea-line {
+    min-height: 2.5rem;
+    field-sizing: content;
+    resize: none;
+}
+
 progress {
     height: .6rem;
     accent-color: var(--pilot-info);
@@ -619,7 +636,21 @@ progress {
     background: var(--pilot-surface);
 }
 
-.pilot-credit-empty {
+// A credit's border by the time left to place it before its renewal, thick enough to be read at a glance
+.pilot-credit-fine, .pilot-credit-soon, .pilot-credit-late, .pilot-credit-empty {
+    border-width: 2px;
+    border-inline-start-width: .375rem;
+}
+
+.pilot-credit-fine {
+    border-color: var(--pilot-success);
+}
+
+.pilot-credit-soon {
+    border-color: var(--pilot-warning);
+}
+
+.pilot-credit-late, .pilot-credit-empty {
     border-color: var(--pilot-danger);
 }
 
@@ -652,15 +683,6 @@ progress {
 .pilot-card-progress::-moz-progress-bar {
     border-radius: .125rem;
     background: var(--pilot-ink, var(--pilot-primary));
-}
-
-.pilot-outlook-credit {
-    margin-bottom: .5rem;
-}
-
-.pilot-outlook-steps {
-    margin: .25rem 0 0;
-    padding-inline-start: 1.25rem;
 }
 
 .pilot-feedback-shot img, .pilot-feedback-shot-preview {

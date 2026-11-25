@@ -1,4 +1,4 @@
-{# A card as a tile in the project's colour, opened by a click anywhere on it, dragged with the mouse to another day, to the backlog or onto another space (on a space's page only while it has no date): title, number, project (left out on the project's own page), date coloured by its nearness, steps ticked, feedback still open, status, the next action, one gesture; on a tint of that colour while open, a grey background once done. The rest is on its page #}
+{# A card as a tile in the project's colour, opened by a click anywhere on it, dragged with the mouse to another day, to the backlog or onto another space (on a space's page only while it has no date): title, number, project (left out on the project's own page), date coloured by its nearness, steps ticked (in the credits outlook, the steps that could spend a credit), feedback still open, status, the next action, one gesture; on a tint of that colour while open, a grey background once done. The rest is on its page #}
 {% import '@c975LPilot/pilot/_due.html.twig' as due %}
 {% set next = card.steps|filter(step => not (step.done ?? false))|first %}
 {% set ticked = card.steps|filter(step => (step.done ?? false))|length %}
@@ -15,7 +15,13 @@
             <div class="pilot-small pilot-muted">{{ 'label.card_number_short'|trans({'%id%': card.id}, 'pilot') }}</div>
             {% if card.note %}<div class="pilot-small pilot-muted">{{ card.note|split("\n")|first }}</div>{% endif %}
         {% else %}
-        {% if next %}
+        {# In the credits outlook, the steps that could spend a credit with their cost and what they wait for, the whole list in its tooltip; elsewhere the next step #}
+        {% if offer is defined %}
+            {% for step in offer.steps %}
+                <div class="pilot-small">{{ card.checklist[step.index].t }} <span class="pilot-tag">{{ step.amount|format_number }} {{ step.credit.unit }} · {{ step.credit.label }}</span></div>
+            {% endfor %}
+            {% if offer.awaits is not empty %}<div class="pilot-small pilot-muted" title="{{ offer.awaits|join(', ') }}">{{ 'label.outlook_awaits'|trans({'%steps%': offer.awaits|first ~ (offer.awaits|length > 1 ? ' +' ~ (offer.awaits|length - 1))}, 'pilot') }}</div>{% endif %}
+        {% elseif next %}
             <div class="pilot-small pilot-muted">{{ 'label.next'|trans({}, 'pilot') }} {{ next.t }}</div>
         {% endif %}
         <div class="pilot-row pilot-row-tight pilot-small pilot-card-foot">

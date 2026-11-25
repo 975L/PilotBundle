@@ -19,6 +19,14 @@ class CreditOutlook
     // Steps offered at most for a credit
     public const int LIMIT = 5;
 
+    // Days before its renewal from which a credit left unplaced is late
+    public const int LATE_DAYS = 7;
+
+    // Tones of a credit's tile
+    public const string FINE = 'fine';
+    public const string SOON = 'soon';
+    public const string LATE = 'late';
+
     // A line per credit with a balance and a renewal whose planned steps leave some of it, or spend more than it holds
     /**
      * @param list<Credit> $credits
@@ -39,6 +47,76 @@ class CreditOutlook
         }
 
         return $outlook;
+    }
+
+    // The tone of each credit's tile with a balance and a renewal, keyed by credit: fine by default, its line's tone when the outlook names it
+    /**
+     * @param list<Credit>                                                         $credits
+     * @param list<array{credit: Credit, renewsOn: \DateTimeImmutable, left: int}> $outlook
+     *
+     * @return array<string, string>
+     */
+    public function tones(array $credits, array $outlook, \DateTimeImmutable $today): array
+    {
+        $tones = [];
+        foreach ($credits as $credit) {
+            if (null !== $credit->getRemaining() && null !== $credit->nextRenewal($today)) {
+                $tones[$credit->getKey()] = self::FINE;
+            }
+        }
+        foreach ($outlook as $line) {
+            $tones[$line['credit']->getKey()] = $this->tone($line, $today);
+        }
+
+        return $tones;
+    }
+
+    // Late when the planned steps overspend or a week or less is left to place what remains, soon once half the month before the renewal is past, fine otherwise
+    /** @param array{credit: Credit, renewsOn: \DateTimeImmutable, left: int} $line */
+    public function tone(array $line, \DateTimeImmutable $today): string
+    {
+        $days = $today->diff($line['renewsOn'])->days;
+        $day = (int) $line['credit']->getRenewsOn()?->format('j');
+        $month = $line['renewsOn']->modify('first day of -1 month');
+        $period = $month->setDate((int) $month->format('Y'), (int) $month->format('n'), min($day, (int) $month->format('t')))->diff($line['renewsOn'])->days;
+
+        return match (true) {
+            $line['left'] < 0, $line['left'] > 0 && $days <= self::LATE_DAYS => self::LATE,
+            $line['left'] > 0 && $days * 2 <= $period => self::SOON,
+            default => self::FINE,
+        };
+    }
+
+    // The offered steps gathered card by card, the card spending the credit renewing first ahead, then the one spending most of it, then the nearest, each step with its credit, the steps they wait for named once and in order
+    /**
+     * @param list<array{credit: Credit, renewsOn: \DateTimeImmutable, steps: list<array{card: Card, index: int, amount: int, awaits: list<string>}>}> $outlook
+     *
+     * @return list<array{card: Card, steps: list<array{index: int, amount: int, credit: Credit}>, awaits: list<string>}>
+     */
+    public function byCard(array $outlook): array
+    {
+        $cards = [];
+        $ranks = [];
+        foreach ($outlook as $line) {
+            foreach ($line['steps'] as $offer) {
+                $id = spl_object_id($offer['card']);
+                $cards[$id] ??= ['card' => $offer['card'], 'steps' => [], 'awaits' => []];
+                $rank = $ranks[$id] ?? [$line['renewsOn'], 0];
+                $ranks[$id] = $line['renewsOn'] < $rank[0] ? [$line['renewsOn'], $offer['amount']] : [$rank[0], $rank[1] + ($line['renewsOn'] == $rank[0] ? $offer['amount'] : 0)];
+                $cards[$id]['steps'][] = ['index' => $offer['index'], 'amount' => $offer['amount'], 'credit' => $line['credit']];
+                $cards[$id]['awaits'] = [...$cards[$id]['awaits'], ...$offer['card']->stepAwaitsAll($offer['index'])];
+            }
+        }
+        foreach ($cards as &$entry) {
+            $awaits = array_diff(array_unique($entry['awaits']), array_column($entry['steps'], 'index'));
+            sort($awaits);
+            usort($entry['steps'], static fn (array $a, array $b): int => $a['index'] <=> $b['index']);
+            $entry['awaits'] = array_map(static fn (int $step): string => $entry['card']->getChecklist()[$step]['t'], $awaits);
+        }
+        unset($entry);
+        uksort($cards, static fn (int $a, int $b): int => [$ranks[$a][0], $ranks[$b][1], $cards[$a]['card']->getDue()] <=> [$ranks[$b][0], $ranks[$a][1], $cards[$b]['card']->getDue()]);
+
+        return array_values($cards);
     }
 
     // What each credit with a balance holds once the steps planned before its renewal are taken off, the whole balance for one without a renewal
