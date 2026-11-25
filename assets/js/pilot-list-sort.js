@@ -6,6 +6,7 @@
  * with this source code in the file LICENSE.
  */
 import { Controller } from "@hotwired/stimulus";
+import { notice } from "./pilot-notice.js";
 
 // Base of the vertical lists ordered by dragging, the gesture being UiBundle's: each child gives its handles and saves the order on the drop
 export default class extends Controller {
@@ -62,7 +63,6 @@ export default class extends Controller {
 
     // Reloaded so the list shows what was actually saved
     failed() {
-        window.alert(this.failedLabelValue);
-        window.location.reload();
+        notice(this.failedLabelValue).then(() => window.location.reload());
     }
 }

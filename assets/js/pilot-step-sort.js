@@ -40,10 +40,7 @@ export default class extends PilotListSort {
         body.append("_token", this.tokenValue);
         this.itemTargets.forEach((item) => { body.append("order[]", item.dataset.index); });
         fetch(this.urlValue, { method: "POST", headers: { "X-Pilot-Dialog": "1" }, body })
-            .then((response) => {
-                if (!response.ok) window.alert(this.failedLabelValue);
-                window.location.reload();
-            })
-            .catch(() => { window.alert(this.failedLabelValue); window.location.reload(); });
+            .then((response) => (response.ok ? window.location.reload() : this.failed()))
+            .catch(() => this.failed());
     }
 }

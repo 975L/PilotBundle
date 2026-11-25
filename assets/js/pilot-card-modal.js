@@ -6,6 +6,7 @@
  * with this source code in the file LICENSE.
  */
 import { Controller } from "@hotwired/stimulus";
+import { notice } from "./pilot-notice.js";
 
 // Opens a card or a file over the page it was clicked on, its own page read and shown in a dialog; the address keeps it as #card-<id> or #doc-<slug>, so a link or the back button reopen it
 export default class extends Controller {
@@ -135,8 +136,9 @@ export default class extends Controller {
 
                 return response.ok ? null : response.text();
             })
-            .then((refusal) => {
-                if (refusal) window.alert(refusal);
+            // A refusal read before the card is, or before the page behind reloads once the dialog closed meanwhile
+            .then((refusal) => (refusal ? notice(refusal) : null))
+            .then(() => {
                 if (gone) return this.dialogTarget.close();
                 if (next) window.history.replaceState(null, "", "#card-" + next.split("/").pop());
                 // The form counted as sending until the card is read again, its filled field removed then sending it no second time

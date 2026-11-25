@@ -7,6 +7,7 @@
  */
 import { Controller } from "@hotwired/stimulus";
 import { addSortGesture } from "@c975l/ui-bundle/pointer-sort.js";
+import { notice } from "./pilot-notice.js";
 
 // Moves a card to another day of the Planning or to the backlog of its project, to another place in its own, onto another collection's tab or the + making a new one, or onto another space of the column, by dragging its tile with the mouse; the new date, order or space is saved on the drop
 export default class extends Controller {
@@ -94,7 +95,7 @@ export default class extends Controller {
         this.revert(card);
         const body = new URLSearchParams({ _token: card.dataset.token, project: space.dataset.projectId });
         fetch(card.dataset.moveUrl, { method: "POST", headers: { "X-Pilot-Dialog": "1" }, body })
-            .then((response) => (response.ok ? window.location.reload() : response.text().then((refusal) => { window.alert(refusal || this.failedLabelValue); })))
+            .then((response) => (response.ok ? window.location.reload() : response.text().then((refusal) => { notice(refusal || this.failedLabelValue); })))
             .catch(() => this.failed());
     }
 
@@ -152,7 +153,6 @@ export default class extends Controller {
 
     // Reloaded so the page shows what was actually saved
     failed() {
-        window.alert(this.failedLabelValue);
-        window.location.reload();
+        notice(this.failedLabelValue).then(() => window.location.reload());
     }
 }

@@ -71,6 +71,16 @@
         <dialog class="pilot-dialog pilot-zoom" data-pilot-card-modal-target="zoom" aria-label="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}">
             <img alt="{{ 'label.feedback_image_view'|trans({}, 'pilot') }}" data-pilot-card-modal-target="zoomImage">
         </dialog>
+        {# A refusal or a failure said over the page or the card's dialog, as the back office says it (pilot-notice.js) #}
+        <dialog class="pilot-dialog pilot-confirm pilot-notice" aria-labelledby="pilot-notice-title">
+            <div class="pilot-confirm-body">
+                <h2 class="pilot-title pilot-mb-sm" id="pilot-notice-title">{{ pilot_icon('triangle-exclamation', 'pilot-icon-before pilot-danger-text') }}{{ 'label.notice_title'|trans({}, 'pilot') }}</h2>
+                <p class="pilot-m0 pilot-muted" data-pilot-notice-message></p>
+            </div>
+            <form method="dialog" class="pilot-confirm-actions">
+                <button class="pilot-btn pilot-btn-secondary pilot-btn-lg" autofocus>{{ 'label.close'|trans({}, 'pilot') }}</button>
+            </form>
+        </dialog>
         {# The asking before a deletion, over the page or the card's dialog, as the back office asks it #}
         <dialog class="pilot-dialog pilot-confirm" data-pilot-card-modal-target="confirm" aria-labelledby="pilot-confirm-title">
             <div class="pilot-confirm-body">

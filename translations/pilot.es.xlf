@@ -1313,6 +1313,10 @@
                 <source>label.nothing_planned</source>
                 <target>Nada previsto en este periodo.</target>
             </trans-unit>
+            <trans-unit id="H8q95DB">
+                <source>label.notice_title</source>
+                <target>No es posible</target>
+            </trans-unit>
             <trans-unit id="VYbxN1B">
                 <source>label.order_drag</source>
                 <target>Arrastrar para ordenar</target>

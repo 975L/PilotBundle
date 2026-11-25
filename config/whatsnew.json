@@ -41,6 +41,11 @@
                 "en": "Piloting: an AI agent types in the balance of a service without an API, read on its site in a browser, with the new pilot_credit_set tool.",
                 "fr": "Pilotage : un agent IA saisit le solde d'un service sans API, lu sur son site dans un navigateur, avec le nouvel outil pilot_credit_set.",
                 "es": "Pilotaje: un agente de IA introduce el saldo de un servicio sin API, leído en su sitio en un navegador, con la nueva herramienta pilot_credit_set."
+            },
+            {
+                "en": "Piloting: a gesture refused or a save that failed is now said in a window over the page or the card, like the other messages of the back office, instead of the browser's alert.",
+                "fr": "Pilotage : un geste refusé ou un enregistrement qui échoue s'affiche désormais dans une fenêtre au-dessus de la page ou de la carte, comme les autres messages du back-office, au lieu de l'alerte du navigateur.",
+                "es": "Pilotaje: un gesto rechazado o un guardado fallido se muestra ahora en una ventana sobre la página o la tarjeta, como los demás mensajes del back-office, en lugar de la alerta del navegador."
             }
         ]
     },

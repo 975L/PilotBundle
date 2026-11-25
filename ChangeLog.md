@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.9.1
+
+Refusals said in a dialog
+
+- A refused gesture or a failed save said in a dialog over the page or the card, as the back office says it, instead of the browser's alert (`pilot-notice.js`) (25/11/2026)
+
 ## v1.9.0
 
 Credits toned by their renewal, outlook by card, title box
