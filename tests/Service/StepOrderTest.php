@@ -26,7 +26,7 @@ class StepOrderTest extends TestCase
     public function testReorderKeepsTheTemplateOrder(): void
     {
         $project = new Project('catalog', 'Catalog');
-        $template = new PlanTemplate('catalog', [['title' => 'a', 'executor' => 'human'], ['title' => 'b', 'executor' => 'human']])->setChecklist(true);
+        $template = new PlanTemplate('catalog', [['title' => 'a'], ['title' => 'b']]);
         $card = new Card($project, 'item-1')->follow($template)->setChecklist([['t' => 'a'], ['t' => 'b']]);
 
         new StepOrder($this->createStub(CardRepository::class), new MockClock('2026-11-19 10:00'))->reorder($card, [1, 0]);
@@ -39,7 +39,7 @@ class StepOrderTest extends TestCase
     public function testStepsWithVariables(): void
     {
         $project = new Project('catalog', 'Catalog');
-        $template = new PlanTemplate('catalog', [['title' => 'Write {item}', 'executor' => 'human'], ['title' => 'Build', 'executor' => 'runner', 'action' => 'build']])->setChecklist(true);
+        $template = new PlanTemplate('catalog', [['title' => 'Write {item}'], ['title' => 'Build', 'action' => 'build']]);
         $card = new Card($project, 'item-1')->follow($template)->setChecklist([['t' => 'Write item-1', 'done' => true], ['t' => 'Build', 'action' => 'build']]);
         $repository = $this->createStub(CardRepository::class);
         $repository->method('findOpenOfTemplate')->willReturn([$card]);
@@ -49,7 +49,7 @@ class StepOrderTest extends TestCase
         $this->assertSame([['t' => 'Write item-1', 'done' => true], ['t' => 'Build', 'action' => 'build']], $card->getChecklist());
 
         $previous = $template->getSteps();
-        $order->fromTemplate($template->setSteps([...$previous, ['title' => 'Clip {item}', 'executor' => 'human']]), $previous);
+        $order->fromTemplate($template->setSteps([...$previous, ['title' => 'Clip {item}']]), $previous);
         $this->assertSame(['Write item-1', 'Build', 'Clip item-1'], array_column($card->getChecklist(), 't'));
     }
 
@@ -80,7 +80,7 @@ class StepOrderTest extends TestCase
     public function testFollowARewrite(): void
     {
         $project = new Project('catalog', 'Catalog');
-        $template = new PlanTemplate('catalog', [['title' => 'a', 'executor' => 'human'], ['title' => 'b', 'executor' => 'runner', 'action' => 'build']])->setChecklist(true);
+        $template = new PlanTemplate('catalog', [['title' => 'a'], ['title' => 'b', 'action' => 'build']]);
         $before = [['t' => 'a'], ['t' => 'b', 'action' => 'build']];
         $card = $this->card($project, $template, $before);
         $run = new Run($card, 'build', [], 1);
@@ -100,8 +100,8 @@ class StepOrderTest extends TestCase
     public function testFromTemplate(): void
     {
         $project = new Project('catalog', 'Catalog');
-        $previous = [['title' => 'a', 'executor' => 'human'], ['title' => 'b', 'executor' => 'runner', 'action' => 'build'], ['title' => 'gone', 'executor' => 'human'], ['title' => 'kept', 'executor' => 'human']];
-        $template = new PlanTemplate('catalog', [['title' => 'b', 'executor' => 'runner', 'action' => 'build'], ['title' => 'new', 'executor' => 'runner', 'action' => 'copy', 'params' => ['item' => '{item}']], ['title' => 'a', 'executor' => 'human']])->setChecklist(true);
+        $previous = [['title' => 'a'], ['title' => 'b', 'action' => 'build'], ['title' => 'gone'], ['title' => 'kept']];
+        $template = new PlanTemplate('catalog', [['title' => 'b', 'action' => 'build'], ['title' => 'new', 'action' => 'copy', 'params' => ['item' => '{item}']], ['title' => 'a']]);
         $card = $this->card($project, $template, [['t' => 'a', 'done' => true], ['t' => 'b', 'action' => 'build', 'params' => ['item' => 'item-1']], ['t' => 'gone'], ['t' => 'kept', 'done' => true], ['t' => 'mine']]);
         $run = $this->saveTemplate($card, $template, $previous);
 
@@ -115,8 +115,8 @@ class StepOrderTest extends TestCase
     public function testFromTemplateLaysAfter(): void
     {
         $project = new Project('catalog', 'Catalog');
-        $previous = [['title' => 'a', 'executor' => 'human'], ['title' => 'b', 'executor' => 'runner', 'action' => 'build', 'after' => []]];
-        $template = new PlanTemplate('catalog', [['title' => 'a', 'executor' => 'human'], ['title' => 'b', 'executor' => 'runner', 'action' => 'build'], ['title' => 'c', 'executor' => 'human', 'after' => [1]]])->setChecklist(true);
+        $previous = [['title' => 'a'], ['title' => 'b', 'action' => 'build', 'after' => []]];
+        $template = new PlanTemplate('catalog', [['title' => 'a'], ['title' => 'b', 'action' => 'build'], ['title' => 'c', 'after' => [1]]]);
         $card = $this->card($project, $template, [['t' => 'a', 'done' => true], ['t' => 'b', 'action' => 'build', 'after' => []]]);
         $this->saveTemplate($card, $template, $previous);
 
@@ -128,8 +128,8 @@ class StepOrderTest extends TestCase
     public function testFromTemplateWithStepsOfTheSameText(): void
     {
         $project = new Project('catalog', 'Catalog');
-        $previous = [['title' => 'review', 'executor' => 'human'], ['title' => 'build', 'executor' => 'runner', 'action' => 'build'], ['title' => 'review', 'executor' => 'human']];
-        $template = new PlanTemplate('catalog', [$previous[0], $previous[2], $previous[1]])->setChecklist(true);
+        $previous = [['title' => 'review'], ['title' => 'build', 'action' => 'build'], ['title' => 'review']];
+        $template = new PlanTemplate('catalog', [$previous[0], $previous[2], $previous[1]]);
         $card = $this->card($project, $template, [['t' => 'review', 'done' => true], ['t' => 'build', 'action' => 'build'], ['t' => 'review']]);
         $run = $this->saveTemplate($card, $template, $previous);
 
@@ -148,7 +148,7 @@ class StepOrderTest extends TestCase
     }
 
     // The template saved with the card as its only open one, a run of the card's second step returned to follow
-    /** @param list<array{title: string, executor: string, action?: string}> $previous */
+    /** @param list<array{title: string, action?: string, group?: string}> $previous */
     private function saveTemplate(Card $card, PlanTemplate $template, array $previous): Run
     {
         $run = new Run($card, 'build', [], 1);
@@ -170,8 +170,8 @@ class StepOrderTest extends TestCase
     public function testFromTemplateLaysGroups(): void
     {
         $project = new Project('catalog', 'Catalog');
-        $previous = [['title' => 'a', 'executor' => 'human'], ['title' => 'b', 'executor' => 'human', 'group' => 'Old']];
-        $template = new PlanTemplate('catalog', [['title' => 'a', 'executor' => 'human', 'group' => 'Book'], ['title' => 'b', 'executor' => 'human'], ['title' => 'c', 'executor' => 'human', 'group' => 'Film']])->setChecklist(true);
+        $previous = [['title' => 'a'], ['title' => 'b', 'group' => 'Old']];
+        $template = new PlanTemplate('catalog', [['title' => 'a', 'group' => 'Book'], ['title' => 'b'], ['title' => 'c', 'group' => 'Film']]);
         $card = $this->card($project, $template, [['t' => 'a', 'done' => true], ['t' => 'b', 'g' => 'Old']]);
         $this->saveTemplate($card, $template, $previous);
 

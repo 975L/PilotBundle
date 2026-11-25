@@ -57,15 +57,6 @@ class ActionOfferTest extends TestCase
         $this->assertSame([], $this->offer([], $actions)->on($this->project));
     }
 
-    // Only the actions asking no parameter are handed in one click
-    public function testDirectKeysLeavesOutTheActionsAskingParameters(): void
-    {
-        $actions = $this->createStub(ActionRepository::class);
-        $actions->method('findOffered')->willReturn([new Action('hello')->declare('Hello', ['text']), new Action('render')->declare('Render', [])]);
-
-        $this->assertSame(['render'], $this->offer([$this->machine('machine-1', ['hello', 'render'])], $actions)->directKeys($this->project));
-    }
-
     // Every action declared gives its label, by key
     public function testLabelsByKey(): void
     {

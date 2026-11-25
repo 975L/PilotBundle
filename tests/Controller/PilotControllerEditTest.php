@@ -42,6 +42,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
@@ -142,9 +143,36 @@ class PilotControllerEditTest extends TestCase
         $add->invoke($controller, $card, 'step-1');
         $this->assertSame('step-1', $card->getChecklist()[0]['t']);
 
-        $card->follow(new PlanTemplate('catalog', [])->setChecklist(true));
+        $card->follow(new PlanTemplate('catalog', []));
         $this->expectException(FlowException::class);
         $add->invoke($controller, $card, 'step-2');
+    }
+
+    // A step's action and its parameters are edited on its line, the parameters typed as « name=value » split by « ; »
+    public function testStepEditedWithItsParameters(): void
+    {
+        $controller = $this->controller($this->createStub(ProjectRepository::class), $this->createStub(PilotAccess::class));
+        $card = $this->card()->setChecklist([['t' => 'step-1'], ['t' => 'step-2']]);
+
+        $this->gesture($controller, 'stepEdit', $card, ['index' => '0', 'text' => 'step-1', 'action' => 'build', 'params' => 'item=item-1; size = 2;bad']);
+        $this->assertSame(['t' => 'step-1', 'action' => 'build', 'params' => ['item' => 'item-1', 'size' => '2']], $card->getChecklist()[0]);
+
+        $this->gesture($controller, 'stepEdit', $card, ['index' => '1', 'text' => 'step-2', 'action' => '', 'params' => 'item=item-1']);
+        $this->assertSame(['t' => 'step-2'], $card->getChecklist()[1]);
+
+        $card->setStepParams(0, ['item' => 'a;b']);
+        $this->gesture($controller, 'stepEdit', $card, ['index' => '0', 'text' => 'step-3', 'action' => 'build', 'params' => 'item=a;b']);
+        $this->assertSame(['t' => 'step-3', 'action' => 'build', 'params' => ['item' => 'a;b']], $card->getChecklist()[0]);
+    }
+
+    // A machine action is handed only by a step, the card page no longer taking a free one
+    public function testNoFreeActionGesture(): void
+    {
+        $route = new \ReflectionMethod(PilotController::class, 'gesture')->getAttributes(Route::class)[0]->getArguments();
+
+        foreach (['entrust', 'launch', 'validate'] as $gesture) {
+            $this->assertDoesNotMatchRegularExpression('/^(' . $route['requirements']['gesture'] . ')$/', $gesture);
+        }
     }
 
     // A report's card goes to the page's space only when the report shows there the row, or for the whole table any row
@@ -311,7 +339,6 @@ class PilotControllerEditTest extends TestCase
         return new Report('report-1', $project)->refresh(['label' => 'Report', 'project' => $project, 'match' => 'site', 'home' => false, 'columns' => [], 'rows' => $rows, 'actions' => [], 'globals' => []], new \DateTimeImmutable());
     }
 
-    // The private gesture run on the posted fields
     // A reference deleted from its page leaves the cards citing it without one, the dialog told it is gone
     public function testDocDeleted(): void
     {
@@ -395,6 +422,7 @@ class PilotControllerEditTest extends TestCase
         return $controller;
     }
 
+    // The private gesture run on the posted fields
     /** @param array<string, string> $fields */
     private function edit(Card $card, array $fields): void
     {

@@ -43,7 +43,7 @@ class CardRemovalTest extends TestCase
         $shot = str_repeat('a', 32) . '.png';
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setImage('card-7-a.png')->addFeedback('feedback-1');
         $card->setFeedbackImages(0, [$shot]);
-        $run = new Run($card);
+        $run = new Run($card, 'action-1', [], 0);
         new \ReflectionProperty(Run::class, 'id')->setValue($run, 7);
         $run->finish(RunStatus::Done, null, [], new \DateTimeImmutable());
         $output = $outputs->folder($run) . '/item-1.txt';
@@ -76,7 +76,7 @@ class CardRemovalTest extends TestCase
     public function testRefusedWhileRunning(): void
     {
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1');
-        new Run($card);
+        new Run($card, 'action-1', [], 0);
 
         $this->expectException(FlowException::class);
         $this->removal($this->createStub(EntityManagerInterface::class))->remove($card);

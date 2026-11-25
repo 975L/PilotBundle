@@ -45,9 +45,9 @@ class CardFillerTest extends TestCase
     public function testTemplateSteps(): void
     {
         $template = new PlanTemplate('catalog', [
-            ['title' => 'Write {item}', 'executor' => 'human'],
-            ['title' => 'Build', 'executor' => 'runner', 'action' => 'build', 'params' => ['item' => '{item}']],
-        ])->setChecklist(true);
+            ['title' => 'Write {item}'],
+            ['title' => 'Build', 'action' => 'build', 'params' => ['item' => '{item}']],
+        ]);
 
         $card = $this->filler()->card($this->project, 'item-1', new CardSet($this->project, 'Stories')->setTemplate($template));
 
@@ -58,7 +58,7 @@ class CardFillerTest extends TestCase
     // A card added to a collection goes into it and follows its template; a collection of another space is ignored, the card then laid bare
     public function testCollection(): void
     {
-        $own = new PlanTemplate('catalog', [['title' => 'Draw', 'executor' => 'human']])->setChecklist(true);
+        $own = new PlanTemplate('catalog', [['title' => 'Draw']]);
         $set = new CardSet($this->project, 'Strips')->setTemplate($own);
 
         $card = $this->filler()->fill($this->project, 'item-1', $set)[0];
@@ -68,14 +68,6 @@ class CardFillerTest extends TestCase
         $stranger = $this->filler()->card($this->project, 'item-2', new CardSet(new Project('other', 'Other'), 'Other')->setTemplate($own));
         $this->assertNull($stranger->getCardSet());
         $this->assertSame([], $stranger->getChecklist());
-    }
-
-    // A template laying one card per step lays nothing on a single card
-    public function testPerStepTemplateLaysNothing(): void
-    {
-        $set = new CardSet($this->project, 'Stories')->setTemplate(new PlanTemplate('catalog', [['title' => 'Write', 'executor' => 'human']]));
-
-        $this->assertSame([], $this->filler()->card($this->project, 'item-1', $set)->getChecklist());
     }
 
     // No more lines than the cap, a title cut to its column

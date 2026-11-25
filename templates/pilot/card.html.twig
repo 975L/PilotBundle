@@ -235,9 +235,9 @@
         {% endif %}
         {% endif %}
 
-        {# The feedback on the card (a fix, an idea), ticked once dealt with; a box to tick opens a done card again; the open lines handed to the machine at once, after a run of the card or of one of its steps, each ticked once done or kept with the machine's reason #}
+        {# The feedback on the card (a fix, an idea), ticked once dealt with; a box to tick opens a done card again; the open lines handed to the machine at once, after a run of one of its steps, each ticked once done or kept with the machine's reason #}
         {% set feedback_open = card.feedback|filter(line => not (line.done ?? false))|length %}
-        {% set feedback_run = can.run and feedback_open > 0 and run and (card.status.value == 'review' or (run.step is not null and not run.status.active and card.status.value not in ['running', 'done'])) %}
+        {% set feedback_run = can.run and feedback_open > 0 and run and run.step is not null and not run.status.active and card.status.value not in ['running', 'done'] %}
         <div class="pilot-row pilot-mt-sm pilot-mb-sm">
             <h2 class="pilot-subtitle pilot-muted pilot-upper pilot-m0">{{ 'label.feedback'|trans({}, 'pilot') }}</h2>
             {% if feedback_run %}
@@ -275,93 +275,6 @@
                 <input type="file" name="image[]" multiple accept="image/png, image/jpeg, image/webp, image/gif" hidden data-pilot-paste-image-target="file" data-action="change->pilot-paste-image#chosen" aria-label="{{ 'label.feedback_image'|trans({}, 'pilot') }}">
             </label>
         </form>
-
-        {% if not card.sheet %}
-        {# The last run's output of the card's own action, a failed or withdrawn one not kept as a block, a step's run showing on its step #}
-        {% if run and run.step is null and run.status.value not in ['failed', 'cancelled'] %}
-            <section class="pilot-mb-lg pilot-run">
-                <h2 class="pilot-title">{{ 'label.machine'|trans({}, 'pilot') }} · {{ action_labels[run.action] ?? run.action }}</h2>
-                <p class="pilot-row pilot-mb-xs">
-                    <span class="pilot-tag pilot-tag-info">{{ run.status.label|trans }}</span>
-                    {% if run.machine %}<span class="pilot-muted pilot-small">{{ pilot_icon('desktop', 'pilot-icon-before') }}{{ run.machine.name }}</span>{% endif %}
-                    {% if run.message %}<span class="pilot-small">{{ run.message }}</span>{% endif %}
-                </p>
-                {% if run.status.value == 'claimed' %}
-                    {% set shown = pilot_run_progress(run) %}
-                    <progress class="pilot-full pilot-mb-sm" max="100" value="{{ shown.value }}" title="{{ shown.estimated ? '≈ ' }}{{ shown.value }} %">{{ shown.estimated ? '≈ ' }}{{ shown.value }} %</progress>
-                {% endif %}
-                {% for output in outputs %}
-                    <figure class="pilot-mb">
-                        <figcaption class="pilot-small pilot-muted">{{ output.name }}</figcaption>
-                        {% set url = output.kind != 'elsewhere' ? path('pilot_run_output', {id: run.id, name: output.name}) : null %}
-                        {% if output.kind == 'text' %}<pre class="pilot-small">{{ output.text }}</pre>
-                        {% elseif output.kind == 'image' %}<img src="{{ url }}" alt="{{ output.name }}" class="pilot-output-image">
-                        {% elseif output.kind == 'video' %}<video src="{{ url }}" controls class="pilot-full"></video>
-                        {% elseif output.kind == 'file' %}<a href="{{ url }}">{{ output.name }}</a>
-                        {% else %}<span class="pilot-small">{{ 'label.output_elsewhere'|trans({}, 'pilot') }}</span>{% endif %}
-                    </figure>
-                {% endfor %}
-            </section>
-        {% endif %}
-
-        {# A run of the card's own action waits for validation, or for the feedback handed back to the machine #}
-        {% if can.run and card.status.value == 'review' %}
-            <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'validate'}) }}" class="pilot-mb-lg">
-                <input type="hidden" name="_token" value="{{ token }}">
-                <button class="pilot-btn pilot-btn-success pilot-btn-lg pilot-validate">{{ pilot_icon('check') }}{{ 'label.validate'|trans({}, 'pilot') }}</button>
-            </form>
-        {% elseif can.run and run and run.status.value == 'queued' and run.step is null %}
-        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'cancel'}) }}" class="pilot-mb-lg">
-            <input type="hidden" name="_token" value="{{ token }}">
-            <button class="pilot-btn pilot-cancel">{{ pilot_icon('xmark') }}{{ 'label.run_cancel'|trans({}, 'pilot') }}</button>
-        </form>
-    {% elseif can.run and card.runner and card.action and card.status.value in ['ready', 'failed'] and card.action not in card.checklist|map(step => step.action ?? null) %}
-            {# The card's own action launched here only when no step carries it, each step having its button #}
-            <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'launch'}) }}" class="pilot-mb-lg">
-                <input type="hidden" name="_token" value="{{ token }}">
-                <button class="pilot-btn pilot-btn-primary pilot-launch">{{ pilot_icon('play') }}{{ 'label.launch'|trans({}, 'pilot') }}</button>
-            </form>
-        {% endif %}
-
-        {% set direct = actions|filter(action => action.params is empty) %}
-        {% if card.status.value not in ['running', 'done'] and direct is not empty %}
-            {# The actions asking nothing leave in one click, as buttons #}
-            <div class="pilot-row pilot-mb pilot-direct-actions">
-                {% for action in direct %}
-                    <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'entrust'}) }}">
-                        <input type="hidden" name="_token" value="{{ token }}">
-                        <input type="hidden" name="action" value="{{ action.key }}">
-                        <button class="pilot-btn pilot-btn-primary" title="{{ action.help ? action.help ~ ' · ' }}{{ action.machine }}">{{ pilot_icon('play') }}{{ action.label }}</button>
-                    </form>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        {% set asking = actions|filter(action => action.params is not empty) %}
-        {% if card.status.value not in ['running', 'done'] and asking is not empty %}
-            <details class="pilot-mb-lg pilot-entrust">
-                <summary class="pilot-subtitle">{{ 'label.entrust'|trans({}, 'pilot') }}</summary>
-                <p class="pilot-small pilot-muted">{{ 'label.info_entrust'|trans({}, 'pilot') }}</p>
-                {% for action in asking %}
-                    {% set key = action.key %}
-                    <details class="pilot-mb-xs">
-                        <summary>{{ action.label }} <span class="pilot-muted pilot-small">{{ action.machine }}</span></summary>
-                        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'entrust'}) }}" class="pilot-row pilot-row-bottom pilot-mt-sm">
-                            <input type="hidden" name="_token" value="{{ token }}">
-                            <input type="hidden" name="action" value="{{ key }}">
-                            {% for name in action.params %}
-                                <label class="pilot-label pilot-m0">{{ name }}
-                                    <input name="params[{{ name }}]" value="{{ card.action == key ? (card.params[name] ?? '') : '' }}">
-                                </label>
-                            {% endfor %}
-                            <button class="pilot-btn pilot-btn-primary">{{ pilot_icon('play') }}{{ 'label.entrust_go'|trans({}, 'pilot') }}</button>
-                        </form>
-                    </details>
-                {% endfor %}
-            </details>
-        {% endif %}
-
-        {% endif %}
 
         {% if card.doc %}
             <h2 class="pilot-subtitle pilot-muted pilot-upper pilot-mt-lg pilot-mb-sm">{{ pilot_icon('file-lines', 'pilot-icon-before') }}{{ 'label.card_doc'|trans({}, 'pilot') }}</h2>

@@ -180,6 +180,22 @@ class Credit implements \Stringable
         return $this;
     }
 
+    // The next renewal after a day, the date read or typed in carried forward month by month on its anniversary once past, the last day of a shorter month standing for it
+    public function nextRenewal(\DateTimeImmutable $today): ?\DateTimeImmutable
+    {
+        if (null === $this->renewsOn) {
+            return null;
+        }
+        $day = (int) $this->renewsOn->format('j');
+        $next = $this->renewsOn;
+        for ($months = 1; $next <= $today; ++$months) {
+            $month = $this->renewsOn->modify('first day of +' . $months . ' month');
+            $next = $month->setDate((int) $month->format('Y'), (int) $month->format('n'), min($day, (int) $month->format('t')));
+        }
+
+        return $next;
+    }
+
     public function getNote(): ?string
     {
         return $this->note;

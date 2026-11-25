@@ -11,9 +11,7 @@
 namespace c975L\PilotBundle\Entity;
 
 use c975L\ConfigBundle\Contract\UserInterface;
-use c975L\PilotBundle\Enum\CardKind;
 use c975L\PilotBundle\Enum\CardStatus;
-use c975L\PilotBundle\Enum\Executor;
 use c975L\PilotBundle\Enum\RunStatus;
 use c975L\PilotBundle\Exception\FlowException;
 use c975L\PilotBundle\Repository\CardRepository;
@@ -75,25 +73,6 @@ class Card implements \Stringable
 
     #[ORM\Column(enumType: CardStatus::class)]
     private CardStatus $status = CardStatus::Ready;
-
-    #[ORM\Column(enumType: Executor::class)]
-    private Executor $executor = Executor::Human;
-
-    #[ORM\Column(enumType: CardKind::class)]
-    private CardKind $kind = CardKind::Task;
-
-    // Key the runner looks up in its allowlist, and its parameters
-    #[ORM\Column(length: 50, nullable: true)]
-    #[Assert\Length(max: 50)]
-    private ?string $action = null;
-
-    /** @var array<string, string> */
-    #[ORM\Column(type: Types::JSON)]
-    private array $params = [];
-
-    // The open feedback handed to the card's own run waiting for validation, passed to the next run
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $comment = null;
 
     // Sub-steps ticked one by one: text, the group gathering it with its neighbours, done and the day it was, what a step spends of a credit (its key, the amount, whether it is a guess), the machine action a step leaves for once the one before is ticked; the feedback (a fix, an idea, the file name of a screenshot, why the machine left it open) after the steps
     /** @var list<array{t: string, done?: bool, doneAt?: string, doneBy?: string, cost?: array{credit: string, amount: int, guess?: bool}, action?: string, params?: array<string, string>, after?: list<string>, feedback?: bool, g?: string, img?: string|list<string>, r?: string, s?: bool}> */
@@ -251,7 +230,7 @@ class Card implements \Stringable
     // Whether steps may be added to it by hand, a card following a checklist template taking its steps from it alone
     public function takesStepsByHand(): bool
     {
-        return true !== $this->getTemplate()?->isChecklist();
+        return null === $this->getTemplate();
     }
 
     // Whether the card is done
@@ -332,65 +311,6 @@ class Card implements \Stringable
     public function setStatus(CardStatus $status): static
     {
         $this->status = $status;
-
-        return $this;
-    }
-
-    public function getExecutor(): Executor
-    {
-        return $this->executor;
-    }
-
-    public function isRunner(): bool
-    {
-        return Executor::Runner === $this->executor;
-    }
-
-    public function getKind(): CardKind
-    {
-        return $this->kind;
-    }
-
-    public function isValidation(): bool
-    {
-        return CardKind::Validate === $this->kind;
-    }
-
-    // What the card does and who does it
-    /**
-     * @param array<string, string> $params
-     */
-    public function assign(Executor $executor, CardKind $kind = CardKind::Task, ?string $action = null, array $params = []): static
-    {
-        $this->executor = $executor;
-        $this->kind = $kind;
-        $this->action = $action;
-        $this->params = $params;
-
-        return $this;
-    }
-
-    public function getAction(): ?string
-    {
-        return $this->action;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function getParams(): array
-    {
-        return $this->params;
-    }
-
-    public function getComment(): ?string
-    {
-        return $this->comment;
-    }
-
-    public function setComment(?string $comment): static
-    {
-        $this->comment = $comment;
 
         return $this;
     }
@@ -480,7 +400,7 @@ class Card implements \Stringable
             $groups[\count($groups) - 1]['steps'][$index] = $step;
         }
 
-        $fold = !($this->getTemplate()?->isChecklist() ?? false);
+        $fold = null === $this->getTemplate();
 
         return array_map(static fn (array $group): array => $group + ['parts' => self::stepParts($group['steps'], $fold)], $groups);
     }
@@ -706,6 +626,39 @@ class Card implements \Stringable
         return [] !== $this->stepAwaits($index);
     }
 
+    // Indices of the steps not ticked yet a step waits for, those they wait for in turn included, in the checklist's order
+    /** @return list<int> */
+    public function stepAwaitsAll(int $index): array
+    {
+        $found = [];
+        $todo = [$index];
+        while ([] !== $todo) {
+            foreach ($this->stepNeeds((int) array_pop($todo)) as $need) {
+                if ($need !== $index && !isset($found[$need]) && !($this->checklist[$need]['done'] ?? false)) {
+                    $found[$need] = $need;
+                    $todo[] = $need;
+                }
+            }
+        }
+        sort($found);
+
+        return $found;
+    }
+
+    // What a step not ticked yet spends of a credit, none for a ticked step or a cost missing its credit or amount, as an import may write it
+    /**
+     * @param array<string, mixed> $step
+     *
+     * @return ?array{credit: string, amount: int}
+     */
+    public static function stepCost(array $step): ?array
+    {
+        $credit = $step['cost']['credit'] ?? null;
+        $amount = $step['cost']['amount'] ?? null;
+
+        return \is_string($credit) && \is_int($amount) && !($step['done'] ?? false) ? ['credit' => $credit, 'amount' => $amount] : null;
+    }
+
     // A step renamed stays the one the others wait for
     private function renameNeed(string $before, string $after): void
     {
@@ -776,6 +729,23 @@ class Card implements \Stringable
         unset($step['action'], $step['params']);
         if (null !== $action) {
             $step['action'] = $action;
+        }
+        $this->checklist[$index] = $step;
+
+        return $this;
+    }
+
+    // Parameters of the action a step names, replaced as a whole, each value cut to what a runner takes, none kept on a step naming no action
+    /** @param array<string, string> $params */
+    public function setStepParams(int $index, array $params): static
+    {
+        if (!isset($this->checklist[$index]['action'])) {
+            return $this;
+        }
+        $step = $this->checklist[$index];
+        unset($step['params']);
+        if ([] !== $params) {
+            $step['params'] = array_map(static fn (string $value): string => mb_substr($value, 0, self::FEEDBACK_PASS_LENGTH), $params);
         }
         $this->checklist[$index] = $step;
 
@@ -906,7 +876,6 @@ class Card implements \Stringable
             ->setSourceUrl($this->sourceUrl)
             ->setCardSet($this->cardSet)
             ->follow($this->template)
-            ->assign($this->executor, $this->kind, $this->action, $this->params)
             ->setChecklist($steps);
     }
 
@@ -1012,7 +981,7 @@ class Card implements \Stringable
         return $stale;
     }
 
-    // Latest run of each checklist step in one pass over the runs, a run of the card's own action counting for the steps naming it when it is the last one
+    // Latest run of each checklist step in one pass over the runs
     /** @return array<int, Run> */
     public function stepRuns(): array
     {
@@ -1020,15 +989,6 @@ class Card implements \Stringable
         foreach ($this->runs as $run) {
             if (isset($this->checklist[$run->getStep() ?? Run::LEFT_STEP])) {
                 $runs[(int) $run->getStep()] = $run;
-            }
-        }
-        $last = $this->lastRun();
-        if (null === $last || null !== $last->getStep()) {
-            return $runs;
-        }
-        foreach ($this->checklist as $index => $step) {
-            if (!isset($runs[$index]) && null !== ($step['action'] ?? null) && $step['action'] === $last->getAction()) {
-                $runs[$index] = $last;
             }
         }
 

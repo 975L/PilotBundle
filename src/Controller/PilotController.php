@@ -19,6 +19,7 @@ use c975L\PilotBundle\Entity\Report;
 use c975L\PilotBundle\Entity\Run;
 use c975L\PilotBundle\Enum\RunStatus;
 use c975L\PilotBundle\Exception\FlowException;
+use c975L\PilotBundle\Form\PlanStep;
 use c975L\PilotBundle\Repository\ActionRepository;
 use c975L\PilotBundle\Repository\CardRepository;
 use c975L\PilotBundle\Repository\CardSetRepository;
@@ -37,6 +38,7 @@ use c975L\PilotBundle\Service\CardFlow;
 use c975L\PilotBundle\Service\CardImages;
 use c975L\PilotBundle\Service\CardMarkdown;
 use c975L\PilotBundle\Service\CardRemoval;
+use c975L\PilotBundle\Service\CreditOutlook;
 use c975L\PilotBundle\Service\CreditRefresher;
 use c975L\PilotBundle\Service\PilotUrls;
 use c975L\PilotBundle\Service\PlanFactory;
@@ -87,10 +89,7 @@ class PilotController extends AbstractController
         'feedbackadd' => PilotAccess::WORK,
         'feedbackimage' => PilotAccess::WORK,
         'runstep' => PilotAccess::RUN,
-        'entrust' => PilotAccess::RUN,
-        'launch' => PilotAccess::RUN,
         'cancel' => PilotAccess::RUN,
-        'validate' => PilotAccess::RUN,
         'feedbackrun' => PilotAccess::RUN,
     ];
     public const string CARDS_ORDER_ROUTE = 'pilot_cards_order';
@@ -114,15 +113,18 @@ class PilotController extends AbstractController
     ) {
     }
 
-    // Late cards, the coming days up to the horizon, then the later ones by month
+    // Late cards, the coming days up to the horizon, then the later ones by month, the credits to spend before their renewal above them
     #[Route('/pilot', name: 'pilot_dashboard')]
-    public function dashboard(Planning $planning, CreditRepository $creditRepository, RunRepository $runRepository): Response
+    public function dashboard(Planning $planning, CreditRepository $creditRepository, RunRepository $runRepository, CreditOutlook $creditOutlook): Response
     {
         $this->denyAccess();
         $scope = $this->pilotAccess->scope();
+        $plan = $planning->build($scope);
+        $credits = $scope->all ? $creditRepository->findOrdered() : [];
 
-        return $this->page('@c975LPilot/pilot/dashboard.html.twig', $planning->build($scope) + [
-            'credits' => $scope->all ? $creditRepository->findOrdered() : [],
+        return $this->page('@c975LPilot/pilot/dashboard.html.twig', $plan + [
+            'credits' => $credits,
+            'outlook' => $creditOutlook->build($credits, Planning::cardsOf($plan), $plan['today']),
             'runs' => $runRepository->findActive($scope),
             'reports' => $this->reportRepository->findShownOn(null, $scope),
             'waiting' => $this->cardRepository->findWaiting($scope),
@@ -256,7 +258,7 @@ class PilotController extends AbstractController
         $today = $this->clock->now()->setTime(0, 0);
         $card = new Card($project, $action->getLabel())->setDue($today);
         $this->entityManager->persist($card);
-        $this->entityManager->persist($this->cardFlow->entrust($card, $key, $this->params($request)));
+        $this->entityManager->persist($this->cardFlow->entrust($card, $key, $this->params($request), $action->getLabel()));
         $this->entityManager->flush();
 
         return $this->redirectToRoute(self::CARD_ROUTE, ['id' => $card->getId()]);
@@ -285,7 +287,7 @@ class PilotController extends AbstractController
         $title = null === $row ? $action['label'] : $action['label'] . ' · ' . (string) array_values($report->getRows()[$row])[0];
         $card = new Card($project, mb_substr($title, 0, 500))->setDue($this->clock->now()->setTime(0, 0));
         try {
-            $run = $this->cardFlow->entrust($card, $action['action'], $report->params($action, $row, $this->params($request)));
+            $run = $this->cardFlow->entrust($card, $action['action'], $report->params($action, $row, $this->params($request)), $action['label']);
         } catch (FlowException $exception) {
             $this->addFlash('danger', $exception->reason->trans($this->translator));
 
@@ -424,9 +426,7 @@ class PilotController extends AbstractController
         return $this->page('@c975LPilot/pilot/card.html.twig', [
             'card' => $card,
             'run' => $run,
-            'outputs' => null === $run ? [] : $runOutputs->previews($run),
             'step_files' => $runOutputs->ofSteps($card),
-            'actions' => $can[PilotAccess::RUN] ? $actionOffer->on($card->getProject()) : [],
             'action_labels' => $actionOffer->labels(),
             'docs' => $can[PilotAccess::EDIT] ? $this->docRepository->findFiles($card->getProject()) : [],
             'card_sets' => $can[PilotAccess::EDIT] ? $this->cardSetRepository->findOfProject($card->getProject()) : [],
@@ -553,7 +553,7 @@ class PilotController extends AbstractController
     }
 
     // Done, back to do, a date (empty sends it back to the backlog), another space, its title and note, a feedback added (with its screenshot), its screenshot set or removed, its steps reordered, a step ticked or run, or a machine gesture; then back where the gesture came from
-    #[Route('/pilot/card/{id}/{gesture}', name: 'pilot_card_gesture', requirements: ['id' => '\d+', 'gesture' => 'done|reopen|schedule|move|edit|assign|unassign|stepadd|feedbackadd|feedbackimage|stepedit|steporder|step|runstep|entrust|launch|cancel|validate|feedbackrun'], methods: ['POST'])]
+    #[Route('/pilot/card/{id}/{gesture}', name: 'pilot_card_gesture', requirements: ['id' => '\d+', 'gesture' => 'done|reopen|schedule|move|edit|assign|unassign|stepadd|feedbackadd|feedbackimage|stepedit|steporder|step|runstep|cancel|feedbackrun'], methods: ['POST'])]
     public function gesture(Card $card, string $gesture, Request $request): Response
     {
         $this->guard($card, PilotAccess::VIEW);
@@ -668,10 +668,7 @@ class PilotController extends AbstractController
             'steporder' => $this->stepOrder->reorder($card, array_values(array_map(intval(...), array_filter($request->request->all('order'), is_numeric(...))))),
             'step' => $this->cardFlow->tick($card, $request->request->getInt('index', -1)),
             'runstep' => $this->cardFlow->runStep($card, $request->request->getInt('index', -1)),
-            'entrust' => $this->cardFlow->entrust($card, $request->request->getString('action'), $this->params($request)),
-            'launch' => $this->cardFlow->launch($card),
             'cancel' => $this->cardFlow->cancel($card, $request->request->has('run') ? $request->request->getInt('run') : null),
-            'validate' => $this->cardFlow->validate($card),
             default => $this->cardFlow->treatFeedback($card),
         };
         if ($run instanceof Run) {
@@ -763,13 +760,18 @@ class PilotController extends AbstractController
         return $this->cardImages->storeFeedback($file) ?? throw new FlowException(t('label.card_image_refused', [], 'pilot'));
     }
 
-    // A step's text and, when posted, the machine action it names, edited in place; an empty text removes the step
+    // A step's text and, when posted, the machine action it names and that action's parameters, these written only once changed so a value holding « ; » survives a rename; an empty text removes the step
     private function stepEdit(Card $card, Request $request): Card
     {
         $index = $request->request->getInt('index', -1);
         $text = $request->request->getString('text');
+        $params = trim($request->request->getString('params'));
+        $changed = $request->request->has('params') && $params !== PlanStep::paramsText($card->getChecklist()[$index]['params'] ?? [], '; ');
         if ('' !== trim($text) && $request->request->has('action')) {
             $card->setStepAction($index, $request->request->getString('action'));
+        }
+        if ($changed) {
+            $card->setStepParams($index, PlanStep::paramsFrom($params));
         }
 
         return $card->renameStep($index, $text, $this->clock->now());

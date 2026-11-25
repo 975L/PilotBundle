@@ -1,5 +1,29 @@
 # Changelog
 
+## v1.8.0
+
+Step-only machine actions, credits outlook, tile progress bar
+
+- [BC-Break] Card page no longer lists the space's machine actions, nor takes the `entrust` gesture: an action leaves only from the step naming it (25/11/2026)
+- A step's action parameters edited on its line, typed `name=value; name=value` (25/11/2026)
+- `pilot_edit_step` MCP tool: a step's text, machine action and parameters, an undeclared action refused (25/11/2026)
+- Step parameters read and written by `PlanStep::paramsText()` and `PlanStep::paramsFrom()`, shared by the template form and the card (25/11/2026)
+- `ActionOffer::directKeys()` removed, unused (25/11/2026)
+- [BC-Break] `CardFlow::entrust()` takes the action's label and gives the card a step naming the action, run at once: recurring and report actions end with their step ticked instead of a card to validate (25/11/2026)
+- `pilot_edit_step` keeps only the parameters whose name the step line accepts (`PlanStep::PARAM_NAME`) (25/11/2026)
+- A step's parameter values cut to what a runner takes (`Card::FEEDBACK_PASS_LENGTH`) (25/11/2026)
+- Guided project of a machine step names the action and its parameters on the step's line (25/11/2026)
+- [BC-Break] A card no longer holds an action of its own: `Card::assign()`, `getAction()`, `getParams()`, `getComment()`, `isRunner()`, `isValidation()`, `CardFlow::launch()`, the `launch` gesture and the enums `Executor` and `CardKind` removed (25/11/2026) **Needs db update**
+- [BC-Break] « To validate » state removed: `CardStatus::Review`, `CardFlow::validate()`, the `validate` gesture and the `pilot_validate_run` MCP tool, a step's run done ticking its step (25/11/2026)
+- [BC-Break] A plan is a single card laid from its template's steps: `PlanTemplate::isChecklist()`, its form field, a template step's executor and `Plan::cardAfter()` / `runnerCardBefore()` removed (25/11/2026) **Needs db update**
+- [BC-Break] A run always names its action: `Run`'s constructor takes it, `RunOutputs::previews()` removed with the card's own run block (25/11/2026)
+- Dashboard lists the credits the steps planned before their renewal leave unspent or overspend, with the later steps that could spend them, the nearest first, and the steps they still wait for, one waiting for another credit offered while it holds enough (`CreditOutlook`) (25/11/2026)
+- A credit's renewal carried forward month by month on its anniversary once past (`Credit::nextRenewal()`) (25/11/2026)
+- `pilot_credit_outlook` MCP tool: the same outlook for the admin (25/11/2026)
+- `pilot_credit_set` MCP tool: a credit typed in by hand set by the admin with its renewal, as a browser reads it on a service without an API (25/11/2026)
+- A card's tile shows its ticked steps as a bar in its space's colour (25/11/2026)
+- `Card::stepAwaitsAll()` and `Card::stepCost()`, the steps a step waits for in turn and what a step still to do spends, `Planning::cardsOf()` listing a planning's cards (25/11/2026)
+
 ## v1.7.0
 
 Recipes followed by the runner's agent, pilot home folder

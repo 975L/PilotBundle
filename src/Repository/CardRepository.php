@@ -106,17 +106,13 @@ class CardRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // Open cards following a template: those of its checklist plans of one card (a plan built with a card per step left as it is), and those outside any plan laid from it
+    // Open cards following a template: the card of each of its plans, and those outside any plan laid from it
     /** @return list<Card> */
     public function findOpenOfTemplate(PlanTemplate $template): array
     {
-        $cards = $this->createQueryBuilder('o')
-            ->select('COUNT(o.id)')
-            ->where('o.plan = p');
-
         return $this->createQueryBuilder('c')
             ->leftJoin('c.plan', 'p')
-            ->where('(p.template = :template AND (' . $cards->getDQL() . ') = 1) OR (p.id IS NULL AND c.template = :template)')
+            ->where('p.template = :template OR (p.id IS NULL AND c.template = :template)')
             ->andWhere('c.status != :done')
             ->setParameter('template', $template)
             ->setParameter('done', CardStatus::Done)

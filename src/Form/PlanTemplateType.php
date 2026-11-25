@@ -14,13 +14,12 @@ use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-// A plan template's settings: name, the spaces offering it, one card per step or a single card to tick, and its steps added, removed and ordered
+// A plan template's settings: name, the spaces offering it and the steps of its card added, removed and ordered
 class PlanTemplateType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -28,7 +27,6 @@ class PlanTemplateType extends AbstractType
         $builder
             ->add('name', TextType::class, ['label' => 'label.template_name'])
             ->add('projects', EntityType::class, ['label' => 'label.projects', 'help' => 'label.info_template_projects', 'class' => Project::class, 'multiple' => true, 'expanded' => true, 'by_reference' => false])
-            ->add('checklist', CheckboxType::class, ['label' => 'label.template_checklist', 'help' => 'label.info_template_checklist', 'required' => false])
             ->add('steps', CollectionType::class, ['label' => 'label.template_steps', 'entry_type' => PlanStepType::class, 'allow_add' => true, 'allow_delete' => true, 'prototype' => true, 'entry_options' => ['label' => false]])
         ;
     }

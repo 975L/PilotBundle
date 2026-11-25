@@ -14,9 +14,7 @@ use c975L\PilotBundle\Entity\Action;
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Plan;
 use c975L\PilotBundle\Entity\Run;
-use c975L\PilotBundle\Enum\CardKind;
 use c975L\PilotBundle\Enum\CardStatus;
-use c975L\PilotBundle\Enum\Executor;
 use c975L\PilotBundle\Enum\RunStatus;
 use c975L\PilotBundle\Exception\FlowException;
 use c975L\PilotBundle\Repository\ActionRepository;
@@ -25,7 +23,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 use function Symfony\Component\Translation\t;
 
-// Moves the cards: a card handed to a machine is queued, run, then validated or handed the open feedback; the steps' actions queue one after the other, each done one ticking its step and queuing the next; a card closed in a plan opens the next one, a machine card leaving on its own
+// Moves the cards: a machine action leaves only from the step naming it, the steps' actions queue one after the other, each done one ticking its step, the open feedback handed back to the last run's action
 class CardFlow
 {
     public function __construct(
@@ -54,52 +52,24 @@ class CardFlow
         return $this->close($card);
     }
 
-    // Hands the card to a machine with an action of its library and the values of its parameters
+    // Hands the card to a machine through a new step naming the action and the values of its parameters, its text the action's label, queued at once
     /** @param array<string, string> $params */
-    public function entrust(Card $card, string $action, array $params): Run
+    public function entrust(Card $card, string $action, array $params, string $label): Run
     {
         if (\in_array($card->getStatus(), [CardStatus::Running, CardStatus::Done], true)) {
             throw new FlowException(t('flow.not_now', [], 'pilot'));
         }
-        $card->assign(Executor::Runner, CardKind::Task, $action, $params)->setComment(null)->setStatus(CardStatus::Ready);
+        $card->addStep('' !== trim($label) ? $label : $action);
+        $index = (int) array_key_last($card->getSteps());
+        $card->setStepAction($index, $action)->setStepParams($index, $params);
 
-        return $this->launch($card);
+        return $this->runStep($card, $index);
     }
 
-    // Queues a runner card that is to do or failed
-    public function launch(Card $card): Run
-    {
-        if (!$card->isRunner() || null === $card->getAction() || !\in_array($card->getStatus(), [CardStatus::Ready, CardStatus::Failed], true)) {
-            throw new FlowException(t('flow.not_now', [], 'pilot'));
-        }
-        $this->expectOffered($card, (string) $card->getAction());
-        $card->setStatus(CardStatus::Running);
-
-        return new Run($card)->setRequester($this->requester());
-    }
-
-    // Accepts what the machine produced: a run started by a checklist step ticks that step, any other closes the card
-    public function validate(Card $card): Card
-    {
-        $this->expectReview($card);
-        $card->setComment(null);
-        $index = $this->stepOfAction($card);
-        if (null === $index) {
-            return $this->close($card);
-        }
-
-        return $this->tick($card->assign(Executor::Human)->setStatus(CardStatus::Ready), $index);
-    }
-
-    // Hands the open feedback to the machine as one numbered comment: the card's own run waiting for validation goes back to it, else the action of the last run is queued again on its step, the machine doing only what the feedback asks
+    // Hands the open feedback to the machine as one numbered comment: the action of the last run is queued again on its step, the machine doing only what the feedback asks
     public function treatFeedback(Card $card): Run
     {
         $comment = $this->feedbackComment($card);
-        if (CardStatus::Review === $card->getStatus()) {
-            $card->setComment($comment)->setStatus(CardStatus::Ready);
-
-            return $this->launch($card);
-        }
         $last = $card->lastRun();
         $step = $last?->getStep();
         if (null === $last || null === $step || !isset($card->getChecklist()[$step]) || $last->getStatus()->isActive() || \in_array($card->getStatus(), [CardStatus::Running, CardStatus::Done], true)) {
@@ -222,12 +192,7 @@ class CardFlow
             }
         }
         $step = $run->getStep();
-        if (null === $step) {
-            $card->setStatus($done ? CardStatus::Review : CardStatus::Failed);
-
-            return;
-        }
-        $named = $card->getChecklist()[$step] ?? [];
+        $named = null !== $step ? $card->getChecklist()[$step] ?? [] : [];
         if ($done && ($named['action'] ?? null) === $run->getAction() && !($named['done'] ?? false)) {
             $card->toggleStep($step, $this->clock->now(), $run->getMachine()?->getName());
         }
@@ -244,7 +209,7 @@ class CardFlow
         $step = $card->getChecklist()[$index] ?? null;
 
         return null !== $step && !($step['done'] ?? false) && isset($step['action']) && !$card->isStepWaiting($index)
-            && !\in_array($card->getStatus(), [CardStatus::Review, CardStatus::Done], true)
+            && CardStatus::Done !== $card->getStatus()
             && !($card->stepRun($index)?->getStatus()->isActive() ?? false);
     }
 
@@ -276,32 +241,9 @@ class CardFlow
         }
     }
 
-    // Marks a card done on the day and opens the next one of its plan, a machine card waiting for its button like any action
+    // Marks a card done on the day
     private function close(Card $card): Card
     {
-        $card->markDone($this->clock->now()->setTime(0, 0));
-        $card->getPlan()?->cardAfter($card)?->setStatus(CardStatus::Ready);
-
-        return $card;
-    }
-
-    // Index of the first step still to do that names the card's action, null when the action came from elsewhere
-    private function stepOfAction(Card $card): ?int
-    {
-        foreach ($card->getChecklist() as $index => $step) {
-            if (!($step['done'] ?? false) && null !== $card->getAction() && ($step['action'] ?? null) === $card->getAction()) {
-                return $index;
-            }
-        }
-
-        return null;
-    }
-
-    // Refuses a validation gesture on a card with nothing to validate
-    private function expectReview(Card $card): void
-    {
-        if (CardStatus::Review !== $card->getStatus()) {
-            throw new FlowException(t('flow.not_now', [], 'pilot'));
-        }
+        return $card->markDone($this->clock->now()->setTime(0, 0));
     }
 }

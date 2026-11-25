@@ -64,21 +64,24 @@ class CardFlowTest extends TestCase
         $this->card->addStep('item-2')->setStepAction(0, 'hello');
 
         $this->assertSame('Item One', $flow->runStep($this->card, 0)->getRequester());
-        $this->assertSame('Item One', $flow->entrust(new Card($this->card->getProject(), 'item-3'), 'hello', [])->getRequester());
-        $this->assertNull($this->flow->entrust(new Card($this->card->getProject(), 'item-4'), 'hello', [])->getRequester());
+        $this->assertSame('Item One', $flow->entrust(new Card($this->card->getProject(), 'item-3'), 'hello', [], 'Hello')->getRequester());
+        $this->assertNull($this->flow->entrust(new Card($this->card->getProject(), 'item-4'), 'hello', [], 'Hello')->getRequester());
     }
 
-    // Handing a card to a machine makes it a runner card with its action and a queued run
-    public function testEntrustQueuesARun(): void
+    // Handing a card to a machine gives it a step naming the action with its values, the action's label for its text, queued at once; its run done ticks the step
+    public function testEntrustQueuesAStep(): void
     {
-        $run = $this->flow->entrust($this->card, 'hello', ['text' => 'catalog']);
+        $run = $this->flow->entrust($this->card, 'hello', ['text' => 'catalog'], 'Hello');
+        $index = (int) array_key_last($this->card->getSteps());
 
-        $this->assertTrue($this->card->isRunner());
-        $this->assertSame('hello', $this->card->getAction());
-        $this->assertSame(['text' => 'catalog'], $this->card->getParams());
+        $this->assertSame(['t' => 'Hello', 'action' => 'hello', 'params' => ['text' => 'catalog']], $this->card->getChecklist()[$index]);
+        $this->assertSame([$index, 'hello', ['text' => 'catalog']], [$run->getStep(), $run->getAction(), $run->getParams()]);
         $this->assertSame(CardStatus::Running, $this->card->getStatus());
-        $this->assertSame(RunStatus::Queued, $run->getStatus());
-        $this->assertSame($run, $this->card->lastRun());
+
+        $this->finish($run, RunStatus::Done);
+        $this->flow->runFinished($run);
+        $this->assertTrue($this->card->getChecklist()[$index]['done'] ?? false);
+        $this->assertSame(CardStatus::Ready, $this->card->getStatus());
     }
 
     // An action the card's space is not offered is refused, handed to the card or named by a step, the one it is offered queued
@@ -86,14 +89,14 @@ class CardFlowTest extends TestCase
     {
         $offered = new Action('action-1')->addProject($this->card->getProject());
         $actions = $this->createStub(ActionRepository::class);
-        $actions->method('findOneBy')->willReturnCallback(static fn (array $criteria): ?Action => 'action-1' === $criteria['key'] ? $offered : new Action($criteria['key']));
+        $actions->method('findOneBy')->willReturnCallback(static fn (array $criteria): Action => 'action-1' === $criteria['key'] ? $offered : new Action($criteria['key']));
         $flow = new CardFlow(new MockClock('2026-11-17 10:00'), null, $actions);
 
-        $this->assertSame(RunStatus::Queued, $flow->entrust($this->card, 'action-1', [])->getStatus());
+        $this->assertSame(RunStatus::Queued, $flow->entrust($this->card, 'action-1', [], 'Action 1')->getStatus());
 
         $other = new Card($this->card->getProject(), 'item-2')->addStep('step-1')->setStepAction(0, 'action-2');
         $refused = 0;
-        foreach ([fn (): Run => $flow->entrust(new Card($this->card->getProject(), 'item-3'), 'action-2', []), fn (): Run => $flow->runStep($other, 0)] as $gesture) {
+        foreach ([fn (): Run => $flow->entrust(new Card($this->card->getProject(), 'item-3'), 'action-2', [], 'Action 2'), fn (): Run => $flow->runStep($other, 0)] as $gesture) {
             try {
                 $gesture();
             } catch (FlowException) {
@@ -107,23 +110,23 @@ class CardFlowTest extends TestCase
     // A card already running cannot be handed over a second time
     public function testEntrustRefusedWhileRunning(): void
     {
-        $this->flow->entrust($this->card, 'hello', []);
+        $this->flow->entrust($this->card, 'hello', [], 'Hello');
 
         $this->expectException(FlowException::class);
-        $this->flow->entrust($this->card, 'hello', []);
+        $this->flow->entrust($this->card, 'hello', [], 'Hello');
     }
 
     // A run still waiting is withdrawn and the card is to do again; one a machine holds is stopped, the machine no longer holding it; a finished one stays
     public function testCancelWithdrawsOrStops(): void
     {
-        $run = $this->flow->entrust($this->card, 'hello', []);
+        $run = $this->flow->entrust($this->card, 'hello', [], 'Hello');
         $this->flow->cancel($this->card);
 
         $this->assertSame(CardStatus::Ready, $this->card->getStatus());
         $this->assertSame(RunStatus::Cancelled, $run->getStatus());
 
         $machine = new Machine('catalog', str_repeat('0', 64));
-        $held = $this->flow->entrust($this->card, 'hello', [])->claim($machine, new \DateTimeImmutable('2026-11-17 10:00'));
+        $held = $this->flow->runStep($this->card, (int) $run->getStep())->claim($machine, new \DateTimeImmutable('2026-11-17 10:00'));
         $this->flow->cancel($this->card);
         $this->assertSame(RunStatus::Cancelled, $held->getStatus());
         $this->assertFalse($held->isHeldBy($machine));
@@ -142,50 +145,15 @@ class CardFlowTest extends TestCase
         $this->assertFirstTickedAndIdle();
     }
 
-    // A finished run puts the card to validate, a failed one marks it failed
-    public function testRunFinishedSetsReviewOrFailed(): void
-    {
-        $run = $this->flow->entrust($this->card, 'hello', []);
-        $this->finish($run, RunStatus::Done);
-        $this->flow->runFinished($run);
-        $this->assertSame(CardStatus::Review, $this->card->getStatus());
-
-        $this->card->setStatus(CardStatus::Failed);
-        $again = $this->flow->launch($this->card);
-        $this->finish($again, RunStatus::Failed);
-        $this->flow->runFinished($again);
-        $this->assertSame(CardStatus::Failed, $this->card->getStatus());
-    }
-
     // A card closed by hand while its run goes on stays closed when the run ends
     public function testRunFinishedLeavesAClosedCard(): void
     {
-        $run = $this->flow->entrust($this->card, 'hello', []);
+        $run = $this->flow->entrust($this->card, 'hello', [], 'Hello');
         $this->card->markDone(new \DateTimeImmutable('2026-11-17'));
         $this->finish($run, RunStatus::Done);
         $this->flow->runFinished($run);
 
         $this->assertSame(CardStatus::Done, $this->card->getStatus());
-    }
-
-    // Validating closes the card on the day; the open feedback handed back relaunches the card's own action with it as the comment
-    public function testValidateAndTreatFeedback(): void
-    {
-        $this->review();
-        $this->card->addFeedback('Shorter')->setStatus(CardStatus::Review);
-        $second = $this->flow->treatFeedback($this->card);
-        $this->assertSame('1. Shorter', $this->card->getComment());
-        $this->assertSame(CardStatus::Running, $this->card->getStatus());
-        $this->assertCount(2, $this->card->getRuns());
-
-        $this->finish($second, RunStatus::Done);
-        $this->flow->feedbackSettled($second, []);
-        $this->flow->runFinished($second);
-        $this->assertTrue(array_values($this->card->getFeedback())[0]['done'] ?? false);
-        $this->flow->validate($this->card);
-        $this->assertSame(CardStatus::Done, $this->card->getStatus());
-        $this->assertNull($this->card->getComment());
-        $this->assertSame('2026-11-17', $this->card->getDoneAt()?->format('Y-m-d'));
     }
 
     // A step's run done ticks its step with no validation, the card to do again once nothing else waits
@@ -316,16 +284,9 @@ class CardFlowTest extends TestCase
             } catch (FlowException $exception) {
                 $this->assertStringStartsWith('flow.', $exception->getMessage());
             }
-            $this->review();
-            $this->card->toggleStep(0, new \DateTimeImmutable('2026-11-17'));
+            $this->finished();
+            $this->card->toggleStep((int) array_key_first($this->card->getFeedback()), new \DateTimeImmutable('2026-11-17'));
         }
-    }
-
-    // Nothing to validate on a card that is not waiting for it
-    public function testValidateRefusedOutsideReview(): void
-    {
-        $this->expectException(FlowException::class);
-        $this->flow->validate($this->card);
     }
 
     // A step's run done ticks its step but never queues the next machine step, left to a hand
@@ -378,10 +339,10 @@ class CardFlowTest extends TestCase
         $this->assertSame(['third'], $this->card->stepAwaits(1));
     }
 
-    // A card with a finished run waiting for validation
-    private function review(): void
+    // A step's run queued then finished done
+    private function finished(): void
     {
-        $run = $this->flow->entrust($this->card, 'hello', []);
+        $run = $this->flow->entrust($this->card, 'hello', [], 'Hello');
         $this->finish($run, RunStatus::Done);
         $this->flow->runFinished($run);
     }

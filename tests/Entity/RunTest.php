@@ -13,8 +13,6 @@ namespace c975L\PilotBundle\Tests\Entity;
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Entity\Run;
-use c975L\PilotBundle\Enum\CardKind;
-use c975L\PilotBundle\Enum\Executor;
 use c975L\PilotBundle\Enum\RunStatus;
 use PHPUnit\Framework\TestCase;
 
@@ -24,30 +22,16 @@ class RunTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->card = new Card(new Project('catalog', 'Catalog'), 'item-1')
-            ->assign(Executor::Runner, CardKind::Task, 'hello', ['text' => 'card'])
-            ->setComment('again');
+        $this->card = new Card(new Project('catalog', 'Catalog'), 'item-1');
     }
 
-    // A run of a step holds its own action and parameters, whatever the card says afterwards
-    public function testStepRunHoldsItsOwnActionAndParameters(): void
+    // A run of a step holds its own action and parameters; none given, none read
+    public function testRunHoldsItsOwnActionAndParameters(): void
     {
         $run = new Run($this->card, 'copy', ['file' => 'item-1.txt'], 2);
-        $this->card->assign(Executor::Runner, CardKind::Task, 'other', []);
 
-        $this->assertSame('copy', $run->getAction());
-        $this->assertSame(['file' => 'item-1.txt'], $run->getParams());
-        $this->assertSame(2, $run->getStep());
-    }
-
-    // A run of the card's own action takes the card's parameters with its comment
-    public function testCardRunTakesTheCardsParametersAndComment(): void
-    {
-        $run = new Run($this->card);
-
-        $this->assertSame('hello', $run->getAction());
-        $this->assertSame(['text' => 'card', 'comment' => 'again'], $run->getParams());
-        $this->assertNull($run->getStep());
+        $this->assertSame(['copy', ['file' => 'item-1.txt'], 2], [$run->getAction(), $run->getParams(), $run->getStep()]);
+        $this->assertSame([null, []], [new Run($this->card, '')->getAction(), new Run($this->card, 'copy')->getParams()]);
     }
 
     // The files a run wrote keep their absolute paths only, once each, grouped by folder for the step
@@ -98,7 +82,7 @@ class RunTest extends TestCase
     // A run withdrawn is cancelled, not failed, and over
     public function testCancelIsNotAFailure(): void
     {
-        $run = new Run($this->card)->cancel(new \DateTimeImmutable('2026-11-18 10:00'));
+        $run = new Run($this->card, 'copy', [], 0)->cancel(new \DateTimeImmutable('2026-11-18 10:00'));
 
         $this->assertSame(RunStatus::Cancelled, $run->getStatus());
         $this->assertTrue($run->getStatus()->isFinished());

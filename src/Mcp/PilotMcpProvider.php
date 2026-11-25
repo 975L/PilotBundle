@@ -19,6 +19,7 @@ class PilotMcpProvider implements McpToolProviderInterface
     public function __construct(
         private readonly PilotTools $pilotTools,
         private readonly PilotDocTools $pilotDocTools,
+        private readonly PilotCreditTools $pilotCreditTools,
     ) {
     }
 
@@ -29,7 +30,7 @@ class PilotMcpProvider implements McpToolProviderInterface
 
     public function getMcpInstructions(): string
     {
-        return 'Cards are tasks grouped in spaces, each space in collections. List the spaces, then the cards of one, read a card before changing it, and give the user the card\'s url. To sort cards, edit their space, collection or day; to merge duplicates, read both and merge the newer into the older; delete only what the user asked to. A step naming a machine action is run by a machine of its space with pilot_run_step, read the card again to follow it. Files hold a short summary for a human and the detail for an agent.';
+        return 'Cards are tasks grouped in spaces, each space in collections. List the spaces, then the cards of one, read a card before changing it, and give the user the card\'s url. To sort cards, edit their space, collection or day; to merge duplicates, read both and merge the newer into the older; delete only what the user asked to. A machine action always leaves from a step: name it and its parameters on a step with pilot_edit_step, run it by a machine of its space with pilot_run_step, read the card again to follow it. Files hold a short summary for a human and the detail for an agent.';
     }
 
     public function getMcpTools(): iterable
@@ -42,14 +43,16 @@ class PilotMcpProvider implements McpToolProviderInterface
         yield new McpTool('pilot_comment', 'Comment a card', 'Leaves a comment at the end of a card, a done card opening again.', $this->pilotTools->comment(...), true);
         yield new McpTool('pilot_edit_card', 'Edit a card', 'Changes only the fields given: title, note (empty clears it), day (YYYY-MM-DD, empty for the backlog), space (slug), collection (name, in the card\'s space once moved) and doc (slug of a file of its space, empty to detach it).', $this->pilotTools->editCard(...), true);
         yield new McpTool('pilot_add_steps', 'Add steps', 'Adds steps after the last one of a card, before its comments.', $this->pilotTools->addSteps(...), true);
+        yield new McpTool('pilot_edit_step', 'Edit a step', 'Changes only what is given of a step: its text, the machine action it names (its key, empty for none) and that action\'s parameters (name to value, replacing the step\'s), so the step can then be run with pilot_run_step.', $this->pilotTools->editStep(...), true);
         yield new McpTool('pilot_close_card', 'Close a card', 'Marks a card done, or opens it again with done false.', $this->pilotTools->closeCard(...), true);
         yield new McpTool('pilot_run_step', 'Run a step', 'Queues the machine action a step names for a machine of its space; its run then shows on the step in pilot_card.', $this->pilotTools->runStep(...), true);
         yield new McpTool('pilot_cancel_run', 'Cancel a run', 'Withdraws a run queued or under way on a card, the run given (its id from pilot_run_step) or else the card\'s last; a machine holding it stops at its next sign of life.', $this->pilotTools->cancelRun(...), true);
-        yield new McpTool('pilot_validate_run', 'Validate a run', 'Accepts what a machine produced on a card waiting for review: the step that ran it is ticked, otherwise the card is closed.', $this->pilotTools->validateRun(...), true);
         yield new McpTool('pilot_merge_cards', 'Merge two cards', 'Merges card into the card into: its note, steps and comments carried over, then card deleted.', $this->pilotTools->mergeCards(...), true, true);
         yield new McpTool('pilot_delete_card', 'Delete a card', 'Deletes a card permanently, with its runs and their files.', $this->pilotTools->deleteCard(...), true, true);
         yield new McpTool('pilot_docs', 'Files', 'Files whose title or text holds the search words, else those of a space, else every file the account sees.', $this->pilotDocTools->docs(...));
         yield new McpTool('pilot_doc', 'File', 'A file as markdown: title, summary, then detail.', $this->pilotDocTools->doc(...));
         yield new McpTool('pilot_write_doc', 'Write a file', 'Adds a file to a space (space and title), or rewrites the one named by doc, only the summary or detail given changing.', $this->pilotDocTools->writeDoc(...), true);
+        yield new McpTool('pilot_credit_outlook', 'Credits outlook', 'For the admin, each credit the steps planned before its renewal leave unspent, or overspend, with the steps of later cards that could spend it (the readiest first) and the steps they still wait for; bring one forward by editing its card\'s day.', $this->pilotCreditTools->outlook(...));
+        yield new McpTool('pilot_credit_set', 'Type in a credit', 'For the admin, the balance of a credit typed in by hand, as read on its service\'s own site (in a browser for a service without an API), with its next renewal day (YYYY-MM-DD) when given; a credit read from its service\'s API refused.', $this->pilotCreditTools->set(...), true);
     }
 }

@@ -60,16 +60,13 @@ class StepOrder
     // Whether the card follows a checklist template, which alone sets the order of its steps
     private static function templated(Card $card): bool
     {
-        return true === $card->getTemplate()?->isChecklist();
+        return null !== $card->getTemplate();
     }
 
     // A checklist template saved: each open card takes its steps in the template's order, gains the steps added, those it shares keeping their ticks, loses the ones removed unless ticked, its own steps kept after
-    /** @param list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>, after?: list<int>}> $previous */
+    /** @param list<array{title: string, action?: string, params?: array<string, string>, after?: list<int>, group?: string}> $previous */
     public function fromTemplate(PlanTemplate $template, array $previous): void
     {
-        if (!$template->isChecklist()) {
-            return;
-        }
         $steps = $template->getSteps();
         $current = array_map(self::templateKey(...), $steps);
         $before = array_map(self::templateKey(...), $previous);
@@ -80,9 +77,9 @@ class StepOrder
 
     // One card laid again after its template: shared steps as they were, in their template step's group (a title holding {variables} known by the text that fills it), new ones filled with the values the card's steps already give, or the card's title on a card laid outside any plan
     /**
-     * @param list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>, after?: list<int>}> $steps
-     * @param list<string>                                                                                                                    $current
-     * @param list<string>                                                                                                                    $before
+     * @param list<array{title: string, action?: string, params?: array<string, string>, after?: list<int>, group?: string}> $steps
+     * @param list<string>                                                                                                   $current
+     * @param list<string>                                                                                                   $before
      */
     private function relay(Card $card, array $steps, array $current, array $before): void
     {
@@ -161,8 +158,8 @@ class StepOrder
 
     // A step the template added, its {variables} filled with the values the card's steps already give, else with the fallback given, else left as they are
     /**
-     * @param array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>} $step
-     * @param array<string, string>                                                                                  $values
+     * @param array{title: string, action?: string, params?: array<string, string>} $step
+     * @param array<string, string>                                                 $values
      *
      * @return array{t: string, action?: string, params?: array<string, string>}
      */

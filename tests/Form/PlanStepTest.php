@@ -18,10 +18,10 @@ class PlanStepTest extends TestCase
     // A step goes back to the template as it came, its empty parts dropped, and is named by its title
     public function testRoundTrip(): void
     {
-        $step = ['title' => 'Build {item}', 'executor' => 'runner', 'action' => 'build', 'params' => ['item' => '{item}']];
+        $step = ['title' => 'Build {item}', 'action' => 'build', 'params' => ['item' => '{item}']];
 
         $this->assertSame($step, PlanStep::fromArray($step)->toArray());
-        $this->assertSame(['title' => 'Write', 'executor' => 'human'], PlanStep::fromArray(['title' => 'Write'])->toArray());
+        $this->assertSame(['title' => 'Write'], PlanStep::fromArray(['title' => 'Write'])->toArray());
         $this->assertSame('Build {item}', (string) PlanStep::fromArray($step));
     }
 
@@ -34,6 +34,15 @@ class PlanStepTest extends TestCase
         $this->assertSame('2, 4', PlanStep::fromArray(['title' => 'Publish', 'after' => [2, 4]])->after);
         $this->assertSame('-', PlanStep::fromArray(['title' => 'Publish', 'after' => []])->after);
         $this->assertSame('', PlanStep::fromArray(['title' => 'Publish'])->after);
+    }
+
+    // Parameters are written one « name=value » a line or joined, and read back from lines or « ; », a part without a name dropped
+    public function testParams(): void
+    {
+        $this->assertSame("item=item-1\nsize=2", PlanStep::paramsText(['item' => 'item-1', 'size' => '2']));
+        $this->assertSame('item=item-1; size=2', PlanStep::paramsText(['item' => 'item-1', 'size' => '2'], '; '));
+        $this->assertSame(['item' => 'item-1', 'size' => '2'], PlanStep::paramsFrom("item = item-1\nsize=2; =3;bad"));
+        $this->assertSame([], PlanStep::paramsFrom(''));
     }
 
     // A step's group is kept through the form, trimmed, an empty one dropped

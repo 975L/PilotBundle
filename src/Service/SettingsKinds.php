@@ -47,7 +47,7 @@ class SettingsKinds
             'title' => 'label.templates',
             'description' => 'label.info_templates',
             'icon' => 'list-ol',
-            'columns' => [['property' => 'name', 'label' => 'label.template_name'], ['property' => 'checklist', 'label' => 'label.template_checklist'], ['property' => 'projects', 'label' => 'label.projects']],
+            'columns' => [['property' => 'name', 'label' => 'label.template_name'], ['property' => 'projects', 'label' => 'label.projects']],
             'translation_domain' => 'pilot',
             'sort' => ['name' => 'ASC'],
             'new' => true,

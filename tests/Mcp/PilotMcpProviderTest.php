@@ -13,19 +13,22 @@ namespace c975L\PilotBundle\Tests\Mcp;
 use c975L\ConfigBundle\Contract\UserInterface;
 use c975L\ConfigBundle\Entity\AgentToken;
 use c975L\ConfigBundle\Mcp\McpServer;
+use c975L\ConfigBundle\Service\ConfigServiceInterface;
+use c975L\PilotBundle\Entity\Action;
 use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\CardSet;
+use c975L\PilotBundle\Entity\Credit;
 use c975L\PilotBundle\Entity\Doc;
 use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
-use c975L\PilotBundle\Enum\CardKind;
-use c975L\PilotBundle\Enum\CardStatus;
-use c975L\PilotBundle\Enum\Executor;
+use c975L\PilotBundle\Mcp\PilotCreditTools;
 use c975L\PilotBundle\Mcp\PilotDocTools;
 use c975L\PilotBundle\Mcp\PilotMcpProvider;
 use c975L\PilotBundle\Mcp\PilotTools;
+use c975L\PilotBundle\Repository\ActionRepository;
 use c975L\PilotBundle\Repository\CardRepository;
 use c975L\PilotBundle\Repository\CardSetRepository;
+use c975L\PilotBundle\Repository\CreditRepository;
 use c975L\PilotBundle\Repository\DocRepository;
 use c975L\PilotBundle\Repository\ProjectRepository;
 use c975L\PilotBundle\Security\PilotAccess;
@@ -35,8 +38,10 @@ use c975L\PilotBundle\Service\CardFlow;
 use c975L\PilotBundle\Service\CardImages;
 use c975L\PilotBundle\Service\CardMarkdown;
 use c975L\PilotBundle\Service\CardRemoval;
+use c975L\PilotBundle\Service\CreditOutlook;
 use c975L\PilotBundle\Service\PilotUrls;
 use c975L\PilotBundle\Service\PlanFactory;
+use c975L\PilotBundle\Service\Planning;
 use c975L\PilotBundle\Service\RunOutputs;
 use c975L\PilotBundle\Tests\Fixtures\TestEntityManager;
 use Doctrine\ORM\EntityManager;
@@ -70,7 +75,7 @@ class PilotMcpProviderTest extends TestCase
         $this->other = new Project('other', 'Other');
         $this->card = new Card($this->catalog, 'item-1')->setDue(new \DateTimeImmutable('2026-11-19'))->addStep('step-1')->addStep('step-2')->setStepAction(0, 'action-1');
         $this->hidden = new Card($this->other, 'item-2');
-        foreach ([$this->catalog, $this->other, new CardSet($this->catalog, 'Stories'), new CardSet($this->catalog, 'Replies'), new Doc('catalog-file-1', 'file-1')->setProject($this->catalog)->write('summary-1', 'detail-1'), new Doc('other-file-2', 'file-2')->setProject($this->other), $this->card, $this->hidden] as $entity) {
+        foreach ([$this->catalog, $this->other, new CardSet($this->catalog, 'Stories'), new CardSet($this->catalog, 'Replies'), new Doc('catalog-file-1', 'file-1')->setProject($this->catalog)->write('summary-1', 'detail-1'), new Doc('other-file-2', 'file-2')->setProject($this->other), $this->card, $this->hidden, new Action('action-2')->declare('Action 2', ['item'])] as $entity) {
             $this->entityManager->persist($entity);
         }
         $this->entityManager->flush();
@@ -91,7 +96,7 @@ class PilotMcpProviderTest extends TestCase
         $this->assertStringStartsWith('# item-2', $this->tool('pilot_card', ['card' => $this->hidden->getId()])['markdown']);
 
         $this->writable = false;
-        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_docs', 'pilot_doc'], array_column($this->call(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'])['result']['tools'], 'name'));
+        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_docs', 'pilot_doc', 'pilot_credit_outlook'], array_column($this->call(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'])['result']['tools'], 'name'));
     }
 
     // The handshake answers on the site's own host, the tools listed with the writing ones not marked read-only and the deleting ones marked destructive
@@ -102,12 +107,45 @@ class PilotMcpProviderTest extends TestCase
         $this->assertStringContainsString('Cards are tasks grouped in spaces', $initialized['result']['instructions']);
 
         $tools = array_column($this->call(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'])['result']['tools'], null, 'name');
-        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_add_card', 'pilot_tick_step', 'pilot_comment', 'pilot_edit_card', 'pilot_add_steps', 'pilot_close_card', 'pilot_run_step', 'pilot_cancel_run', 'pilot_validate_run', 'pilot_merge_cards', 'pilot_delete_card', 'pilot_docs', 'pilot_doc', 'pilot_write_doc'], array_keys($tools));
+        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_add_card', 'pilot_tick_step', 'pilot_comment', 'pilot_edit_card', 'pilot_add_steps', 'pilot_edit_step', 'pilot_close_card', 'pilot_run_step', 'pilot_cancel_run', 'pilot_merge_cards', 'pilot_delete_card', 'pilot_docs', 'pilot_doc', 'pilot_write_doc', 'pilot_credit_outlook', 'pilot_credit_set'], array_keys($tools));
         $this->assertTrue($tools['pilot_card']['annotations']['readOnlyHint']);
         $this->assertFalse($tools['pilot_add_card']['annotations']['readOnlyHint']);
         $this->assertFalse($tools['pilot_edit_card']['annotations']['destructiveHint']);
         $this->assertTrue($tools['pilot_merge_cards']['annotations']['destructiveHint']);
         $this->assertSame(['space', 'title'], $tools['pilot_add_card']['inputSchema']['required']);
+    }
+
+    // The admin reads what each credit leaves before its renewal and the later steps that could spend it; a member is refused
+    public function testCreditOutlook(): void
+    {
+        $this->entityManager->persist(new Credit('item-1')->setLabel('Item 1')->setRemaining(10)->setRenewsOn(new \DateTimeImmutable('2026-11-08')));
+        $later = new Card($this->catalog, 'item-3')->setDue(new \DateTimeImmutable('2027-01-02'))->setChecklist([['t' => 'step-1', 'cost' => ['credit' => 'item-1', 'amount' => 4]]]);
+        $this->entityManager->persist($later);
+        $this->entityManager->flush();
+        $this->assertStringContainsString('Only an administrator', $this->call(['jsonrpc' => '2.0', 'id' => 4, 'method' => 'tools/call', 'params' => ['name' => 'pilot_credit_outlook', 'arguments' => new \stdClass()]])['result']['content'][0]['text']);
+
+        $this->admin = true;
+        $outlook = $this->tool('pilot_credit_outlook');
+
+        $this->assertSame(['item-1', '2026-12-08', 10], [$outlook[0]['credit'], $outlook[0]['renews'], $outlook[0]['left']]);
+        $this->assertSame([$later->getId(), 'step-1', 4, []], [$outlook[0]['steps'][0]['card'], $outlook[0]['steps'][0]['text'], $outlook[0]['steps'][0]['amount'], $outlook[0]['steps'][0]['awaits']]);
+    }
+
+    // The admin types in a balance by hand with its renewal; a credit read from its service, a bad day or a member refused
+    public function testCreditSet(): void
+    {
+        $typed = new Credit('item-1')->setLabel('Item 1');
+        $this->entityManager->persist($typed);
+        $this->entityManager->persist(new Credit('item-2')->setLabel('Item 2')->setProvider('d-id'));
+        $this->entityManager->flush();
+        $this->assertStringContainsString('Only an administrator', $this->toolError('pilot_credit_set', ['credit' => 'item-1', 'remaining' => 5]));
+
+        $this->admin = true;
+
+        $this->assertSame(['credit' => 'item-1', 'remaining' => 70, 'renews' => '2026-12-08'], $this->tool('pilot_credit_set', ['credit' => 'item-1', 'remaining' => 70, 'renews' => '2026-12-08']));
+        $this->assertSame(70, $typed->getRemaining());
+        $this->assertStringContainsString('read from its service', $this->toolError('pilot_credit_set', ['credit' => 'item-2', 'remaining' => 5]));
+        $this->assertStringContainsString('no day', $this->toolError('pilot_credit_set', ['credit' => 'item-1', 'remaining' => 5, 'renews' => '08/12/2026']));
     }
 
     // Only the spaces the account sees are listed, with their open cards counted and their collections
@@ -217,7 +255,7 @@ class PilotMcpProviderTest extends TestCase
     // A card with steps is never merged into a card following a checklist template, which takes its steps from the template
     public function testMergeRefusedIntoATemplateCard(): void
     {
-        $template = new PlanTemplate('catalog', [['title' => 'step-1', 'executor' => 'human']])->setChecklist(true);
+        $template = new PlanTemplate('catalog', [['title' => 'step-1']]);
         $this->entityManager->persist($template);
         $this->card->follow($template);
         $twin = new Card($this->catalog, 'item-1 bis')->addStep('step-9');
@@ -251,6 +289,18 @@ class PilotMcpProviderTest extends TestCase
         $this->assertSame(['index' => 0, 'text' => 'step-1', 'done' => false, 'action' => 'action-1', 'run' => 'queued'], $steps[0]);
     }
 
+    // A step given its action and that action's parameters, only what is given changing; an unknown action or step refused
+    public function testEditStep(): void
+    {
+        $id = (int) $this->card->getId();
+
+        $this->assertSame(['index' => 1, 'text' => 'step-2', 'action' => 'action-2', 'params' => ['item' => 'item-1']], $this->tool('pilot_edit_step', ['card' => $id, 'step' => 1, 'action' => 'action-2', 'params' => ['item' => 'item-1', 'bad name' => 'item-2']]));
+        $this->assertSame(['index' => 1, 'text' => 'step-3', 'action' => 'action-2', 'params' => ['item' => 'item-1']], $this->tool('pilot_edit_step', ['card' => $id, 'step' => 1, 'text' => 'step-3']));
+        $this->assertSame(['index' => 1, 'text' => 'step-3', 'action' => null, 'params' => []], $this->tool('pilot_edit_step', ['card' => $id, 'step' => 1, 'action' => '']));
+        $this->assertSame('No machine declares the action action-9.', $this->toolError('pilot_edit_step', ['card' => $id, 'step' => 1, 'action' => 'action-9']));
+        $this->assertSame('The card has no step 5.', $this->toolError('pilot_edit_step', ['card' => $id, 'step' => 5]));
+    }
+
     // A run queued then withdrawn, the card back to do; nothing left to withdraw refused, as is an account that may not run
     public function testCancelRun(): void
     {
@@ -263,23 +313,6 @@ class PilotMcpProviderTest extends TestCase
 
         $this->denied = [PilotAccess::RUN];
         $this->assertSame('This account may not do that on card ' . $id . '.', $this->toolError('pilot_cancel_run', ['card' => $id]));
-    }
-
-    // What a machine produced on a card under review accepted, the step naming its action ticked; a card with nothing to validate refused, as is an account that may not run
-    public function testValidateRun(): void
-    {
-        $id = (int) $this->card->getId();
-        $this->assertSame('flow.not_now', $this->toolError('pilot_validate_run', ['card' => $id]));
-        $this->card->assign(Executor::Runner, CardKind::Task, 'action-1', [])->setStatus(CardStatus::Review);
-        $this->entityManager->flush();
-
-        $this->denied = [PilotAccess::RUN];
-        $this->assertSame('This account may not do that on card ' . $id . '.', $this->toolError('pilot_validate_run', ['card' => $id]));
-        $this->denied = [];
-        $this->assertSame(['url' => 'https://site.example/pilot/catalog#card-' . $id, 'status' => 'ready'], $this->tool('pilot_validate_run', ['card' => $id]));
-        $this->entityManager->clear();
-        $this->assertTrue($this->entityManager->find(Card::class, $id)->getChecklist()[0]['done']);
-        $this->assertSame('No card ' . $this->hidden->getId() . '.', $this->toolError('pilot_validate_run', ['card' => $this->hidden->getId()]));
     }
 
     // Files listed and read within the spaces served, one added, one rewritten floor by floor and attached to a card
@@ -408,9 +441,10 @@ class PilotMcpProviderTest extends TestCase
         $root = sys_get_temp_dir() . '/pilot-mcp';
         $removal = new CardRemoval($this->entityManager, new CardImages($root), new RunOutputs($root));
         $access = $this->access();
-        $tools = new PilotTools(new ProjectRepository($registry), $cards, new CardFiller($cards, new PlanFactory($flow)), $flow, new CardMarkdown($urls), new PilotUrls($urls), $this->entityManager, new MockClock('2026-11-20 10:00'), new CardSetRepository($registry), $removal, $translator, new DocRepository($registry), $access);
+        $tools = new PilotTools(new ProjectRepository($registry), $cards, new CardFiller($cards, new PlanFactory($flow)), $flow, new CardMarkdown($urls), new PilotUrls($urls), $this->entityManager, new MockClock('2026-11-20 10:00'), new CardSetRepository($registry), $removal, $translator, new DocRepository($registry), $access, new ActionRepository($registry));
         $docs = new PilotDocTools(new ProjectRepository($registry), new DocRepository($registry), $this->entityManager, $urls, $access);
+        $credits = new PilotCreditTools(new Planning($cards, $this->createStub(ConfigServiceInterface::class), new MockClock('2026-11-20 10:00')), new CreditRepository($registry), new CreditOutlook(), $access, new PilotUrls($urls), $this->entityManager, new MockClock('2026-11-20 10:00'));
 
-        return new PilotMcpProvider($tools, $docs);
+        return new PilotMcpProvider($tools, $docs, $credits);
     }
 }

@@ -42,6 +42,17 @@ class CreditTest extends TestCase
         $this->assertTrue($credit->setProvider('')->isManual());
     }
 
+    // The renewal carried forward month by month once past, on its anniversary or the last day of a shorter month, none without a date
+    public function testNextRenewal(): void
+    {
+        $credit = new Credit('catalog')->setRenewsOn(new \DateTimeImmutable('2026-01-31'));
+
+        $this->assertSame('2026-01-31', $credit->nextRenewal(new \DateTimeImmutable('2026-01-15'))->format('Y-m-d'));
+        $this->assertSame('2026-02-28', $credit->nextRenewal(new \DateTimeImmutable('2026-01-31'))->format('Y-m-d'));
+        $this->assertSame('2026-12-31', $credit->nextRenewal(new \DateTimeImmutable('2026-12-08'))->format('Y-m-d'));
+        $this->assertNull(new Credit('catalog')->nextRenewal(new \DateTimeImmutable('2026-01-15')));
+    }
+
     // An emptied provider, account or key is stored as none
     public function testEmptiedServiceFieldsAreNone(): void
     {

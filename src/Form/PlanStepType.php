@@ -10,7 +10,6 @@
 
 namespace c975L\PilotBundle\Form;
 
-use c975L\PilotBundle\Enum\Executor;
 use c975L\PilotBundle\Repository\ActionRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\CallbackTransformer;
@@ -22,7 +21,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
-// One step of a plan template: its title, the group it belongs to on a card, who does it, for a machine the action and its parameters, {variables} asked when the plan is created, and the steps it waits for
+// One step of a plan template: its title, the group it belongs to on a card, the machine action it names and its parameters, {variables} asked when the plan is created, and the steps it waits for
 class PlanStepType extends AbstractType
 {
     public function __construct(
@@ -39,12 +38,11 @@ class PlanStepType extends AbstractType
         $builder
             ->add('title', TextType::class, ['label' => 'label.step_title', 'constraints' => [new NotBlank(), new Length(max: 500)]])
             ->add('group', TextType::class, ['label' => 'label.step_group', 'help' => 'label.info_step_group', 'required' => false, 'empty_data' => '', 'constraints' => [new Length(max: 50)]])
-            ->add('executor', ChoiceType::class, ['label' => 'label.step_executor', 'choices' => ['label.executor_human' => Executor::Human->value, 'label.executor_runner' => Executor::Runner->value]])
             ->add('action', ChoiceType::class, ['label' => 'label.step_action', 'choices' => $actions, 'required' => false, 'placeholder' => '', 'choice_translation_domain' => false])
             ->add('params', TextareaType::class, ['label' => 'label.step_params', 'help' => 'label.info_step_params', 'required' => false])
             ->add('after', TextType::class, ['label' => 'label.step_after', 'help' => 'label.info_step_after', 'required' => false, 'empty_data' => ''])
         ;
-        $builder->get('params')->addModelTransformer(new CallbackTransformer($this->paramsToText(...), $this->textToParams(...)));
+        $builder->get('params')->addModelTransformer(new CallbackTransformer(static fn (mixed $params): string => PlanStep::paramsText(\is_array($params) ? $params : []), static fn (mixed $text): array => PlanStep::paramsFrom((string) $text)));
         $builder->addModelTransformer(new CallbackTransformer(
             static fn (mixed $step): PlanStep => $step instanceof PlanStep ? $step : PlanStep::fromArray(\is_array($step) ? $step : []),
             static fn (mixed $step): array => $step instanceof PlanStep ? $step->toArray() : [],
@@ -54,31 +52,5 @@ class PlanStepType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(['translation_domain' => 'pilot', 'data_class' => PlanStep::class, 'empty_data' => static fn (): PlanStep => new PlanStep()]);
-    }
-
-    // Parameters shown one "name=value" per line
-    private function paramsToText(mixed $params): string
-    {
-        $lines = [];
-        foreach (\is_array($params) ? $params : [] as $name => $value) {
-            $lines[] = $name . '=' . $value;
-        }
-
-        return implode("\n", $lines);
-    }
-
-    // Parameters read back from their lines, a line without "=" or without a name dropped
-    /** @return array<string, string> */
-    private function textToParams(mixed $text): array
-    {
-        $params = [];
-        foreach (preg_split('/\R/', (string) $text) ?: [] as $line) {
-            [$name, $value] = array_pad(explode('=', $line, 2), 2, null);
-            if (null !== $value && 1 === preg_match('/^\w{1,30}$/', trim($name))) {
-                $params[trim($name)] = trim($value);
-            }
-        }
-
-        return $params;
     }
 }

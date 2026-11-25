@@ -96,34 +96,34 @@ class Run
     #[Assert\Length(max: 100)]
     private ?string $requester = null;
 
-    // A queued run of a card, doing the given action of one of its steps or, without one, the card's own action with its comment
+    // A queued run of a card, doing the given action of one of its steps
     /** @param array<string, string> $params */
     public function __construct(
         #[ORM\ManyToOne(inversedBy: 'runs')]
         #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
         private Card $card,
-        ?string $action = null,
+        string $action,
         array $params = [],
         #[ORM\Column(nullable: true)]
         private ?int $step = null,
     ) {
         $this->createdAt = new \DateTimeImmutable();
-        $this->action = $action ?? $card->getAction();
-        $this->params = null !== $action ? $params : null;
+        $this->action = '' !== $action ? $action : null;
+        $this->params = [] !== $params ? $params : null;
         $card->addRun($this);
     }
 
-    // Action the machine runs, the card's for a run queued before runs held their own
+    // Action the machine runs, none for a run imported without one
     public function getAction(): ?string
     {
-        return $this->action ?? $this->card->getAction();
+        return $this->action;
     }
 
-    // Values of the action's parameters, the card's with its comment for a run of the card's own action, which cannot change while it runs
+    // Values of the action's parameters, which cannot change while it runs
     /** @return array<string, string> */
     public function getParams(): array
     {
-        return $this->params ?? $this->card->getParams() + (null !== $this->card->getComment() ? ['comment' => $this->card->getComment()] : []);
+        return $this->params ?? [];
     }
 
     public function getRequester(): ?string
@@ -139,7 +139,7 @@ class Run
         return $this;
     }
 
-    // Index of the checklist step the run does, null for the card's own action
+    // Index of the checklist step the run does, null for a run imported without one
     public function getStep(): ?int
     {
         return $this->step;

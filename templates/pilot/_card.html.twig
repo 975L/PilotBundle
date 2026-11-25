@@ -29,12 +29,14 @@
             {% endif %}
             {% if card.steps is not empty %}<span class="pilot-muted" title="{{ 'label.steps_done'|trans({}, 'pilot') }}">{{ ticked }}/{{ card.steps|length }}</span>{% endif %}
             {% if feedback_open > 0 %}<span class="pilot-tag pilot-tag-warning" title="{{ 'label.feedback'|trans({}, 'pilot') }}">{{ pilot_icon('comment') }}{{ feedback_open }}</span>{% endif %}
-            {# The state only when it says more than « to do »: running, to validate, done #}
+            {# The state only when it says more than « to do »: running, done, failed #}
             {% if card.status.value != 'ready' %}<span class="pilot-tag{{ card.status.value == 'running' ? ' pilot-tag-info' : (card.status.value == 'failed' ? ' pilot-tag-danger' : '') }}">{{ card.status.label|trans }}</span>{% endif %}
             {% if card.waitingOn %}<span class="pilot-tag pilot-tag-info">{{ 'label.waiting_on'|trans({'%who%': card.waitingOn}, 'pilot') }}</span>{% endif %}
             {% if card.resultUrl %}<a href="{{ card.resultUrl }}" target="_blank" rel="noopener noreferrer" class="pilot-card-gesture" title="{{ 'label.card_result'|trans({}, 'pilot') }}" aria-label="{{ 'label.card_result'|trans({}, 'pilot') }}">{{ pilot_icon('arrow-up-right-from-square') }}</a>{% endif %}
             {% include '@c975LPilot/pilot/_done_toggle.html.twig' with {toggle_class: 'pilot-push pilot-card-gesture'} %}
         </div>
+        {# How far its steps are ticked, at a glance #}
+        {% if card.steps is not empty %}<progress class="pilot-card-progress" value="{{ ticked }}" max="{{ card.steps|length }}" aria-label="{{ 'label.steps_done'|trans({}, 'pilot') }}">{{ ticked }}/{{ card.steps|length }}</progress>{% endif %}
         {% endif %}
     </div>
 </div>

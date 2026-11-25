@@ -18,9 +18,7 @@ use c975L\PilotBundle\Entity\Plan;
 use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Entity\Run;
-use c975L\PilotBundle\Enum\CardKind;
 use c975L\PilotBundle\Enum\CardStatus;
-use c975L\PilotBundle\Enum\Executor;
 use c975L\PilotBundle\Enum\RunStatus;
 use c975L\PilotBundle\Exception\FlowException;
 use PHPUnit\Framework\TestCase;
@@ -52,26 +50,17 @@ class CardTest extends TestCase
         $this->assertNull($card->getDoneAt());
     }
 
-    // In a plan, the next card and the runner card a validation sends back to are found by position
-    public function testPlanNavigation(): void
+    // A plan holds its card, done once its card is; a place given by hand kept
+    public function testPlanCard(): void
     {
         $plan = new Plan(new PlanTemplate('Test', []), $this->project, 'item-1');
-        $cards = [];
-        foreach ([Executor::Human, Executor::Runner, Executor::Human] as $index => $executor) {
-            $cards[] = new Card($this->project, 'Item ' . $index)->assign($executor, 2 === $index ? CardKind::Validate : CardKind::Task)->placeIn($plan, $index + 1);
-        }
+        $card = new Card($this->project, 'Item 1')->placeIn($plan, 0);
 
-        $this->assertSame($cards[1], $plan->cardAfter($cards[0]));
-        $this->assertNull($plan->cardAfter($cards[2]));
-        $this->assertSame($cards[1], $plan->runnerCardBefore($cards[2]));
-        $this->assertTrue($cards[2]->isValidation());
+        $this->assertSame([$card], $plan->getCards()->toArray());
         $this->assertFalse($plan->isDone());
-
-        // A place given by hand leaves the chain of the plan as it was
-        $cards[0]->setRank(2);
-        $cards[1]->setRank(0);
-        $this->assertSame($cards[1], $plan->cardAfter($cards[0]));
-        $this->assertSame(2, $cards[0]->getRank());
+        $card->markDone(new \DateTimeImmutable('2026-11-25'));
+        $this->assertTrue($plan->isDone());
+        $this->assertSame(2, $card->setRank(2)->getRank());
     }
 
     // A step's files are out of date once an earlier step's run wrote files after them, a run without files or not done changing nothing
@@ -93,7 +82,7 @@ class CardTest extends TestCase
     {
         $card = new Card($this->project, 'Item 1');
         $machine = new Machine('machine-1', str_repeat('a', 64));
-        $run = new Run($card);
+        $run = new Run($card, 'action-1');
         $now = new \DateTimeImmutable('2026-11-17 10:00:00');
 
         $run->claim($machine, $now)->report(40, 'step 4', $now);
@@ -110,16 +99,13 @@ class CardTest extends TestCase
         $this->assertTrue($run->getStatus()->isFinished());
     }
 
-    // Steps are added by hand to a card of its own or one following a template of separate cards, never to one following a checklist template
+    // Steps are added by hand to a card of its own, never to one following a template
     public function testTakesStepsByHand(): void
     {
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1');
         $this->assertTrue($card->takesStepsByHand());
 
         $card->follow(new PlanTemplate('catalog', []));
-        $this->assertTrue($card->takesStepsByHand());
-
-        $card->follow(new PlanTemplate('catalog', [])->setChecklist(true));
         $this->assertFalse($card->takesStepsByHand());
     }
 
@@ -221,6 +207,21 @@ class CardTest extends TestCase
         $this->assertSame([['t' => 'step-1', 'action' => 'publish'], ['t' => 'step-2']], $card->getChecklist());
     }
 
+    // A step's parameters are replaced as a whole, emptied by none, each value cut to what a runner takes, and kept only on a step naming an action
+    public function testSetStepParams(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1', 'action' => 'build', 'params' => ['item' => 'item-1']], ['t' => 'step-2']]);
+
+        $card->setStepParams(0, ['item' => 'item-2'])->setStepParams(1, ['item' => 'item-1'])->setStepParams(9, ['item' => 'item-1']);
+        $this->assertSame([['t' => 'step-1', 'action' => 'build', 'params' => ['item' => 'item-2']], ['t' => 'step-2']], $card->getChecklist());
+
+        $card->setStepParams(0, []);
+        $this->assertSame(['t' => 'step-1', 'action' => 'build'], $card->getChecklist()[0]);
+
+        $card->setStepParams(0, ['item' => str_repeat('é', Card::FEEDBACK_PASS_LENGTH + 10)]);
+        $this->assertSame(Card::FEEDBACK_PASS_LENGTH, mb_strlen($card->getChecklist()[0]['params']['item']));
+    }
+
     // A title is cut to the length of its column
     public function testTitleCut(): void
     {
@@ -255,17 +256,16 @@ class CardTest extends TestCase
         $this->assertSame(CardStatus::Running, $card->getStatus());
     }
 
-    // The latest run of each step in one pass, the card's own last run counting for the steps naming its action
+    // The latest run of each step in one pass, a run without a step counting for none
     public function testStepRuns(): void
     {
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'a', 'action' => 'build'], ['t' => 'b', 'action' => 'copy'], ['t' => 'c']]);
         new Run($card, 'build', [], 0);
         $latest = new Run($card, 'build', [], 0);
-        $card->assign(Executor::Runner, CardKind::Task, 'copy');
-        $own = new Run($card);
+        new Run($card, 'copy');
 
-        $this->assertSame([0 => $latest, 1 => $own], $card->stepRuns());
-        $this->assertSame($own, $card->stepRun(1));
+        $this->assertSame([0 => $latest], $card->stepRuns());
+        $this->assertNull($card->stepRun(1));
         $this->assertNull($card->stepRun(2));
     }
 
@@ -299,6 +299,30 @@ class CardTest extends TestCase
         $this->assertSame([], $card->stepAwaits(1));
     }
 
+    // The steps a step still waits for, those they wait for in turn included, a ticked one stopping the chain and a loop ending
+    public function testStepAwaitsAll(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([
+            ['t' => 'first', 'done' => true],
+            ['t' => 'second', 'after' => ['text:first']],
+            ['t' => 'third', 'after' => ['text:second', 'text:fifth']],
+            ['t' => 'fourth', 'after' => ['text:third']],
+            ['t' => 'fifth', 'after' => ['text:fourth']],
+        ]);
+
+        $this->assertSame([1, 2, 3], $card->stepAwaitsAll(4));
+        $this->assertSame([], $card->stepAwaitsAll(1));
+    }
+
+    // A cost counts only on a step still to do, with both its credit and its amount
+    public function testStepCost(): void
+    {
+        $this->assertSame(['credit' => 'item-1', 'amount' => 5], Card::stepCost(['t' => 'a', 'cost' => ['credit' => 'item-1', 'amount' => 5]]));
+        $this->assertNull(Card::stepCost(['t' => 'a', 'done' => true, 'cost' => ['credit' => 'item-1', 'amount' => 5]]));
+        $this->assertNull(Card::stepCost(['t' => 'a', 'cost' => ['credit' => 'item-1']]));
+        $this->assertNull(Card::stepCost(['t' => 'a']));
+    }
+
     // A step renamed stays the one the others wait for
     public function testRenamedStepStaysAwaited(): void
     {
@@ -312,7 +336,7 @@ class CardTest extends TestCase
     // The template of a card is its plan's, otherwise the checklist one it follows; its copy follows it too
     public function testTemplate(): void
     {
-        $checklist = new PlanTemplate('catalog-checklist', [])->setChecklist(true);
+        $checklist = new PlanTemplate('catalog-checklist', []);
         $perStep = new PlanTemplate('catalog-steps', []);
         $card = new Card($this->project, 'item-1');
 
@@ -400,7 +424,7 @@ class CardTest extends TestCase
     public function testStepPartsUnfoldedOnTemplate(): void
     {
         $card = new Card($this->project, 'item-1')->setChecklist([['t' => 'step-1', 'done' => true], ['t' => 'step-2', 'done' => true], ['t' => 'step-3']]);
-        $card->follow(new PlanTemplate('catalog-checklist', [])->setChecklist(true));
+        $card->follow(new PlanTemplate('catalog-checklist', []));
         $parts = $card->getStepGroups()[0]['parts'];
 
         $this->assertSame([false], array_column($parts, 'folded'));

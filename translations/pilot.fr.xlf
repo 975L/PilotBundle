@@ -36,7 +36,7 @@
             </trans-unit>
             <trans-unit id="h3w1C7_">
                 <source>description.guided_project_pilot_template</source>
-                <target>Un modèle de plan donne d'un coup ses étapes à une carte, ou une carte par étape, dans les espaces qui le proposent.</target>
+                <target>Un modèle de plan donne d'un coup ses étapes à une carte, dans les espaces qui le proposent.</target>
             </trans-unit>
             <trans-unit id="VVwBJhz">
                 <source>description.guided_step_pilot_agent_card</source>
@@ -44,7 +44,7 @@
             </trans-unit>
             <trans-unit id="L9cw6vK">
                 <source>description.guided_step_pilot_agent_feedback</source>
-                <target>Ce qui lui manque, il le demande sur la carte : répondez-y, puis validez.</target>
+                <target>Ce qui lui manque, il le demande sur la carte : répondez-y, puis confiez la réponse à la machine.</target>
             </trans-unit>
             <trans-unit id="V9u0XmA">
                 <source>description.guided_step_pilot_agent_open</source>
@@ -102,6 +102,10 @@
                 <source>description.guided_step_pilot_credits_open</source>
                 <target>Parmi les réglages, les crédits.</target>
             </trans-unit>
+            <trans-unit id="co8a7N_">
+                <source>description.guided_step_pilot_credits_outlook</source>
+                <target>Ce qu'un crédit garde avant son renouvellement, et les étapes de cartes plus tardives qui pourraient le dépenser, avec ce qu'il faut faire avant.</target>
+            </trans-unit>
             <trans-unit id="ISH1E0_">
                 <source>description.guided_step_pilot_credits_provider</source>
                 <target>Un service lu donne son solde par son API, avec la clé de votre compte ; vide, le solde se saisit à la main.</target>
@@ -149,6 +153,10 @@
             <trans-unit id="R2_PFTN">
                 <source>description.guided_step_pilot_number_space</source>
                 <target>Cliquez sur l'espace de la carte, dans la colonne de gauche.</target>
+            </trans-unit>
+            <trans-unit id="sbnSf8Z">
+                <source>description.guided_step_pilot_run_action</source>
+                <target>Cliquez sur le texte d'une étape : sa ligne nomme l'action de machine et ses paramètres, saisis nom=valeur; nom=valeur.</target>
             </trans-unit>
             <trans-unit id="TdWIM_A">
                 <source>description.guided_step_pilot_run_card</source>
@@ -212,11 +220,7 @@
             </trans-unit>
             <trans-unit id="_D0Y6Dk">
                 <source>description.guided_step_pilot_steps_step</source>
-                <target>Une ligne par étape ; une étape peut nommer une action de machine, lancée par son bouton. Sur une carte qui suit un modèle, les étapes viennent du modèle.</target>
-            </trans-unit>
-            <trans-unit id="kOA145w">
-                <source>description.guided_step_pilot_template_checklist</source>
-                <target>Coché, le plan est une seule carte dont les étapes se cochent ; sinon, une carte par étape.</target>
+                <target>Une ligne par étape ; une étape peut nommer une action de machine, lancée par son bouton, et les valeurs qu'elle demande, en cliquant sur son texte ; aucune action ne part d'ailleurs. Sur une carte qui suit un modèle, les étapes viennent du modèle.</target>
             </trans-unit>
             <trans-unit id="IIwzwob">
                 <source>description.guided_step_pilot_template_done</source>
@@ -801,22 +805,6 @@
                 <source>label.due</source>
                 <target>Date</target>
             </trans-unit>
-            <trans-unit id="jKsIt3R">
-                <source>label.entrust</source>
-                <target>Confier à une machine</target>
-            </trans-unit>
-            <trans-unit id="X2Xki9R">
-                <source>label.entrust_go</source>
-                <target>Confier</target>
-            </trans-unit>
-            <trans-unit id="hLzCk5U">
-                <source>label.executor_human</source>
-                <target>À la main</target>
-            </trans-unit>
-            <trans-unit id="KmVPWwb">
-                <source>label.executor_runner</source>
-                <target>Une machine</target>
-            </trans-unit>
             <trans-unit id="YerstO3">
                 <source>label.feedback</source>
                 <target>Commentaires</target>
@@ -957,6 +945,10 @@
                 <source>label.guided_step_pilot_credits_open</source>
                 <target>Ouvrez le formulaire d'un nouveau crédit</target>
             </trans-unit>
+            <trans-unit id="iH8yMlq">
+                <source>label.guided_step_pilot_credits_outlook</source>
+                <target>Lisez les crédits à placer</target>
+            </trans-unit>
             <trans-unit id="zde.F46">
                 <source>label.guided_step_pilot_credits_provider</source>
                 <target>Service lu ou saisi à la main</target>
@@ -1004,6 +996,10 @@
             <trans-unit id="uenJQik">
                 <source>label.guided_step_pilot_number_space</source>
                 <target>Ouvrez un espace</target>
+            </trans-unit>
+            <trans-unit id="WamXzAM">
+                <source>label.guided_step_pilot_run_action</source>
+                <target>Nommez l'action</target>
             </trans-unit>
             <trans-unit id="JXtBKoa">
                 <source>label.guided_step_pilot_run_card</source>
@@ -1068,10 +1064,6 @@
             <trans-unit id="m9b_wPP">
                 <source>label.guided_step_pilot_steps_step</source>
                 <target>Ajoutez une étape</target>
-            </trans-unit>
-            <trans-unit id="VbCubkT">
-                <source>label.guided_step_pilot_template_checklist</source>
-                <target>Une carte ou plusieurs</target>
             </trans-unit>
             <trans-unit id="_OHs855">
                 <source>label.guided_step_pilot_template_done</source>
@@ -1161,10 +1153,6 @@
                 <source>label.info_doc_delete</source>
                 <target>La référence est supprimée sans retour, les cartes qui la citent restent, sans référence.</target>
             </trans-unit>
-            <trans-unit id="FxX95j_">
-                <source>label.info_entrust</source>
-                <target>Une machine (le runner sur ton poste) exécute pour cette carte une action de sa liste, par exemple un script, puis montre son résultat à valider, ou traite les commentaires ouverts de la carte.</target>
-            </trans-unit>
             <trans-unit id="Qjf4vqF">
                 <source>label.info_feedback_add</source>
                 <target>Une correction ou une idée ; jusqu'à trois captures se collent ici</target>
@@ -1237,13 +1225,13 @@
                 <source>label.info_step_params</source>
                 <target>Un « nom=valeur » par ligne.</target>
             </trans-unit>
+            <trans-unit id="gQzFV4E">
+                <source>label.info_step_params_line</source>
+                <target>nom=valeur ; nom=valeur</target>
+            </trans-unit>
             <trans-unit id="bo1fgQe">
                 <source>label.info_step_stale</source>
                 <target>Une étape précédente a été refaite après ce rendu, il sera remplacé</target>
-            </trans-unit>
-            <trans-unit id="YERdGS1">
-                <source>label.info_template_checklist</source>
-                <target>Coché : le plan est une seule carte dont les étapes sont les cases à cocher ; sinon, une carte par étape.</target>
             </trans-unit>
             <trans-unit id="IaYl.9w">
                 <source>label.info_template_projects</source>
@@ -1260,10 +1248,6 @@
             <trans-unit id=".c3ER3G">
                 <source>label.late</source>
                 <target>En retard</target>
-            </trans-unit>
-            <trans-unit id="qhB25G1">
-                <source>label.launch</source>
-                <target>Relancer</target>
             </trans-unit>
             <trans-unit id="VCOHhjm">
                 <source>label.machine</source>
@@ -1336,6 +1320,26 @@
             <trans-unit id="hT45Qr2">
                 <source>label.order_failed</source>
                 <target>L'ordre des espaces n'a pas pu être enregistré.</target>
+            </trans-unit>
+            <trans-unit id="XMh7qy2">
+                <source>label.outlook</source>
+                <target>Crédits à utiliser avant leur renouvellement</target>
+            </trans-unit>
+            <trans-unit id="Ml6DPsg">
+                <source>label.outlook_awaits</source>
+                <target>Avant : %steps%</target>
+            </trans-unit>
+            <trans-unit id="Hjcm8oQ">
+                <source>label.outlook_left</source>
+                <target>%credit% : %amount% %unit% à placer avant le %date%</target>
+            </trans-unit>
+            <trans-unit id="mt0RTVS">
+                <source>label.outlook_none</source>
+                <target>aucune étape plus tardive à avancer</target>
+            </trans-unit>
+            <trans-unit id="OCsVeNE">
+                <source>label.outlook_short</source>
+                <target>%credit% : il manque %amount% %unit% avant le %date%</target>
             </trans-unit>
             <trans-unit id="fKU3y1e">
                 <source>label.output_elsewhere</source>
@@ -1545,10 +1549,6 @@
                 <source>label.status_ready</source>
                 <target>À faire</target>
             </trans-unit>
-            <trans-unit id="k0mrUZw">
-                <source>label.status_review</source>
-                <target>À valider</target>
-            </trans-unit>
             <trans-unit id="17Ds0dr">
                 <source>label.status_running</source>
                 <target>En cours</target>
@@ -1576,10 +1576,6 @@
             <trans-unit id="1CiY47b">
                 <source>label.step_edit</source>
                 <target>Modifier l'étape</target>
-            </trans-unit>
-            <trans-unit id="NVK7xLn">
-                <source>label.step_executor</source>
-                <target>Qui</target>
             </trans-unit>
             <trans-unit id="ECNtqnc">
                 <source>label.step_group</source>
@@ -1641,10 +1637,6 @@
                 <source>label.template</source>
                 <target>Modèle de plan</target>
             </trans-unit>
-            <trans-unit id="XfW0Lbv">
-                <source>label.template_checklist</source>
-                <target>Une seule carte à cocher</target>
-            </trans-unit>
             <trans-unit id="W7kzvfO">
                 <source>label.template_name</source>
                 <target>Nom</target>
@@ -1660,10 +1652,6 @@
             <trans-unit id="E5XaMa_">
                 <source>label.templates_offered</source>
                 <target>Modèles proposés :</target>
-            </trans-unit>
-            <trans-unit id="M2GHic6">
-                <source>label.validate</source>
-                <target>Valider</target>
             </trans-unit>
             <trans-unit id="TCdmg3c">
                 <source>label.waiting</source>

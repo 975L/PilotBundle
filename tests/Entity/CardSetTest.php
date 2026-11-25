@@ -28,8 +28,7 @@ class CardSetTest extends TestCase
         $this->assertNull($set->setItem('  ')->getItem());
         $this->assertSame('Stories', $set->setName('  ')->getName());
         $this->assertSame('Tales', $set->setName(' Tales ')->getName());
-        $this->assertNull($set->setTemplate($template)->getChecklistTemplate());
-        $this->assertSame($template, $set->setTemplate($template->setChecklist(true))->getChecklistTemplate());
+        $this->assertSame($template, $set->setTemplate($template)->getTemplate());
     }
 
     // A card is a sheet only in a collection of sheets

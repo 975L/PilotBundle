@@ -37,7 +37,7 @@ class RunQueueTest extends TestCase
         $this->clock = new MockClock('2026-11-17 10:00');
         $this->machine = new Machine('machine-1', '');
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1');
-        $this->run = new CardFlow($this->clock)->entrust($card, 'hello', []);
+        $this->run = new CardFlow($this->clock)->entrust($card, 'hello', [], 'Hello');
     }
 
     // The run a machine took is handed back, the call recording what the machine declares
@@ -121,7 +121,7 @@ class RunQueueTest extends TestCase
         $this->queue($this->createStub(RunRepository::class))->finish($this->run, $this->machine, RunStatus::Claimed, null, []);
     }
 
-    // A held run finished as done sends its card to review
+    // A held run finished as done ticks its step, the card to do again
     public function testFinishMovesTheCardOn(): void
     {
         $this->run->claim($this->machine, $this->clock->now());
@@ -129,7 +129,8 @@ class RunQueueTest extends TestCase
         $this->queue($this->createStub(RunRepository::class))->finish($this->run, $this->machine, RunStatus::Done, 'ok', ['out.md']);
 
         $this->assertSame(RunStatus::Done, $this->run->getStatus());
-        $this->assertSame(CardStatus::Review, $this->run->getCard()->getStatus());
+        $this->assertTrue($this->run->getCard()->getChecklist()[0]['done'] ?? false);
+        $this->assertSame(CardStatus::Ready, $this->run->getCard()->getStatus());
     }
 
     // Of what a step's run spent, only the credit its step's cost names goes to the credits with its end
@@ -219,9 +220,9 @@ class RunQueueTest extends TestCase
     // The feedback a finished run was handed is settled: the one the machine left open keeps its reason, the other ticked
     public function testFinishSettlesTheFeedback(): void
     {
-        $card = $this->run->getCard()->setComment("1. item-2\n2. item-3")->addFeedback('item-2')->addFeedback('item-3');
-        $this->run->claim($this->machine, $this->clock->now());
-        $this->queue($this->createStub(RunRepository::class))->finish($this->run, $this->machine, RunStatus::Done, 'ok', [], null, [2 => 'item-4']);
+        $card = $this->run->getCard()->addFeedback('item-2')->addFeedback('item-3');
+        $run = new Run($card, 'hello', ['comment' => "1. item-2\n2. item-3"], 0)->claim($this->machine, $this->clock->now());
+        $this->queue($this->createStub(RunRepository::class))->finish($run, $this->machine, RunStatus::Done, 'ok', [], null, [2 => 'item-4']);
 
         $feedback = array_values($card->getFeedback());
         $this->assertTrue($feedback[0]['done'] ?? false);

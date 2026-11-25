@@ -17,7 +17,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
-// Reusable model of a plan, its steps kept as a list of definitions, offered on the projects chosen for it
+// Reusable model of a plan, the steps of its single card kept as a list of definitions, offered on the projects chosen for it
 #[ORM\Entity(repositoryClass: PlanTemplateRepository::class)]
 #[ORM\Table(name: 'pilot_plan_template')]
 class PlanTemplate implements \Stringable
@@ -34,12 +34,8 @@ class PlanTemplate implements \Stringable
     #[ORM\JoinTable(name: 'pilot_plan_template_project')]
     private Collection $projects;
 
-    // One card whose checklist is the steps, instead of one card per step
-    #[ORM\Column(options: ['default' => false])]
-    private bool $checklist = false;
-
-    // Each step: title, executor (human|runner), kind (task|validate), action key and params for a runner step
-    /** @param list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>, after?: list<int>}> $steps */
+    // Each step: title, the machine action it names and that action's params, the steps it waits for and its group
+    /** @param list<array{title: string, action?: string, params?: array<string, string>, after?: list<int>, group?: string}> $steps */
     public function __construct(
         #[ORM\Column(length: 100, unique: true)]
         #[Assert\NotBlank]
@@ -76,29 +72,17 @@ class PlanTemplate implements \Stringable
     }
 
     // Step definitions
-    /** @return list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>, after?: list<int>}> */
+    /** @return list<array{title: string, action?: string, params?: array<string, string>, after?: list<int>, group?: string}> */
     public function getSteps(): array
     {
         return $this->steps;
     }
 
     // Replaces the step definitions
-    /** @param list<array{title: string, executor: string, kind?: string, action?: string, params?: array<string, string>, after?: list<int>}> $steps */
+    /** @param list<array{title: string, action?: string, params?: array<string, string>, after?: list<int>, group?: string}> $steps */
     public function setSteps(array $steps): static
     {
         $this->steps = $steps;
-
-        return $this;
-    }
-
-    public function isChecklist(): bool
-    {
-        return $this->checklist;
-    }
-
-    public function setChecklist(bool $checklist): static
-    {
-        $this->checklist = $checklist;
 
         return $this;
     }

@@ -1017,11 +1017,6 @@ a.pilot-list-item:hover {
   margin: 0.75em 0 0.25em;
 }
 
-.pilot-run pre {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
 .guided-highlight {
   position: relative;
   z-index: 2001;
@@ -1193,9 +1188,39 @@ progress {
   font-size: 1.25rem;
 }
 
-.pilot-output-image {
-  border: 1px solid var(--pilot-border);
-  border-radius: var(--pilot-radius);
+.pilot-card-progress {
+  display: block;
+  width: 100%;
+  height: 0.25rem;
+  border: 0;
+  border-radius: 0.125rem;
+  background: var(--pilot-border);
+  appearance: none;
+  accent-color: var(--pilot-ink, var(--pilot-primary));
+}
+
+.pilot-card-progress::-webkit-progress-bar {
+  border-radius: 0.125rem;
+  background: var(--pilot-border);
+}
+
+.pilot-card-progress::-webkit-progress-value {
+  border-radius: 0.125rem;
+  background: var(--pilot-ink, var(--pilot-primary));
+}
+
+.pilot-card-progress::-moz-progress-bar {
+  border-radius: 0.125rem;
+  background: var(--pilot-ink, var(--pilot-primary));
+}
+
+.pilot-outlook-credit {
+  margin-bottom: 0.5rem;
+}
+
+.pilot-outlook-steps {
+  margin: 0.25rem 0 0;
+  padding-inline-start: 1.25rem;
 }
 
 .pilot-feedback-shot img, .pilot-feedback-shot-preview {

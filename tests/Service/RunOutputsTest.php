@@ -33,8 +33,8 @@ class RunOutputsTest extends TestCase
         new Filesystem()->remove($this->dir);
     }
 
-    // A sent file is kept under a safe name, previewed by kind, and a file left on the machine is only named
-    public function testStoreAndPreview(): void
+    // A sent file is kept under a safe name, shown by kind on its step, and a file left on the machine is only named
+    public function testStoreAndKinds(): void
     {
         $run = $this->newRun();
         $outputs = new RunOutputs($this->dir);
@@ -43,16 +43,15 @@ class RunOutputsTest extends TestCase
 
         $name = $outputs->store($run, new UploadedFile($source, '../../.item 1.txt', null, null, true));
         $run->finish(RunStatus::Done, null, ['/home/x/item 1.txt', '/home/x/film.mp4'], new \DateTimeImmutable());
-        $previews = $outputs->previews($run);
+        $files = $outputs->ofSteps($run->getCard())[0]['files'] ?? [];
 
         $this->assertSame('item_1.txt', $name);
-        $this->assertSame(['name' => 'item_1.txt', 'kind' => 'text', 'text' => 'catalog'], $previews[0] ?? null);
-        $this->assertSame('elsewhere', $previews[1]['kind'] ?? null);
-        $this->assertSame('/home/x/film.mp4', $previews[1]['name']);
+        $this->assertSame(['name' => 'item_1.txt', 'kind' => 'text'], $files[0] ?? null);
+        $this->assertSame(['name' => '/home/x/film.mp4', 'kind' => 'elsewhere'], $files[1] ?? null);
         $this->assertNull($outputs->path($run, '../source.txt'));
     }
 
-    // Each step keeps the files of its last run that produced any, a run without files, a run that only answered in markdown, a failed one, one whose step left or the card's own left aside
+    // Each step keeps the files of its last run that produced any, a run without files, a run that only answered in markdown, a failed one or one whose step left aside
     public function testOfSteps(): void
     {
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1'], ['t' => 'step-2']]);
@@ -63,14 +62,13 @@ class RunOutputsTest extends TestCase
         new Run($card, 'action-1', [], 0);
         new Run($card, 'action-1', [], 1)->finish(RunStatus::Done, null, ['/home/x/item-5.md'], new \DateTimeImmutable());
         new Run($card, 'action-1', [], 1)->finish(RunStatus::Failed, null, ['/home/x/item-3.md'], new \DateTimeImmutable());
-        new Run($card)->finish(RunStatus::Done, null, ['/home/x/item-4.md'], new \DateTimeImmutable());
         new Run($card, 'action-1', [], Run::LEFT_STEP)->finish(RunStatus::Done, null, ['/home/x/item-6.jpg'], new \DateTimeImmutable());
 
         $steps = new RunOutputs($this->dir)->ofSteps($card);
 
         $this->assertSame([0], array_keys($steps));
         $this->assertSame($last, $steps[0]['run']);
-        $this->assertSame([['name' => '/home/x/item-2.jpg', 'kind' => 'elsewhere', 'text' => null]], $steps[0]['files']);
+        $this->assertSame([['name' => '/home/x/item-2.jpg', 'kind' => 'elsewhere']], $steps[0]['files']);
     }
 
     // The files listed under a step are named and typed, never read
@@ -85,7 +83,7 @@ class RunOutputsTest extends TestCase
         $outputs->store($run, new UploadedFile($source, 'item-1.txt', null, null, true));
         $run->finish(RunStatus::Done, null, ['/home/x/item-1.txt'], new \DateTimeImmutable());
 
-        $this->assertSame([['name' => 'item-1.txt', 'kind' => 'text', 'text' => null]], $outputs->ofSteps($card)[0]['files']);
+        $this->assertSame([['name' => 'item-1.txt', 'kind' => 'text']], $outputs->ofSteps($card)[0]['files']);
     }
 
     // Only images and videos get a type to be shown under, an html or svg file none
@@ -129,7 +127,7 @@ class RunOutputsTest extends TestCase
     // A run with an id, as the database gives it
     private function newRun(): Run
     {
-        $run = new Run(new Card(new Project('catalog', 'Catalog'), 'item-1'));
+        $run = new Run(new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1', 'action' => 'action-1']]), 'action-1', [], 0);
         new \ReflectionProperty(Run::class, 'id')->setValue($run, 7);
 
         return $run;

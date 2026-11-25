@@ -16,6 +16,8 @@ use c975L\PilotBundle\Entity\Doc;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Entity\Run;
 use c975L\PilotBundle\Exception\FlowException;
+use c975L\PilotBundle\Form\PlanStep;
+use c975L\PilotBundle\Repository\ActionRepository;
 use c975L\PilotBundle\Repository\CardRepository;
 use c975L\PilotBundle\Repository\CardSetRepository;
 use c975L\PilotBundle\Repository\DocRepository;
@@ -53,6 +55,7 @@ class PilotTools
         private readonly TranslatorInterface $translator,
         private readonly DocRepository $docRepository,
         private readonly PilotAccess $pilotAccess,
+        private readonly ActionRepository $actionRepository,
     ) {
     }
 
@@ -234,6 +237,40 @@ class PilotTools
         return ['steps' => $this->indexed($found->getSteps())];
     }
 
+    // A step's text, the machine action it names and that action's parameters, only the parts given changing, as its line on the card's page edits them; an unknown action refused, a parameter with no valid name dropped
+    /**
+     * @param int                    $card   id of the card
+     * @param int                    $step   index of the step, as the card tool gives it
+     * @param ?string                $text   new text of the step
+     * @param ?string                $action key of a machine action, empty for none
+     * @param ?array<string, string> $params values the action asks, by name, replacing those the step had
+     *
+     * @return array{index: int, text: string, action: ?string, params: array<string, string>}
+     */
+    public function editStep(int $card, int $step, ?string $text = null, ?string $action = null, ?array $params = null): array
+    {
+        $found = $this->served($card, PilotAccess::EDIT);
+        if (!isset($found->getSteps()[$step])) {
+            throw new ToolCallException(sprintf('The card has no step %d.', $step));
+        }
+        if (null !== $action && '' !== trim($action) && null === $this->actionRepository->findOneBy(['key' => trim($action)])) {
+            throw new ToolCallException(sprintf('No machine declares the action %s.', $action));
+        }
+        if (null !== $action) {
+            $found->setStepAction($step, $action);
+        }
+        if (null !== $params) {
+            $found->setStepParams($step, array_filter(array_map(strval(...), $params), static fn (string $name): bool => 1 === preg_match(PlanStep::PARAM_NAME, $name), \ARRAY_FILTER_USE_KEY));
+        }
+        if (null !== $text && '' !== trim($text)) {
+            $found->renameStep($step, $text, $this->clock->now());
+        }
+        $this->entityManager->flush();
+        $line = $found->getChecklist()[$step];
+
+        return ['index' => $step, 'text' => $line['t'], 'action' => $line['action'] ?? null, 'params' => $line['params'] ?? []];
+    }
+
     // A card marked done, or opened again with done false; refused while a machine works on it
     /**
      * @param int  $card id of the card
@@ -284,21 +321,6 @@ class PilotTools
         $this->entityManager->flush();
 
         return ['url' => $this->url($found), 'run' => $cancelled->getId(), 'status' => $cancelled->getStatus()->value, 'cardStatus' => $found->getStatus()->value];
-    }
-
-    // What a machine produced accepted as its page does: a run started by a checklist step ticks that step, any other closes the card; refused when nothing waits for validation
-    /**
-     * @param int $card id of the card, its status review
-     *
-     * @return array{url: string, status: string}
-     */
-    public function validateRun(int $card): array
-    {
-        $found = $this->served($card, PilotAccess::RUN);
-        $this->flow(fn (): Card => $this->cardFlow->validate($found));
-        $this->entityManager->flush();
-
-        return ['url' => $this->url($found), 'status' => $found->getStatus()->value];
     }
 
     // A card merged into another one and deleted: its note, steps (ticked ones staying so) and feedback carried over; refused while a machine works on either or past the checklist's ceiling

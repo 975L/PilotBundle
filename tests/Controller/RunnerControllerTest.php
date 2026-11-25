@@ -68,7 +68,7 @@ class RunnerControllerTest extends TestCase
         $queue->expects($this->once())->method('finish')->with($this->anything(), $this->anything(), RunStatus::Done, null, [], null, [], null, ['item-1' => 120]);
         $controller = new RunnerController($machines, $queue, $this->createStub(RunOutputs::class), $this->createStub(ReportIngester::class), $this->createStub(DocIngester::class), $this->limiter());
         $controller->setContainer(new Container());
-        $run = new CardFlow(new MockClock('2026-11-20 10:00'))->entrust(new Card(new Project('catalog', 'Catalog'), 'item-1'), 'hello', []);
+        $run = new CardFlow(new MockClock('2026-11-20 10:00'))->entrust(new Card(new Project('catalog', 'Catalog'), 'item-1'), 'hello', [], 'Hello');
         $request = Request::create('/api/pilot/runner/runs/1/finish', 'POST', server: ['HTTP_AUTHORIZATION' => 'Bearer token-1', 'CONTENT_TYPE' => 'application/json'], content: '{"status":"done","spent":{"item-1":120,"item-2":-5,"Bad Key":3,"item-3":"7"}}');
 
         $this->assertSame(200, $controller->finish($run, $request)->getStatusCode());
@@ -100,7 +100,7 @@ class RunnerControllerTest extends TestCase
         $controller->setContainer(new Container());
         $path = (string) tempnam(sys_get_temp_dir(), 'pilot');
         file_put_contents($path, 'item-1');
-        $run = new CardFlow(new MockClock('2026-11-20 10:00'))->entrust(new Card(new Project('catalog', 'Catalog'), 'item-1'), 'hello', []);
+        $run = new CardFlow(new MockClock('2026-11-20 10:00'))->entrust(new Card(new Project('catalog', 'Catalog'), 'item-1'), 'hello', [], 'Hello');
         $request = Request::create('/api/pilot/runner/runs/1/output', 'POST', server: ['HTTP_AUTHORIZATION' => 'Bearer token-1'], files: ['file' => new UploadedFile($path, 'item-1.txt', null, null, true)]);
 
         try {
@@ -126,7 +126,7 @@ class RunnerControllerTest extends TestCase
         $machines = $this->createStub(MachineRepository::class);
         $machines->method('findOneByBearer')->willReturn(new Machine('machine-1', ''));
         $queue = $this->createStub(RunQueue::class);
-        $queue->method('claim')->willReturn(new CardFlow(new MockClock('2026-11-20 10:00'))->entrust($card, 'hello', []));
+        $queue->method('claim')->willReturn(new CardFlow(new MockClock('2026-11-20 10:00'))->entrust($card, 'hello', [], 'Hello'));
         $controller = new RunnerController($machines, $queue, $this->createStub(RunOutputs::class), $this->createStub(ReportIngester::class), $this->createStub(DocIngester::class), $this->limiter());
         $controller->setContainer(new Container());
         $request = Request::create('/api/pilot/runner/claim', 'POST', server: ['HTTP_AUTHORIZATION' => 'Bearer token-1', 'CONTENT_TYPE' => 'application/json'], content: '{"actions":{}}');

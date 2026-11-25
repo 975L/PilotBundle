@@ -14,11 +14,9 @@ use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\Plan;
 use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
-use c975L\PilotBundle\Enum\CardKind;
 use c975L\PilotBundle\Enum\CardStatus;
-use c975L\PilotBundle\Enum\Executor;
 
-// Builds a plan from a template: one card per step, or a single card whose checklist is the steps, their {variables} replaced by the values given, the first card opened
+// Builds a plan from a template: a single card whose checklist is the steps, their {variables} replaced by the values given, opened at once
 class PlanFactory
 {
     private const string VARIABLE = '/\{(\w+)\}/';
@@ -43,37 +41,18 @@ class PlanFactory
         return array_values(array_unique($names));
     }
 
-    // A plan of the project, its cards waiting their turn but the first one
+    // A plan of the project: its single card, whose checklist is the template's steps, opened at once
     /** @param array<string, string> $values */
     public function create(PlanTemplate $template, Project $project, string $title, array $values): Plan
     {
         $plan = new Plan($template, $project, $title);
-        if ($template->isChecklist()) {
-            return $this->checklist($template, $plan, $project, $title, $values);
-        }
-        foreach ($template->getSteps() as $position => $step) {
-            $params = array_map(fn (string $value): string => $this->fill($value, $values), $step['params'] ?? []);
-            new Card($project, $this->fill($step['title'], $values))
-                ->assign(Executor::tryFrom($step['executor']) ?? Executor::Human, CardKind::Task, $step['action'] ?? null, $params)
-                ->setStatus(CardStatus::Todo)
-                ->placeIn($plan, $position);
-        }
-        $this->cardFlow->start($plan);
-
-        return $plan;
-    }
-
-    // The single card of a checklist template, each step a box to tick, still naming the machine action it hands the card to
-    /** @param array<string, string> $values */
-    private function checklist(PlanTemplate $template, Plan $plan, Project $project, string $title, array $values): Plan
-    {
         new Card($project, $title)->setChecklist($this->steps($template, $values))->setStatus(CardStatus::Todo)->placeIn($plan, 0);
         $this->cardFlow->start($plan);
 
         return $plan;
     }
 
-    // The steps of a checklist template as a card's boxes, their {variables} filled, each naming the machine action it hands the card to and the steps it waits for
+    // The steps of a template as a card's boxes, their {variables} filled, each naming the machine action it hands the card to and the steps it waits for
     /**
      * @param array<string, string> $values
      *

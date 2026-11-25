@@ -36,7 +36,7 @@
             </trans-unit>
             <trans-unit id="h3w1C7_">
                 <source>description.guided_project_pilot_template</source>
-                <target>A plan template gives a card its steps at once, or one card per step, in the spaces that offer it.</target>
+                <target>A plan template gives a card its steps at once, in the spaces that offer it.</target>
             </trans-unit>
             <trans-unit id="VVwBJhz">
                 <source>description.guided_step_pilot_agent_card</source>
@@ -44,7 +44,7 @@
             </trans-unit>
             <trans-unit id="L9cw6vK">
                 <source>description.guided_step_pilot_agent_feedback</source>
-                <target>What it misses, it asks on the card: answer there, then validate.</target>
+                <target>What it misses, it asks on the card: answer there, then hand the answer to the machine.</target>
             </trans-unit>
             <trans-unit id="V9u0XmA">
                 <source>description.guided_step_pilot_agent_open</source>
@@ -102,6 +102,10 @@
                 <source>description.guided_step_pilot_credits_open</source>
                 <target>Among the settings, the credits.</target>
             </trans-unit>
+            <trans-unit id="co8a7N_">
+                <source>description.guided_step_pilot_credits_outlook</source>
+                <target>What a credit keeps before it renews, and the steps of later cards that could spend it, with what to do first.</target>
+            </trans-unit>
             <trans-unit id="ISH1E0_">
                 <source>description.guided_step_pilot_credits_provider</source>
                 <target>A service read gives its balance through its API, with your account's key; empty, the balance is typed in by hand.</target>
@@ -149,6 +153,10 @@
             <trans-unit id="R2_PFTN">
                 <source>description.guided_step_pilot_number_space</source>
                 <target>Click the space of the card, in the left column.</target>
+            </trans-unit>
+            <trans-unit id="sbnSf8Z">
+                <source>description.guided_step_pilot_run_action</source>
+                <target>Click a step's text: its line names the machine action and its parameters, typed name=value; name=value.</target>
             </trans-unit>
             <trans-unit id="TdWIM_A">
                 <source>description.guided_step_pilot_run_card</source>
@@ -212,11 +220,7 @@
             </trans-unit>
             <trans-unit id="_D0Y6Dk">
                 <source>description.guided_step_pilot_steps_step</source>
-                <target>One line per step; a step can name a machine action, launched by its button. On a card following a template, the steps come from the template.</target>
-            </trans-unit>
-            <trans-unit id="kOA145w">
-                <source>description.guided_step_pilot_template_checklist</source>
-                <target>Ticked, the plan is a single card whose steps are ticked; otherwise, one card per step.</target>
+                <target>One line per step; a step can name a machine action, launched by its button, and the values it asks, by a click on its text; no action leaves from anywhere else. On a card following a template, the steps come from the template.</target>
             </trans-unit>
             <trans-unit id="IIwzwob">
                 <source>description.guided_step_pilot_template_done</source>
@@ -801,22 +805,6 @@
                 <source>label.due</source>
                 <target>Date</target>
             </trans-unit>
-            <trans-unit id="jKsIt3R">
-                <source>label.entrust</source>
-                <target>Hand to a machine</target>
-            </trans-unit>
-            <trans-unit id="X2Xki9R">
-                <source>label.entrust_go</source>
-                <target>Hand over</target>
-            </trans-unit>
-            <trans-unit id="hLzCk5U">
-                <source>label.executor_human</source>
-                <target>By hand</target>
-            </trans-unit>
-            <trans-unit id="KmVPWwb">
-                <source>label.executor_runner</source>
-                <target>A machine</target>
-            </trans-unit>
             <trans-unit id="YerstO3">
                 <source>label.feedback</source>
                 <target>Comments</target>
@@ -957,6 +945,10 @@
                 <source>label.guided_step_pilot_credits_open</source>
                 <target>Open the new credit form</target>
             </trans-unit>
+            <trans-unit id="iH8yMlq">
+                <source>label.guided_step_pilot_credits_outlook</source>
+                <target>Read the credits to spend</target>
+            </trans-unit>
             <trans-unit id="zde.F46">
                 <source>label.guided_step_pilot_credits_provider</source>
                 <target>Service read or typed in by hand</target>
@@ -1004,6 +996,10 @@
             <trans-unit id="uenJQik">
                 <source>label.guided_step_pilot_number_space</source>
                 <target>Open a space</target>
+            </trans-unit>
+            <trans-unit id="WamXzAM">
+                <source>label.guided_step_pilot_run_action</source>
+                <target>Name the action</target>
             </trans-unit>
             <trans-unit id="JXtBKoa">
                 <source>label.guided_step_pilot_run_card</source>
@@ -1068,10 +1064,6 @@
             <trans-unit id="m9b_wPP">
                 <source>label.guided_step_pilot_steps_step</source>
                 <target>Add a step</target>
-            </trans-unit>
-            <trans-unit id="VbCubkT">
-                <source>label.guided_step_pilot_template_checklist</source>
-                <target>One card or several</target>
             </trans-unit>
             <trans-unit id="_OHs855">
                 <source>label.guided_step_pilot_template_done</source>
@@ -1161,10 +1153,6 @@
                 <source>label.info_doc_delete</source>
                 <target>The reference is deleted permanently, the cards citing it stay, without a reference.</target>
             </trans-unit>
-            <trans-unit id="FxX95j_">
-                <source>label.info_entrust</source>
-                <target>A machine (the runner on your computer) runs one of its actions for this card, a script for instance, then shows its result to validate, or treats the card's open feedback.</target>
-            </trans-unit>
             <trans-unit id="Qjf4vqF">
                 <source>label.info_feedback_add</source>
                 <target>A fix or an idea; up to three screenshots are pasted here</target>
@@ -1237,13 +1225,13 @@
                 <source>label.info_step_params</source>
                 <target>One "name=value" per line.</target>
             </trans-unit>
+            <trans-unit id="gQzFV4E">
+                <source>label.info_step_params_line</source>
+                <target>name=value; name=value</target>
+            </trans-unit>
             <trans-unit id="bo1fgQe">
                 <source>label.info_step_stale</source>
                 <target>An earlier step was redone after these files, they will be replaced</target>
-            </trans-unit>
-            <trans-unit id="YERdGS1">
-                <source>label.info_template_checklist</source>
-                <target>Ticked: the plan is a single card whose steps are its boxes to tick; otherwise, one card per step.</target>
             </trans-unit>
             <trans-unit id="IaYl.9w">
                 <source>label.info_template_projects</source>
@@ -1260,10 +1248,6 @@
             <trans-unit id=".c3ER3G">
                 <source>label.late</source>
                 <target>Late</target>
-            </trans-unit>
-            <trans-unit id="qhB25G1">
-                <source>label.launch</source>
-                <target>Run again</target>
             </trans-unit>
             <trans-unit id="VCOHhjm">
                 <source>label.machine</source>
@@ -1336,6 +1320,26 @@
             <trans-unit id="hT45Qr2">
                 <source>label.order_failed</source>
                 <target>The order of the spaces could not be saved.</target>
+            </trans-unit>
+            <trans-unit id="XMh7qy2">
+                <source>label.outlook</source>
+                <target>Credits to spend before they renew</target>
+            </trans-unit>
+            <trans-unit id="Ml6DPsg">
+                <source>label.outlook_awaits</source>
+                <target>First: %steps%</target>
+            </trans-unit>
+            <trans-unit id="Hjcm8oQ">
+                <source>label.outlook_left</source>
+                <target>%credit%: %amount% %unit% to spend before %date%</target>
+            </trans-unit>
+            <trans-unit id="mt0RTVS">
+                <source>label.outlook_none</source>
+                <target>no later step to bring forward</target>
+            </trans-unit>
+            <trans-unit id="OCsVeNE">
+                <source>label.outlook_short</source>
+                <target>%credit%: %amount% %unit% short before %date%</target>
             </trans-unit>
             <trans-unit id="fKU3y1e">
                 <source>label.output_elsewhere</source>
@@ -1545,10 +1549,6 @@
                 <source>label.status_ready</source>
                 <target>To do</target>
             </trans-unit>
-            <trans-unit id="k0mrUZw">
-                <source>label.status_review</source>
-                <target>To validate</target>
-            </trans-unit>
             <trans-unit id="17Ds0dr">
                 <source>label.status_running</source>
                 <target>Running</target>
@@ -1576,10 +1576,6 @@
             <trans-unit id="1CiY47b">
                 <source>label.step_edit</source>
                 <target>Edit the step</target>
-            </trans-unit>
-            <trans-unit id="NVK7xLn">
-                <source>label.step_executor</source>
-                <target>Who</target>
             </trans-unit>
             <trans-unit id="ECNtqnc">
                 <source>label.step_group</source>
@@ -1641,10 +1637,6 @@
                 <source>label.template</source>
                 <target>Plan template</target>
             </trans-unit>
-            <trans-unit id="XfW0Lbv">
-                <source>label.template_checklist</source>
-                <target>A single card to tick</target>
-            </trans-unit>
             <trans-unit id="W7kzvfO">
                 <source>label.template_name</source>
                 <target>Name</target>
@@ -1660,10 +1652,6 @@
             <trans-unit id="E5XaMa_">
                 <source>label.templates_offered</source>
                 <target>Templates offered:</target>
-            </trans-unit>
-            <trans-unit id="M2GHic6">
-                <source>label.validate</source>
-                <target>Validate</target>
             </trans-unit>
             <trans-unit id="TCdmg3c">
                 <source>label.waiting</source>

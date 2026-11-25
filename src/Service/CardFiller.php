@@ -50,7 +50,7 @@ class CardFiller
     {
         $cardSet = $cardSet?->getProject() === $project ? $cardSet : null;
         $card = new Card($project, mb_substr($title, 0, 500))->setCardSet($cardSet);
-        $template = $cardSet?->getChecklistTemplate();
+        $template = $cardSet?->getTemplate();
         if (null === $template) {
             return $card;
         }

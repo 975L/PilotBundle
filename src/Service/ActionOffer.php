@@ -54,11 +54,4 @@ class ActionOffer
 
         return $labels;
     }
-
-    // The keys of the actions a card can be handed to in one click, asking nothing
-    /** @return list<string> */
-    public function directKeys(Project $project): array
-    {
-        return array_values(array_map(static fn (array $action): string => $action['key'], array_filter($this->on($project), static fn (array $action): bool => [] === $action['params'])));
-    }
 }

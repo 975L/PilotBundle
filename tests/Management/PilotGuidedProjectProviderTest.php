@@ -78,7 +78,7 @@ class PilotGuidedProjectProviderTest extends TestCase
                 ++$highlighted;
             }
         }
-        $this->assertSame(14, $highlighted);
+        $this->assertSame(13, $highlighted);
     }
 
     // Every other highlight names a class or an attribute the bundle's templates still carry, a step pointing at nothing otherwise

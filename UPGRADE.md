@@ -1,5 +1,14 @@
 # UPGRADE
 
+## v1.8.0
+
+Machine actions launched only from the steps naming them.
+
+- A card no longer holds an action of its own, nor a « to validate » state: run `doctrine:migrations:diff` then `migrate`, which drops `pilot_card.executor`, `kind`, `action`, `params` and `comment`, and `pilot_plan_template.checklist`. Before `migrate`, move each run of a card's own action to its step: copy the card's `action` and `params` into its runs whose `action` is empty, their `step` set to the index of the step naming that action; a card still `review` goes back to `ready`.
+- Every plan template now lays a single card: a template made of one card per step gives, from now on, one card holding its steps.
+- `Card::assign()`, `getAction()`, `getParams()`, `getComment()`, `setComment()`, `isRunner()`, `getExecutor()`, `getKind()`, `isValidation()`, `CardFlow::launch()`, `CardFlow::validate()`, `CardStatus::Review`, `CardSet::getChecklistTemplate()` (use `getTemplate()`), `PlanTemplate::isChecklist()` and `setChecklist()`, `Plan::cardAfter()` and `runnerCardBefore()`, `RunOutputs::previews()`, `ActionOffer::directKeys()` and the enums `Executor` and `CardKind` are removed; the gestures `entrust`, `launch` and `validate` and the MCP tool `pilot_validate_run` are gone.
+- `CardFlow::entrust()` takes the action's label last and gives the card a step naming the action, run at once. `Run`'s constructor takes the action as its second argument, no longer optional.
+
 ## v1.7.0
 
 Recipes followed by the runner's agent, pilot home folder.

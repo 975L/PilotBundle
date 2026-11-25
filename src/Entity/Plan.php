@@ -96,31 +96,6 @@ class Plan
         return $this;
     }
 
-    // Card following the given one, null for the last
-    public function cardAfter(Card $card): ?Card
-    {
-        foreach ($this->cards as $candidate) {
-            if ($candidate->getPosition() === $card->getPosition() + 1) {
-                return $candidate;
-            }
-        }
-
-        return null;
-    }
-
-    // Closest runner card before the given one, the one a validation sends back to
-    public function runnerCardBefore(Card $card): ?Card
-    {
-        $found = null;
-        foreach ($this->cards as $candidate) {
-            if ($candidate->getPosition() < $card->getPosition() && $candidate->isRunner()) {
-                $found = $candidate;
-            }
-        }
-
-        return $found;
-    }
-
     // Number of finished cards
     public function doneCount(): int
     {

@@ -109,27 +109,23 @@ class QueryTest extends TestCase
         $this->assertSame(120, $repository->typicalSeconds('build'));
     }
 
-    // Only the open cards of the template's plans made of a single card, a plan of a card per step left out
-    public function testFindOpenOfTemplateKeepsSingleCardPlans(): void
+    // The open card of each plan of the template counts as the template's
+    public function testFindOpenOfTemplateKeepsThePlansCards(): void
     {
-        $template = new PlanTemplate('catalog', [['title' => 'a', 'executor' => 'human'], ['title' => 'b', 'executor' => 'human']]);
+        $template = new PlanTemplate('catalog', [['title' => 'a'], ['title' => 'b']]);
         $this->entityManager->persist($template);
-        $checklist = $this->card('item-1')->placeIn(new Plan($template, $this->project, 'item-1'), 1);
-        $perStep = new Plan($template, $this->project, 'item-2');
-        $this->card('item-2-a')->placeIn($perStep, 1);
-        $this->card('item-2-b')->placeIn($perStep, 2);
-        $this->entityManager->persist($checklist->getPlan());
-        $this->entityManager->persist($perStep);
+        $planned = $this->card('item-1')->placeIn(new Plan($template, $this->project, 'item-1'), 0);
+        $this->entityManager->persist($planned->getPlan());
         $this->entityManager->flush();
 
-        $this->assertSame([$checklist], new CardRepository($this->registry)->findOpenOfTemplate($template));
+        $this->assertSame([$planned], new CardRepository($this->registry)->findOpenOfTemplate($template));
     }
 
     // The cards laid from a checklist template outside any plan count as the template's, those of a plan of another template and the done ones do not
     public function testFindOpenOfTemplateTakesTheFollowingCards(): void
     {
-        $template = new PlanTemplate('catalog', [['title' => 'a', 'executor' => 'human']])->setChecklist(true);
-        $other = new PlanTemplate('other', [['title' => 'a', 'executor' => 'human']])->setChecklist(true);
+        $template = new PlanTemplate('catalog', [['title' => 'a']]);
+        $other = new PlanTemplate('other', [['title' => 'a']]);
         $this->entityManager->persist($template);
         $this->entityManager->persist($other);
         $following = $this->card('item-1')->follow($template);

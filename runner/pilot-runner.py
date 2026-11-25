@@ -400,7 +400,7 @@ def upload(site, run, paths):
             print(f'Could not send {path}: {error}', flush=True)
 
 
-# Actions declared to the site in the file's order: label, parameters typed on the card (the comment coming only from the card's open feedback), card: true for one working on the card itself, help shown on hover; the site chooses on which projects each one is offered
+# Actions declared to the site in the file's order: label, parameters given by the step naming the action (the comment coming only from the card's open feedback), card: true for one working on the card itself, help shown on hover; the site chooses on which projects each one is offered
 def declared(actions):
     return {key: {'label': action.get('label', key), 'params': [name for name in action.get('params', {}) if name != 'comment'],
                   'card': bool(action.get('card')), 'help': action.get('help')}

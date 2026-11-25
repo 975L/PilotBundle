@@ -10,11 +10,9 @@
 
 namespace c975L\PilotBundle\Tests\Service;
 
-use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Enum\CardStatus;
-use c975L\PilotBundle\Enum\RunStatus;
 use c975L\PilotBundle\Service\CardFlow;
 use c975L\PilotBundle\Service\PlanFactory;
 use PHPUnit\Framework\TestCase;
@@ -31,9 +29,9 @@ class PlanFactoryTest extends TestCase
         $this->flow = new CardFlow(new MockClock('2026-11-17 10:00'));
         $this->factory = new PlanFactory($this->flow);
         $this->template = new PlanTemplate('catalog', [
-            ['title' => 'Write {item}', 'executor' => 'human'],
-            ['title' => 'Build {item}', 'executor' => 'runner', 'action' => 'build', 'params' => ['item' => '{item}', 'mode' => 'test']],
-            ['title' => 'Publish', 'executor' => 'human'],
+            ['title' => 'Write {item}'],
+            ['title' => 'Build {item}', 'action' => 'build', 'params' => ['item' => '{item}', 'mode' => 'test']],
+            ['title' => 'Publish'],
         ]);
     }
 
@@ -43,22 +41,10 @@ class PlanFactoryTest extends TestCase
         $this->assertSame(['item'], $this->factory->variables($this->template));
     }
 
-    // A plan gets one card per step with its variables replaced, the first one to do and the others waiting
-    public function testCreate(): void
-    {
-        $plan = $this->factory->create($this->template, new Project('catalog', 'Catalog'), 'Item 1', ['item' => 'item-1']);
-        $cards = $plan->getCards()->getValues();
-
-        $this->assertSame(['Write item-1', 'Build item-1', 'Publish'], array_map(static fn ($card): string => $card->getTitle(), $cards));
-        $this->assertSame(['item' => 'item-1', 'mode' => 'test'], $cards[1]->getParams());
-        $this->assertTrue($cards[1]->isRunner());
-        $this->assertSame([CardStatus::Ready, CardStatus::Todo, CardStatus::Todo], array_map(static fn ($card): CardStatus => $card->getStatus(), $cards));
-    }
-
-    // A checklist template makes a single card named after the plan, each step a box naming its action, the card opened
+    // A template makes a single card named after the plan, each step a box naming its action, the card opened
     public function testChecklist(): void
     {
-        $plan = $this->factory->create($this->template->setChecklist(true), new Project('catalog', 'Catalog'), 'Item 1', ['item' => 'item-1']);
+        $plan = $this->factory->create($this->template, new Project('catalog', 'Catalog'), 'Item 1', ['item' => 'item-1']);
         $cards = $plan->getCards()->getValues();
 
         $this->assertCount(1, $cards);
@@ -71,11 +57,11 @@ class PlanFactoryTest extends TestCase
     public function testChecklistAfter(): void
     {
         $template = new PlanTemplate('catalog', [
-            ['title' => 'Write {item}', 'executor' => 'human'],
-            ['title' => 'Build {item}', 'executor' => 'runner', 'action' => 'build', 'after' => []],
-            ['title' => 'Publish', 'executor' => 'human', 'after' => [1, 2, 3, 9]],
+            ['title' => 'Write {item}'],
+            ['title' => 'Build {item}', 'action' => 'build', 'after' => []],
+            ['title' => 'Publish', 'after' => [1, 2, 3, 9]],
         ]);
-        $card = $this->factory->create($template->setChecklist(true), new Project('catalog', 'Catalog'), 'Item 1', ['item' => 'item-1'])->getCards()->first();
+        $card = $this->factory->create($template, new Project('catalog', 'Catalog'), 'Item 1', ['item' => 'item-1'])->getCards()->first();
         $steps = $card->getChecklist();
 
         $this->assertArrayNotHasKey('after', $steps[0]);
@@ -84,28 +70,10 @@ class PlanFactoryTest extends TestCase
         $this->assertSame([0, 1], $card->stepNeeds(2));
     }
 
-    // Closing a card opens the next one, a machine card waiting for its button, and its validation opens the one after
-    public function testCardsFollowEachOther(): void
-    {
-        $cards = $this->factory->create($this->template, new Project('catalog', 'Catalog'), 'Item 1', ['item' => 'item-1'])->getCards()->getValues();
-
-        $this->flow->complete($cards[0]);
-        $this->assertSame(CardStatus::Done, $cards[0]->getStatus());
-        $this->assertSame(CardStatus::Ready, $cards[1]->getStatus());
-        $this->assertSame([], $cards[1]->activeRuns());
-
-        $run = $this->flow->launch($cards[1]);
-
-        $run->claim(new Machine('machine-1', ''), new \DateTimeImmutable())->finish(RunStatus::Done, null, [], new \DateTimeImmutable());
-        $this->flow->runFinished($run);
-        $this->flow->validate($cards[1]);
-        $this->assertSame(CardStatus::Ready, $cards[2]->getStatus());
-    }
-
     // A template step's group reaches the card's step, a step naming none staying out of any
     public function testChecklistGroups(): void
     {
-        $template = new PlanTemplate('catalog', [['title' => 'Write', 'executor' => 'human', 'group' => 'Book'], ['title' => 'Publish', 'executor' => 'human']])->setChecklist(true);
+        $template = new PlanTemplate('catalog', [['title' => 'Write', 'group' => 'Book'], ['title' => 'Publish']]);
         $card = $this->factory->create($template, new Project('catalog', 'Catalog'), 'Item 1', [])->getCards()->first();
 
         $this->assertSame([['t' => 'Write', 'g' => 'Book'], ['t' => 'Publish']], $card->getChecklist());

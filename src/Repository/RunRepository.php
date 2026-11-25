@@ -79,7 +79,7 @@ class RunRepository extends ServiceEntityRepository
             ->select('r.id')
             ->join('r.card', 'c')
             ->where('r.status = :queued')
-            ->andWhere('COALESCE(r.action, c.action) IN (:actions)')
+            ->andWhere('r.action IN (:actions)')
             ->andWhere('NOT EXISTS (' . $before->getDQL() . ')')
             ->setParameter('queued', RunStatus::Queued)
             ->setParameter('claimed', RunStatus::Claimed)

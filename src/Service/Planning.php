@@ -54,7 +54,20 @@ class Planning
         }
         ksort($days);
 
-        return ['today' => $today, 'horizon' => $horizon, 'late' => $late, 'days' => $days, 'later' => $later, 'spend' => $this->spend([...$late, ...array_merge(...array_values($days)), ...array_merge(...array_values($later))], $today)];
+        $planning = ['today' => $today, 'horizon' => $horizon, 'late' => $late, 'days' => $days, 'later' => $later];
+
+        return $planning + ['spend' => $this->spend(self::cardsOf($planning), $today)];
+    }
+
+    // Every card of a planning, late, coming and later ones in a single list
+    /**
+     * @param array{late: list<Card>, days: array<string, list<Card>>, later: array<string, list<Card>>} $planning
+     *
+     * @return list<Card>
+     */
+    public static function cardsOf(array $planning): array
+    {
+        return [...$planning['late'], ...array_merge(...array_values($planning['days'])), ...array_merge(...array_values($planning['later']))];
     }
 
     // What the steps still to do plan to spend, by month of their card's date (a late card counting in this month) and by credit
@@ -69,10 +82,9 @@ class Planning
         foreach ($cards as $card) {
             $month = max($card->getDue() ?? $today, $today)->format('Y-m-01');
             foreach ($card->getChecklist() as $step) {
-                // The steps come as the artifact wrote them, a cost without its credit or amount counting nothing
-                $credit = $step['cost']['credit'] ?? null;
-                if (\is_string($credit) && \is_int($step['cost']['amount'] ?? null) && !($step['done'] ?? false)) {
-                    $spend[$month][$credit] = ($spend[$month][$credit] ?? 0) + $step['cost']['amount'];
+                $cost = Card::stepCost($step);
+                if (null !== $cost) {
+                    $spend[$month][$cost['credit']] = ($spend[$month][$cost['credit']] ?? 0) + $cost['amount'];
                 }
             }
         }

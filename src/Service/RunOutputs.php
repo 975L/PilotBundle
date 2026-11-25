@@ -80,15 +80,8 @@ class RunOutputs
         }
     }
 
-    // Preview of every output of a run: name, kind (text, image, video, file, elsewhere when only the machine holds it) and text content
-    /** @return list<array{name: string, kind: string, text: ?string}> */
-    public function previews(Run $run): array
-    {
-        return $this->entries($run, true);
-    }
-
     // Files of each step from its last run that produced any, a failed or withdrawn one or one whose step left the checklist left aside, with the run they belong to, by name and kind without reading them; a markdown answer is the machine's account of its work, not a file it made, and is left out
-    /** @return array<int, array{run: Run, files: list<array{name: string, kind: string, text: ?string}>}> */
+    /** @return array<int, array{run: Run, files: list<array{name: string, kind: string}>}> */
     public function ofSteps(Card $card): array
     {
         $steps = [];
@@ -96,27 +89,22 @@ class RunOutputs
             $step = $run->getStep();
             $made = array_filter($run->getOutputs(), static fn (string $path): bool => 'md' !== strtolower(pathinfo($path, \PATHINFO_EXTENSION)));
             if (null !== $step && Run::LEFT_STEP !== $step && [] !== $made && \in_array($run->getStatus(), [RunStatus::Done, RunStatus::Blocked], true)) {
-                $steps[$step] = ['run' => $run, 'files' => array_values(array_filter($this->entries($run, false), static fn (array $file): bool => 'md' !== strtolower(pathinfo($file['name'], \PATHINFO_EXTENSION))))];
+                $steps[$step] = ['run' => $run, 'files' => array_values(array_filter($this->entries($run), static fn (array $file): bool => 'md' !== strtolower(pathinfo($file['name'], \PATHINFO_EXTENSION))))];
             }
         }
 
         return $steps;
     }
 
-    // Name and kind of every output of a run, the start of a text one read only when asked
-    /** @return list<array{name: string, kind: string, text: ?string}> */
-    private function entries(Run $run, bool $read): array
+    // Name and kind (text, image, video, file, elsewhere when only the machine holds it) of every output of a run
+    /** @return list<array{name: string, kind: string}> */
+    private function entries(Run $run): array
     {
         $entries = [];
         foreach ($run->getOutputs() as $output) {
             $name = $this->safeName($output);
             $path = $this->path($run, $name);
-            $kind = null === $path ? 'elsewhere' : $this->kind($path);
-            $entries[] = [
-                'name' => null === $path ? $output : $name,
-                'kind' => $kind,
-                'text' => $read && 'text' === $kind ? (string) file_get_contents($path, false, null, 0, 4000) : null,
-            ];
+            $entries[] = ['name' => null === $path ? $output : $name, 'kind' => null === $path ? 'elsewhere' : $this->kind($path)];
         }
 
         return $entries;

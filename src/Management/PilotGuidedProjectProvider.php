@@ -76,7 +76,6 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
                 ['key' => 'open', 'url' => $this->urlGenerator->generate('pilot_settings_new', ['kind' => 'template'])],
                 ['key' => 'name', 'highlight' => '#plan_template_name'],
                 ['key' => 'projects', 'highlight' => '#plan_template_projects'],
-                ['key' => 'checklist', 'highlight' => '#plan_template_checklist'],
                 ['key' => 'steps', 'highlight' => '[data-action="pilot-collection#add"]'],
                 ['key' => 'done', 'highlight' => self::SAVE],
             ]),
@@ -84,6 +83,7 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
                 ['key' => 'open', 'url' => $this->dashboard()],
                 ['key' => 'space', 'highlight' => self::SPACE],
                 ['key' => 'card', 'highlight' => self::CARD],
+                ['key' => 'action', 'highlight' => '.pilot-step-text'],
                 ['key' => 'run', 'highlight' => '.pilot-step-run'],
                 ['key' => 'feedback', 'highlight' => '.pilot-feedback-run'],
             ]),
@@ -97,6 +97,7 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
                 ['key' => 'done', 'highlight' => self::SAVE],
                 ['key' => 'dashboard', 'highlight' => '.pilot-brand'],
                 ['key' => 'refresh', 'highlight' => '.pilot-credits-refresh button'],
+                ['key' => 'outlook', 'highlight' => '.pilot-outlook'],
             ]),
             // A step handed to an AI agent through the runner, which works on the card through the site's MCP endpoint and asks on it what it misses
             self::project('pilot_agent', 12090, null, [

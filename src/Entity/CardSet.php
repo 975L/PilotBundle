@@ -110,12 +110,6 @@ class CardSet implements \Stringable
         return $this;
     }
 
-    // The template a card added to it follows: its own when it is a checklist one
-    public function getChecklistTemplate(): ?PlanTemplate
-    {
-        return null !== $this->template && $this->template->isChecklist() ? $this->template : null;
-    }
-
     public function getPosition(): int
     {
         return $this->position;

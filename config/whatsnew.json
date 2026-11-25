@@ -1,5 +1,40 @@
 [
     {
+        "date": "2026-11-25",
+        "description": [
+            {
+                "en": "Piloting: a machine action now leaves only from the step naming it; the card no longer lists every action of its space at its foot, and a step's line takes the values its action asks, typed name=value; name=value; the buttons of a space's page and the actions of a report also give their card a step, ticked when its run ends.",
+                "fr": "Pilotage : une action de machine part désormais uniquement de l'étape qui la nomme ; la carte ne liste plus en bas toutes les actions de son espace, et la ligne d'une étape prend les valeurs que son action demande, saisies nom=valeur ; nom=valeur ; les boutons de la page d'un espace et les actions d'un rapport donnent eux aussi une étape à leur carte, cochée à la fin de son exécution.",
+                "es": "Pilotaje: una acción de máquina sale ahora solo del paso que la nombra; la tarjeta ya no lista abajo todas las acciones de su espacio, y la línea de un paso recibe los valores que pide su acción, escritos nombre=valor; nombre=valor; los botones de la página de un espacio y las acciones de un informe también dan un paso a su tarjeta, marcado al terminar su ejecución."
+            },
+            {
+                "en": "Piloting: an AI agent sets a step's text, machine action and its values with the new pilot_edit_step tool.",
+                "fr": "Pilotage : un agent IA règle le texte d'une étape, son action de machine et ses valeurs avec le nouvel outil pilot_edit_step.",
+                "es": "Pilotaje: un agente de IA ajusta el texto de un paso, su acción de máquina y sus valores con la nueva herramienta pilot_edit_step."
+            },
+            {
+                "en": "Piloting: a plan is now always a single card whose steps come from its template, and a card no longer waits « to validate »: a step done by a machine is ticked at once, a human step after it checking the work when needed.",
+                "fr": "Pilotage : un plan est désormais toujours une seule carte dont les étapes viennent de son modèle, et une carte n'attend plus « à valider » : une étape faite par une machine est cochée aussitôt, une étape humaine après elle vérifiant le travail au besoin.",
+                "es": "Pilotaje: un plan es ahora siempre una sola tarjeta cuyos pasos vienen de su plantilla, y una tarjeta ya no espera « a validar »: un paso hecho por una máquina se marca enseguida, un paso humano después revisando el trabajo si hace falta."
+            },
+            {
+                "en": "Piloting: the dashboard shows what each credit would lose at its renewal, and which steps of later cards could spend it, with the steps to do first; an AI agent reads the same with the new pilot_credit_outlook tool.",
+                "fr": "Pilotage : le tableau de bord montre ce que chaque crédit perdrait à son renouvellement, et quelles étapes de cartes plus tardives pourraient le dépenser, avec les étapes à faire avant ; un agent IA lit la même chose avec le nouvel outil pilot_credit_outlook.",
+                "es": "Pilotaje: el panel muestra lo que cada crédito perdería en su renovación, y qué pasos de tarjetas posteriores podrían gastarlo, con los pasos que hacer antes; un agente de IA lee lo mismo con la nueva herramienta pilot_credit_outlook."
+            },
+            {
+                "en": "Piloting: a card's tile shows a bar of its ticked steps, in its space's colour.",
+                "fr": "Pilotage : la tuile d'une carte montre une barre de ses étapes cochées, à la couleur de son espace.",
+                "es": "Pilotaje: la ficha de una tarjeta muestra una barra de sus pasos marcados, con el color de su espacio."
+            },
+            {
+                "en": "Piloting: an AI agent types in the balance of a service without an API, read on its site in a browser, with the new pilot_credit_set tool.",
+                "fr": "Pilotage : un agent IA saisit le solde d'un service sans API, lu sur son site dans un navigateur, avec le nouvel outil pilot_credit_set.",
+                "es": "Pilotaje: un agente de IA introduce el saldo de un servicio sin API, leído en su sitio en un navegador, con la nueva herramienta pilot_credit_set."
+            }
+        ]
+    },
+    {
         "date": "2026-11-24",
         "description": [
             {
