@@ -3,6 +3,21 @@
         "date": "2026-11-26",
         "description": [
             {
+                "en": "Piloting: an AI agent reads and changes the settings as their pages do: the checklist templates, laid on their open cards once saved, the spaces offering each machine action, the machines' spaces and runs at once, and the collections of a space.",
+                "fr": "Pilotage : un agent IA lit et change les réglages comme leurs pages : les modèles de checklist, posés sur leurs cartes ouvertes une fois enregistrés, les espaces qui proposent chaque action machine, les espaces et exécutions simultanées des machines, et les collections d'un espace.",
+                "es": "Pilotaje: un agente de IA lee y cambia los ajustes como sus páginas: las plantillas de checklist, puestas en sus tarjetas abiertas una vez guardadas, los espacios que ofrecen cada acción de máquina, los espacios y ejecuciones simultáneas de las máquinas, y las colecciones de un espacio."
+            },
+            {
+                "en": "Piloting: a step is marked « To redo » only when a step it needs was redone after it, no longer any earlier step of the card.",
+                "fr": "Pilotage : une étape n'est marquée « À refaire » que si une étape dont elle dépend a été refaite après elle, et non plus n'importe quelle étape précédente de la carte.",
+                "es": "Pilotaje: un paso solo se marca « Por rehacer » cuando un paso del que depende se rehízo después, ya no cualquier paso anterior de la tarjeta."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-26",
+        "description": [
+            {
                 "en": "Piloting: on a card laid from a checklist template, the steps of the template can only be ticked; their text, action and parameters are changed on the template, which lays them on its cards.",
                 "fr": "Pilotage : sur une carte issue d'un modèle, les étapes du modèle se cochent seulement ; leur texte, leur action et leurs paramètres se changent sur le modèle, qui les pose sur ses cartes.",
                 "es": "Pilotaje: en una tarjeta creada a partir de una plantilla, los pasos de la plantilla solo se marcan; su texto, su acción y sus parámetros se cambian en la plantilla, que los pone en sus tarjetas."

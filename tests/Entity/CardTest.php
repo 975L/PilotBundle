@@ -77,6 +77,19 @@ class CardTest extends TestCase
         $this->assertSame([2, 3], $card->staleSteps());
     }
 
+    // A step naming the steps it needs is only out of date by them, a newer run of another earlier step leaving it as it is
+    public function testStaleStepsFollowWhatAStepNeeds(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1'], ['t' => 'step-2'], ['t' => 'step-3', 'after' => ['text:step-1']]]);
+        new Run($card, 'action-1', [], 0)->finish(RunStatus::Done, null, [], new \DateTimeImmutable('2026-11-20 09:00'))->setFiles(['/x/item-1.mp3']);
+        new Run($card, 'action-1', [], 2)->finish(RunStatus::Done, null, [], new \DateTimeImmutable('2026-11-20 10:00'))->setFiles(['/x/item-3.mp4']);
+        new Run($card, 'action-1', [], 1)->finish(RunStatus::Done, null, [], new \DateTimeImmutable('2026-11-21 10:00'))->setFiles(['/x/item-2.pdf']);
+        $this->assertSame([], $card->staleSteps());
+
+        new Run($card, 'action-1', [], 0)->finish(RunStatus::Done, null, [], new \DateTimeImmutable('2026-11-22 09:00'))->setFiles(['/x/item-1.mp3']);
+        $this->assertSame([1, 2], $card->staleSteps());
+    }
+
     // A run held by a machine is released when its lease is lost, then finished with its outputs
     public function testRunLifecycle(): void
     {

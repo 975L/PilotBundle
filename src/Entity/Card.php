@@ -990,26 +990,42 @@ class Card implements \Stringable
         return $this->stepRuns()[$index] ?? null;
     }
 
-    // Steps whose files are out of date, an earlier step's run having written its own files after theirs, by index
+    // Steps whose files are out of date, a step they need, directly or through others, having had its run write files after theirs, by index
     /** @return list<int> */
     public function staleSteps(): array
     {
-        $runs = $this->stepRuns();
-        ksort($runs);
-        $stale = [];
-        $latest = null;
-        foreach ($runs as $index => $run) {
-            $at = RunStatus::Done === $run->getStatus() && [] !== $run->getFiles() ? $run->getFinishedAt() : null;
-            if (null === $at) {
-                continue;
+        $written = [];
+        foreach ($this->stepRuns() as $index => $run) {
+            if (RunStatus::Done === $run->getStatus() && [] !== $run->getFiles() && null !== $run->getFinishedAt()) {
+                $written[$index] = $run->getFinishedAt();
             }
-            if (null !== $latest && $at < $latest) {
+        }
+        $stale = [];
+        foreach ($written as $index => $at) {
+            if ([] !== array_filter($this->stepNeedsAll($index), static fn (int $need): bool => isset($written[$need]) && $written[$need] > $at)) {
                 $stale[] = $index;
             }
-            $latest = null === $latest || $at > $latest ? $at : $latest;
         }
+        sort($stale);
 
         return $stale;
+    }
+
+    // Indices of every step a step needs, those they need in turn included
+    /** @return list<int> */
+    private function stepNeedsAll(int $index): array
+    {
+        $found = [];
+        $todo = $this->stepNeeds($index);
+        while ([] !== $todo) {
+            $need = array_pop($todo);
+            if ($need !== $index && !isset($found[$need])) {
+                $found[$need] = true;
+                array_push($todo, ...$this->stepNeeds($need));
+            }
+        }
+
+        return array_keys($found);
     }
 
     // Latest run of each checklist step in one pass over the runs

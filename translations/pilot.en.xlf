@@ -1303,7 +1303,7 @@
             </trans-unit>
             <trans-unit id="bo1fgQe">
                 <source>label.info_step_stale</source>
-                <target>An earlier step was redone after these files, they will be replaced</target>
+                <target>A step it needs was redone after these files, they will be replaced</target>
             </trans-unit>
             <trans-unit id="F70vhZc">
                 <source>label.info_step_template</source>

@@ -19,17 +19,21 @@ use c975L\PilotBundle\Entity\Card;
 use c975L\PilotBundle\Entity\CardSet;
 use c975L\PilotBundle\Entity\Credit;
 use c975L\PilotBundle\Entity\Doc;
+use c975L\PilotBundle\Entity\Machine;
 use c975L\PilotBundle\Entity\PlanTemplate;
 use c975L\PilotBundle\Entity\Project;
 use c975L\PilotBundle\Mcp\PilotCreditTools;
 use c975L\PilotBundle\Mcp\PilotDocTools;
 use c975L\PilotBundle\Mcp\PilotMcpProvider;
+use c975L\PilotBundle\Mcp\PilotSettingsTools;
 use c975L\PilotBundle\Mcp\PilotTools;
 use c975L\PilotBundle\Repository\ActionRepository;
 use c975L\PilotBundle\Repository\CardRepository;
 use c975L\PilotBundle\Repository\CardSetRepository;
 use c975L\PilotBundle\Repository\CreditRepository;
 use c975L\PilotBundle\Repository\DocRepository;
+use c975L\PilotBundle\Repository\MachineRepository;
+use c975L\PilotBundle\Repository\PlanTemplateRepository;
 use c975L\PilotBundle\Repository\ProjectRepository;
 use c975L\PilotBundle\Security\PilotAccess;
 use c975L\PilotBundle\Security\PilotScope;
@@ -43,6 +47,7 @@ use c975L\PilotBundle\Service\PilotUrls;
 use c975L\PilotBundle\Service\PlanFactory;
 use c975L\PilotBundle\Service\Planning;
 use c975L\PilotBundle\Service\RunOutputs;
+use c975L\PilotBundle\Service\StepOrder;
 use c975L\PilotBundle\Tests\Fixtures\TestEntityManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\Persistence\ManagerRegistry;
@@ -96,7 +101,7 @@ class PilotMcpProviderTest extends TestCase
         $this->assertStringStartsWith('# item-2', $this->tool('pilot_card', ['card' => $this->hidden->getId()])['markdown']);
 
         $this->writable = false;
-        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_docs', 'pilot_doc', 'pilot_credit_outlook'], array_column($this->call(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'])['result']['tools'], 'name'));
+        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_docs', 'pilot_doc', 'pilot_templates', 'pilot_template', 'pilot_actions', 'pilot_machines', 'pilot_credit_outlook'], array_column($this->call(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'])['result']['tools'], 'name'));
     }
 
     // The handshake answers on the site's own host, the tools listed with the writing ones not marked read-only and the deleting ones marked destructive
@@ -107,12 +112,67 @@ class PilotMcpProviderTest extends TestCase
         $this->assertStringContainsString('Cards are tasks grouped in spaces', $initialized['result']['instructions']);
 
         $tools = array_column($this->call(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'])['result']['tools'], null, 'name');
-        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_add_card', 'pilot_tick_step', 'pilot_comment', 'pilot_edit_card', 'pilot_add_steps', 'pilot_edit_step', 'pilot_close_card', 'pilot_run_step', 'pilot_cancel_run', 'pilot_merge_cards', 'pilot_delete_card', 'pilot_docs', 'pilot_doc', 'pilot_write_doc', 'pilot_credit_outlook', 'pilot_credit_set'], array_keys($tools));
+        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_add_card', 'pilot_tick_step', 'pilot_comment', 'pilot_edit_card', 'pilot_add_steps', 'pilot_edit_step', 'pilot_close_card', 'pilot_run_step', 'pilot_cancel_run', 'pilot_merge_cards', 'pilot_delete_card', 'pilot_docs', 'pilot_doc', 'pilot_write_doc', 'pilot_templates', 'pilot_template', 'pilot_template_save', 'pilot_actions', 'pilot_action_offer', 'pilot_machines', 'pilot_machine_edit', 'pilot_collection_save', 'pilot_credit_outlook', 'pilot_credit_set'], array_keys($tools));
         $this->assertTrue($tools['pilot_card']['annotations']['readOnlyHint']);
         $this->assertFalse($tools['pilot_add_card']['annotations']['readOnlyHint']);
         $this->assertFalse($tools['pilot_edit_card']['annotations']['destructiveHint']);
         $this->assertTrue($tools['pilot_merge_cards']['annotations']['destructiveHint']);
         $this->assertSame(['space', 'title'], $tools['pilot_add_card']['inputSchema']['required']);
+    }
+
+    // The admin makes a template, offers it to a space and changes its steps, laid at once on the open card following it; a member, an undeclared action and a bad « after » refused, its parameters trimmed
+    public function testTemplates(): void
+    {
+        $this->assertStringContainsString('Only an administrator', $this->toolError('pilot_template_save', ['name' => 'Template 1', 'steps' => [['title' => 'step-1']]]));
+
+        $this->admin = true;
+        $made = $this->tool('pilot_template_save', ['name' => 'Template 1', 'spaces' => ['catalog'], 'steps' => [['title' => 'step-1', 'action' => 'action-2', 'params' => ['item' => '1']], ['title' => 'step-2', 'after' => [], 'group' => 'Group 1']]]);
+        $this->assertSame(['catalog'], $made['spaces']);
+        $this->assertSame([['number' => 1, 'title' => 'step-1', 'action' => 'action-2', 'params' => ['item' => '1']], ['number' => 2, 'title' => 'step-2', 'after' => [], 'group' => 'Group 1']], $made['steps']);
+        $this->assertStringContainsString('no machine declares', $this->toolError('pilot_template_save', ['template' => 'Template 1', 'steps' => [['title' => 'step-1', 'action' => 'action-9']]]));
+        $this->assertStringContainsString('waits for a step it cannot', $this->toolError('pilot_template_save', ['template' => 'Template 1', 'steps' => [['title' => 'step-1', 'after' => [1]]]]));
+        $this->assertStringContainsString('waits for a step it cannot', $this->toolError('pilot_template_save', ['template' => 'Template 1', 'steps' => [['title' => 'step-1'], ['title' => 'step-2', 'after' => '1']]]));
+        $this->assertSame(['item' => '1'], $this->tool('pilot_template_save', ['template' => 'Template 1', 'steps' => [['title' => 'step-1', 'action' => 'action-2', 'params' => [' item ' => ' 1 ', 'bad name' => '2']]]])['steps'][0]['params']);
+
+        $template = $this->entityManager->find(PlanTemplate::class, $made['id']);
+        $card = new Card($this->catalog, 'item-3')->follow($template)->setChecklist([['t' => 'step-1', 'action' => 'action-2', 'params' => ['item' => '1'], 'done' => true]]);
+        $this->entityManager->persist($card);
+        $this->entityManager->flush();
+        $saved = $this->tool('pilot_template_save', ['template' => (string) $made['id'], 'steps' => [['title' => 'step-1', 'action' => 'action-2', 'params' => ['item' => '1']], ['title' => 'step-3']]]);
+
+        $this->assertSame(1, $saved['open']);
+        $this->assertSame([['Template 1', 2, 1]], array_map(static fn (array $row): array => [$row['name'], $row['steps'], $row['open']], $this->tool('pilot_templates')));
+        $this->assertSame(['step-1', 'step-3'], array_column($card->getChecklist(), 't'));
+        $this->assertTrue($card->getChecklist()[0]['done'] ?? false);
+    }
+
+    // The admin offers an action to the spaces given and sets a machine's spaces and runs at once, a machine unknown refused
+    public function testActionsAndMachines(): void
+    {
+        $this->admin = true;
+        $machine = new Machine('machine-1', str_repeat('a', 64))->seen(['action-2' => ['label' => 'Action 2', 'params' => ['item']]], new \DateTimeImmutable('2026-11-20 09:59:50'));
+        $this->entityManager->persist($machine);
+        $this->entityManager->flush();
+
+        $this->assertSame(['key' => 'action-2', 'spaces' => ['catalog', 'other']], $this->tool('pilot_action_offer', ['action' => 'action-2', 'spaces' => ['catalog', 'other']]));
+        $this->assertSame(['machine-1'], $this->tool('pilot_actions')[0]['machines']);
+        $this->assertSame([2, ['other'], true, ['action-2']], array_values(array_intersect_key($this->tool('pilot_machine_edit', ['machine' => 'machine-1', 'parallel' => 2, 'spaces' => ['other']]), array_flip(['parallel', 'spaces', 'online', 'actions']))));
+        $this->assertStringContainsString('No machine', $this->toolError('pilot_machine_edit', ['machine' => 'machine-9']));
+    }
+
+    // Whoever manages a space adds a collection and gives it a template the space offers, one it does not offer refused as one that does not exist
+    public function testCollections(): void
+    {
+        $offered = new PlanTemplate('Template 1', [['title' => 'step-1']])->addProject($this->catalog);
+        $this->entityManager->persist($offered);
+        $this->entityManager->persist(new PlanTemplate('Template 2', [['title' => 'step-1']]));
+        $this->entityManager->flush();
+
+        $this->assertSame(['space' => 'catalog', 'collection' => 'Sheets', 'item' => 'sheet', 'template' => 'Template 1', 'sheets' => true], $this->tool('pilot_collection_save', ['space' => 'catalog', 'name' => 'Sheets', 'item' => 'sheet', 'template' => 'Template 1', 'sheets' => true]));
+        $this->assertSame('Template 1', $this->tool('pilot_collection_save', ['space' => 'catalog', 'collection' => 'Sheets', 'item' => 'card'])['template']);
+        $this->assertStringContainsString('does not offer', $this->toolError('pilot_collection_save', ['space' => 'catalog', 'collection' => 'Stories', 'template' => 'Template 2']));
+        $this->assertStringContainsString('does not offer the template "Template 9"', $this->toolError('pilot_collection_save', ['space' => 'catalog', 'collection' => 'Stories', 'template' => 'Template 9']));
+        $this->assertStringContainsString('No space', $this->toolError('pilot_collection_save', ['space' => 'other', 'name' => 'Sheets']));
     }
 
     // The admin reads what each credit leaves before its renewal and the later steps that could spend it; a member is refused
@@ -461,6 +521,8 @@ class PilotMcpProviderTest extends TestCase
         $docs = new PilotDocTools(new ProjectRepository($registry), new DocRepository($registry), $this->entityManager, $urls, $access);
         $credits = new PilotCreditTools(new Planning($cards, $this->createStub(ConfigServiceInterface::class), new MockClock('2026-11-20 10:00')), new CreditRepository($registry), new CreditOutlook(), $access, new PilotUrls($urls), $this->entityManager, new MockClock('2026-11-20 10:00'));
 
-        return new PilotMcpProvider($tools, $docs, $credits);
+        $settings = new PilotSettingsTools(new ProjectRepository($registry), new PlanTemplateRepository($registry), new ActionRepository($registry), new MachineRepository($registry), new CardSetRepository($registry), $cards, new StepOrder($cards, new MockClock('2026-11-20 10:00')), $access, $this->entityManager, new MockClock('2026-11-20 10:00'));
+
+        return new PilotMcpProvider($tools, $docs, $credits, $settings);
     }
 }

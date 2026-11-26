@@ -1303,7 +1303,7 @@
             </trans-unit>
             <trans-unit id="bo1fgQe">
                 <source>label.info_step_stale</source>
-                <target>Une étape précédente a été refaite après ce rendu, il sera remplacé</target>
+                <target>Une étape dont elle dépend a été refaite après ce rendu, il sera remplacé</target>
             </trans-unit>
             <trans-unit id="F70vhZc">
                 <source>label.info_step_template</source>

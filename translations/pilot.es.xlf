@@ -1303,7 +1303,7 @@
             </trans-unit>
             <trans-unit id="bo1fgQe">
                 <source>label.info_step_stale</source>
-                <target>Un paso anterior se rehízo después de estos archivos, serán reemplazados</target>
+                <target>Un paso del que depende se rehízo después de estos archivos, serán reemplazados</target>
             </trans-unit>
             <trans-unit id="F70vhZc">
                 <source>label.info_step_template</source>

@@ -18,7 +18,7 @@
     {% set locked = card.isTemplateStep(index) %}
     <span{% if not locked %} data-controller="pilot-inline-edit"{% endif %} class="pilot-step-body">
         <span class="{{ locked ? '' : 'pilot-inline-view ' }}pilot-step-text{{ (step.done ?? false) ? ' pilot-step-done' }}{{ waiting ? ' pilot-step-waiting' }}"{% if locked %} title="{{ 'label.info_step_template'|trans({}, 'pilot') }}"{% else %} data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.step_edit'|trans({}, 'pilot') }}"{% endif %}>{{ step.t }}</span>
-        {# When the step was last made and by whom: its run's files and the machine, else the moment it was ticked and the initials of who ticked it; marked to redo when an earlier step was redone after its files #}
+        {# When the step was last made and by whom: its run's files and the machine, else the moment it was ticked and the initials of who ticked it; marked to redo when a step it needs was redone after its files #}
         {% set run_made = step_run and step_run.status.value == 'done' and step_run.files is not empty %}
         {% set made_at = run_made ? step_run.finishedAt : ((step.done ?? false) ? step.doneAt ?? null : null) %}
         {% set made_by = (step.done ?? false) and step.doneBy is defined ? step.doneBy : (run_made ? step_run.machine.name ?? null : null) %}
@@ -40,7 +40,7 @@
         </form>{% endif %}
         {# Why the step's run stopped, written under the step rather than hidden in a tooltip #}
         {% if step_failed and step_run.message and not (step.done ?? false) %}<span class="pilot-block pilot-small pilot-danger-text pilot-step-failed-reason">{{ step_run.message }}</span>{% endif %}
-        {# Where the files its last run wrote live on the machine, greyed when an earlier step was redone since: each folder by its name, its whole path on hover, folded with its files one by one behind its arrow, each opened on the computer when the site sets an opening scheme #}
+        {# Where the files its last run wrote live on the machine, greyed when a step it needs was redone since: each folder by its name, its whole path on hover, folded with its files one by one behind its arrow, each opened on the computer when the site sets an opening scheme #}
         {% if run_made %}
             {% for folder, names in step_run.filesByFolder %}
                 {% set open = pilot_open_url(folder) %}

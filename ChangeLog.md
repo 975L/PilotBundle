@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.11.0
+
+Piloting settings through the MCP
+
+- Added pilot_templates, pilot_template and pilot_template_save, a template saved laid on its open cards (26/11/2026)
+- Added pilot_actions and pilot_action_offer, the spaces offering a machine action (26/11/2026)
+- Added pilot_machines and pilot_machine_edit, a machine's runs at once and spaces (26/11/2026)
+- Added pilot_collection_save, a space's collection added or set (26/11/2026)
+- A step is « To redo » by the steps it needs only, directly or through others, in `Card::staleSteps()` (26/11/2026)
+
 ## v1.10.3
 
 Template steps only ticked on their card

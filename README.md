@@ -41,7 +41,7 @@ Then follow the full [installation](#installation) section below: migration, pub
 ## For AI agents
 
 - Skills: [`c975l-pilot`](skills/c975l-pilot/SKILL.md) — the model, the pages and what each role may do, the runner's protocol and the MCP tools. A coding agent reads it straight from `vendor/c975l/pilot-bundle/skills/`.
-- MCP: an AI agent works with the piloting through the site's MCP endpoint (CoreBundle's `/api/mcp`), with the rights of its token's account — `pilot_spaces`, `pilot_cards`, `pilot_card`, `pilot_add_card`, `pilot_edit_card`, `pilot_add_steps`, `pilot_edit_step`, `pilot_tick_step`, `pilot_comment`, `pilot_close_card`, `pilot_run_step`, `pilot_cancel_run`, `pilot_merge_cards`, `pilot_delete_card`, `pilot_docs`, `pilot_doc`, `pilot_write_doc`, `pilot_credit_outlook` and `pilot_credit_set`. See [MCP server](#mcp-server).
+- MCP: an AI agent works with the piloting through the site's MCP endpoint (CoreBundle's `/api/mcp`), with the rights of its token's account — `pilot_spaces`, `pilot_cards`, `pilot_card`, `pilot_add_card`, `pilot_edit_card`, `pilot_add_steps`, `pilot_edit_step`, `pilot_tick_step`, `pilot_comment`, `pilot_close_card`, `pilot_run_step`, `pilot_cancel_run`, `pilot_merge_cards`, `pilot_delete_card`, `pilot_docs`, `pilot_doc`, `pilot_write_doc`, `pilot_templates`, `pilot_template`, `pilot_template_save`, `pilot_actions`, `pilot_action_offer`, `pilot_machines`, `pilot_machine_edit`, `pilot_collection_save`, `pilot_credit_outlook` and `pilot_credit_set`. See [MCP server](#mcp-server).
 
 ## Reference
 
@@ -240,6 +240,14 @@ The piloting brings its tools to the site's MCP endpoint, `/api/mcp`, which c975
 | `pilot_docs` | The files holding the `search` words, else those of a `space`, else every file the account sees |
 | `pilot_doc` | A file as markdown: title, summary, then detail |
 | `pilot_write_doc` | A file added to a `space` with its `title`, or the one named by `doc` rewritten, only the `summary` or `detail` given changing |
+| `pilot_templates` | For the admin, the checklist templates, with the spaces offering them, their steps counted and their open cards |
+| `pilot_template` | For the admin, a `template` (id or name) with its steps numbered from 1, as their `after` names them |
+| `pilot_template_save` | For the admin, a template made (`name` and `steps`) or the one named by `template` changed in what is given only: `name`, `spaces` (slugs) and `steps` given whole in their order (`title`, `action`, `params`, `after` as step numbers, `[]` for none, `group`), checked as the settings form checks them and laid on its open cards as the settings page does |
+| `pilot_actions` | For the admin, the machine actions declared, with the spaces offering them and the machines running them |
+| `pilot_action_offer` | For the admin, the `spaces` offering an `action`, replacing those it had |
+| `pilot_machines` | For the admin, the runner machines, with the spaces each serves, the runs it takes at once, whether it is online and the actions it declared |
+| `pilot_machine_edit` | For the admin, a `machine`'s `parallel` runs and the `spaces` it serves (`[]` for every one), only what is given changing; a machine is made, and its token given, on the settings page only |
+| `pilot_collection_save` | For whoever manages the `space`, a collection added (`name`) or the one named by `collection` changed: `name`, `item`, `template` (one the space offers, empty for none) and `sheets` |
 | `pilot_credit_outlook` | For the admin, each credit the steps planned before its renewal leave unspent or overspend, with its tone (`fine`, `soon`, `late`), the later steps that could spend it and the steps they wait for |
 | `pilot_credit_set` | For the admin, the balance of a credit typed in by hand, as read on its service's site (in a browser for a service without an API), with its next `renews` day; a credit read from its API refused |
 
@@ -253,7 +261,7 @@ claude mcp add --transport http <site> https://<site>/api/mcp --header "Authoriz
 
 ## Opening the files on the computer
 
-A command that prints `FILE /absolute/path` lines names the files it wrote: they are never sent to the site, the step only shows where they are once its run is done, each folder by its name (its whole path on hover) followed by its files one by one. A `LINK <url> [words]` line leaves a link under the step once its run is done (a draft post to approve, for instance), opened in a new tab and named by its words or its host (http(s) only, ten at most). At the end of its text, a step shows when and by whom it was made (`dd/mm/yyyy hh:mm - initials`): its run's files and the machine, otherwise the minute it was ticked and the initials of who ticked it (taken from the name part of their identifier). When an earlier step's run wrote files after its own, its files are greyed and marked « To redo », the next run replacing them. A browser opens no local path from a web page, so a small handler on each computer does it, the site knowing nothing of how that computer is laid out:
+A command that prints `FILE /absolute/path` lines names the files it wrote: they are never sent to the site, the step only shows where they are once its run is done, each folder by its name (its whole path on hover) followed by its files one by one. A `LINK <url> [words]` line leaves a link under the step once its run is done (a draft post to approve, for instance), opened in a new tab and named by its words or its host (http(s) only, ten at most). At the end of its text, a step shows when and by whom it was made (`dd/mm/yyyy hh:mm - initials`): its run's files and the machine, otherwise the minute it was ticked and the initials of who ticked it (taken from the name part of their identifier). When a step it needs, directly or through others, had its run write files after its own, its files are greyed and marked « To redo », the next run replacing them. A browser opens no local path from a web page, so a small handler on each computer does it, the site knowing nothing of how that computer is laid out:
 
 1. Keep the config `pilot-open-scheme` at `pilot-open`, its default (set to `none`, the folders and files stay plain text, an emptied field taking the default back).
 2. On each computer, list under `open:` in the runner's `runner.yaml` the folders whose files may be opened (`~/Documents`, the work folders…); a path outside them, a program or a script is never opened.
