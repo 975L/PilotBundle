@@ -17,6 +17,7 @@ use c975L\PilotBundle\Entity\Project;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\Routing\AttributeRouteControllerLoader;
+use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
@@ -47,6 +48,17 @@ class PilotRoutesTest extends TestCase
     public function testPathReachesItsPage(string $path, string $route): void
     {
         $this->assertSame($route, $this->matcher()->match($path)['_route']);
+    }
+
+    // A question to Donovan is posted, never sent by an address a reload would ask again
+    public function testAskIsPostedOnly(): void
+    {
+        $matcher = $this->matcher();
+        $matcher->setContext(new RequestContext(method: 'POST'));
+
+        $this->assertSame(PilotController::ASK_ROUTE, $matcher->match('/pilot/search/ask')['_route']);
+        $this->expectException(MethodNotAllowedException::class);
+        $this->matcher()->match('/pilot/search/ask');
     }
 
     // A space never takes the name of one of the piloting pages' own words

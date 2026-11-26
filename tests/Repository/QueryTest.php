@@ -170,6 +170,29 @@ class QueryTest extends TestCase
         $this->assertCount(3, $repository->search('item', new PilotScope(true)));
     }
 
+    // Donovan reads the cards holding any stem, in their steps too, and only those the account sees
+    public function testFindHoldingKeepsToTheScope(): void
+    {
+        $user = new UserFixture();
+        $other = new Project('other', 'Other');
+        $this->entityManager->persist($user);
+        $this->entityManager->persist($other);
+        $noted = $this->card('item-1')->setNote('The catalog layout');
+        $stepped = $this->card('item-2')->addStep('Check the catalog');
+        $this->card('item-3');
+        $this->entityManager->persist(new Card($other, 'catalog elsewhere'));
+        $this->entityManager->flush();
+        $repository = new CardRepository($this->registry);
+        $id = (int) $this->project->getId();
+
+        $this->assertEqualsCanonicalizing([$noted, $stepped], $repository->findHolding(['catal'], new PilotScope(false, [$id], [], $user)));
+        $this->assertCount(3, $repository->findHolding(['catal', 'layou'], new PilotScope(true)));
+        $this->assertSame($noted, $repository->findHolding(['catal', 'layou'], new PilotScope(false, [$id], [], $user), 1)[0]);
+        $this->assertSame([$stepped], $repository->findHolding(['check'], new PilotScope(true)));
+        $this->assertSame([], $repository->findHolding(['catal'], new PilotScope(false, [], [$id], $user)));
+        $this->assertSame([], $repository->findHolding([], new PilotScope(true)));
+    }
+
     // The done cards of a tab: counted by collection, listed for one collection or for none, a guest seeing only those given to it
     public function testDoneByCollection(): void
     {

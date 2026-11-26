@@ -1,5 +1,25 @@
 [
     {
+        "date": "2026-11-26",
+        "description": [
+            {
+                "en": "Piloting: the search is now at the top of the dashboard, the cards it finds showing below it as you type, the dashboard staying in place; it is no longer in the column on the left.",
+                "fr": "Pilotage : la recherche est désormais en haut du tableau de bord, les cartes trouvées s'affichant dessous à la saisie sans quitter le tableau de bord ; elle n'est plus dans la colonne de gauche.",
+                "es": "Pilotaje: la búsqueda está ahora arriba del panel, las tarjetas encontradas aparecen debajo al escribir sin salir del panel; ya no está en la columna de la izquierda."
+            },
+            {
+                "en": "Piloting: the Donovan button at the top of the column, or Ctrl+K on any page, opens Donovan in a panel on the right, as in the back office: ask a question, it answers in a few sentences from the cards and files you see, with links opening each card on its space; the conversation stays while you move from page to page.",
+                "fr": "Pilotage : le bouton Donovan en haut de la colonne, ou Ctrl+K sur toute page, ouvre Donovan dans un panneau à droite, comme au back-office : posez une question, il répond en quelques phrases d'après les cartes et dossiers que vous voyez, avec des liens ouvrant chaque carte sur son espace ; la conversation reste d'une page à l'autre.",
+                "es": "Pilotaje: el botón Donovan arriba de la columna, o Ctrl+K en cualquier página, abre Donovan en un panel a la derecha, como en el back-office: haga una pregunta, responde en pocas frases a partir de las tarjetas y los expedientes que ve, con enlaces que abren cada tarjeta en su espacio; la conversación se mantiene de una página a otra."
+            },
+            {
+                "en": "Piloting: a card always opens over its space's page, even from a link or during a guided project, its address being the space's followed by #card- and its number.",
+                "fr": "Pilotage : une carte s'ouvre toujours par-dessus la page de son espace, même depuis un lien ou pendant un projet guidé, son adresse étant celle de l'espace suivie de #card- et de son numéro.",
+                "es": "Pilotaje: una tarjeta se abre siempre sobre la página de su espacio, incluso desde un enlace o durante un proyecto guiado, siendo su dirección la del espacio seguida de #card- y su número."
+            }
+        ]
+    },
+    {
         "date": "2026-11-25",
         "description": [
             {

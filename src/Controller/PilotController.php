@@ -40,6 +40,7 @@ use c975L\PilotBundle\Service\CardMarkdown;
 use c975L\PilotBundle\Service\CardRemoval;
 use c975L\PilotBundle\Service\CreditOutlook;
 use c975L\PilotBundle\Service\CreditRefresher;
+use c975L\PilotBundle\Service\PilotAsk;
 use c975L\PilotBundle\Service\PilotUrls;
 use c975L\PilotBundle\Service\PlanFactory;
 use c975L\PilotBundle\Service\Planning;
@@ -52,6 +53,7 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -61,7 +63,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 use function Symfony\Component\Translation\t;
 
-// The three ways in: the dashboard, a project with its backlog, a search; plus the page of a card and the gestures on it
+// The three ways in: the dashboard, a project with its backlog, a search and Donovan's answer; plus the page of a card and the gestures on it
 class PilotController extends AbstractController
 {
     use PilotPageTrait;
@@ -71,6 +73,7 @@ class PilotController extends AbstractController
     public const string PROJECT_ROUTE = 'pilot_project';
     public const string CARD_ROUTE = 'pilot_card';
     public const string SEARCH_ROUTE = 'pilot_search';
+    public const string ASK_ROUTE = 'pilot_ask';
     public const string GESTURE_ROUTE = 'pilot_card_gesture';
     public const string ORDER_ROUTE = 'pilot_projects_order';
     public const string NEW_CARD_ROUTE = 'pilot_card_new';
@@ -350,19 +353,34 @@ class PilotController extends AbstractController
         ]);
     }
 
-    // Cards and files holding the words, from two letters
-    #[Route('/pilot/search', name: 'pilot_search')]
+    // Cards holding the words, from two letters, done ones included; only the results when fetched while typing
+    #[Route('/pilot/search', name: 'pilot_search', methods: ['GET'])]
     public function search(Request $request): Response
     {
         $this->denyAccess();
         $words = trim($request->query->getString('q'));
-        $searched = mb_strlen($words) >= 2;
-
-        return $this->page('@c975LPilot/pilot/search.html.twig', [
+        $parameters = [
             'words' => $words,
-            'cards' => $searched ? $this->cardRepository->search($words, $this->pilotAccess->scope()) : [],
-            'docs' => $searched ? $this->docRepository->search($words, $this->pilotAccess->scope()) : [],
-        ]);
+            'cards' => mb_strlen($words) >= 2 ? $this->cardRepository->search($words, $this->pilotAccess->scope()) : [],
+        ];
+
+        return $request->isXmlHttpRequest()
+            ? $this->render('@c975LPilot/pilot/_search_results.html.twig', $parameters)
+            : $this->page('@c975LPilot/pilot/search.html.twig', $parameters);
+    }
+
+    // A question to Donovan from its panel, answered from the cards and files the account sees, in the shape the back office's assistant reads (UiBundle's ai-assistant.js): one call to the model per question sent, never on a reload
+    #[Route('/pilot/search/ask', name: 'pilot_ask', methods: ['POST'])]
+    public function ask(Request $request, PilotAsk $pilotAsk): JsonResponse
+    {
+        $this->denyAccess();
+        if (!$this->isCsrfTokenValid(self::ASK_ROUTE, $request->headers->get('X-CSRF-Token'))) {
+            return new JsonResponse(['error' => 'invalid_csrf'], 419);
+        }
+
+        $result = $pilotAsk->ask($request->request->getString('question'), $this->pilotAccess->scope(), $request->getLocale());
+
+        return null === $result ? new JsonResponse(['error' => 'unavailable'], Response::HTTP_SERVICE_UNAVAILABLE) : new JsonResponse($result);
     }
 
     // The projects of the left column in the order they were dragged into, the token travelling as a header
@@ -403,20 +421,29 @@ class PilotController extends AbstractController
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
 
-    // A card by its number alone, sent to its address under its space (the dialog follows it)
+    // A card by its number alone, sent to its space's page where its dialog opens, or to its own address for the dialog reading it
     #[Route('/pilot/card/{id}', name: 'pilot_card', requirements: ['id' => '\d+'])]
-    public function permalink(Card $card, PilotUrls $pilotUrls): RedirectResponse
+    public function permalink(Card $card, PilotUrls $pilotUrls, Request $request): RedirectResponse
     {
         $this->guard($card, PilotAccess::VIEW);
 
-        return $this->redirect($pilotUrls->card($card));
+        return $this->redirect(self::fromDialog($request) ? $pilotUrls->card($card) : $pilotUrls->inSpace($card));
     }
 
-    // Everything about a card: note, checklist with what its steps spend against the balances, file, runs, its markdown handed to an AI with a step; an address naming another space sent to its own
+    // A request of the card's dialog (its reading, or a gesture made in it followed to the card), never a browser opening the address
+    private static function fromDialog(Request $request): bool
+    {
+        return $request->isXmlHttpRequest() || $request->headers->has(self::DIALOG_HEADER);
+    }
+
+    // Everything about a card: note, checklist with what its steps spend against the balances, file, runs, its markdown handed to an AI with a step; read by its dialog only, a browser opening it sent to its space's page where the dialog shows it, an address naming another space sent to its own
     #[Route('/pilot/{space}/{id}', name: PilotUrls::CARD_ROUTE, requirements: ['space' => '[a-z0-9-]+', 'id' => '\d+'], priority: -10)]
     public function card(Card $card, Request $request, PilotUrls $pilotUrls, CardMarkdown $cardMarkdown, ActionOffer $actionOffer, RunOutputs $runOutputs, CreditRepository $creditRepository, MachineRepository $machineRepository): Response
     {
         $this->guard($card, PilotAccess::VIEW);
+        if (!self::fromDialog($request)) {
+            return $this->redirect($pilotUrls->inSpace($card));
+        }
         $url = $pilotUrls->card($card);
         if ($url !== $request->getBaseUrl() . $request->getPathInfo()) {
             return $this->redirect($url);

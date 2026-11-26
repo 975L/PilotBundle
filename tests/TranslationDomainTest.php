@@ -99,12 +99,12 @@ class TranslationDomainTest extends TestCase
         }
     }
 
-    // The keys the guided projects name under one field ("label", "description" or "narration"), the projects' own and their steps', sorted
+    // The keys the guided projects name under one field ("label", "description" or "narration"), the projects' own and their steps', Donovan on and off, sorted
     /** @return list<string> */
     private function guidedProjectKeys(string $field): array
     {
         $keys = [];
-        foreach ($this->guidedProjects() as $project) {
+        foreach ([...$this->guidedProjects(), ...$this->guidedProjects(false)] as $project) {
             $keys = array_merge($keys, array_filter([$project[$field] ?? null]), array_column($project['steps'], $field));
         }
         $keys = array_values(array_unique($keys));

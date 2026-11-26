@@ -14,6 +14,7 @@ use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\ConfigBundle\Test\ManagementTargetsTestCase;
 use c975L\PilotBundle\Management\MenuProvider;
 use c975L\PilotBundle\Management\PilotGuidedProjectProvider;
+use c975L\PilotBundle\Service\PilotAsk;
 
 // Every controller and route the menu and the guided projects name, checked against what the controllers declare, the piloting pages' own included (see ManagementTargetsTestCase)
 class ManagementTargetsTest extends ManagementTargetsTestCase
@@ -22,7 +23,7 @@ class ManagementTargetsTest extends ManagementTargetsTestCase
     {
         return [
             new MenuProvider(),
-            new PilotGuidedProjectProvider($this->createStub(ConfigServiceInterface::class), $this->urlGenerator()),
+            new PilotGuidedProjectProvider($this->createStub(ConfigServiceInterface::class), $this->urlGenerator(), $this->createStub(PilotAsk::class)),
         ];
     }
 

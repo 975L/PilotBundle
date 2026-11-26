@@ -1,8 +1,12 @@
 {% extends '@c975LPilot/pilot/_layout.html.twig' %}
 
 {% block pilot %}
-    <h1>{{ 'label.dashboard'|trans({}, 'pilot') }}</h1>
+    <h1>{{ 'label.pilot'|trans({}, 'pilot') }}</h1>
     <p class="pilot-muted">{{ 'label.info_week'|trans({}, 'pilot') }}</p>
+
+    {# The cards holding the words, open or done, drawn under the field while typing, under a heading of its own #}
+    <h2 class="pilot-title">{{ pilot_icon('magnifying-glass', 'pilot-icon-before') }}{{ 'label.search'|trans({}, 'pilot') }}</h2>
+    {% include '@c975LPilot/pilot/_search.html.twig' with {words: '', focus: false} %}
 
     {# The machine work under way first, before anything else #}
     {% include '@c975LPilot/pilot/_runs.html.twig' %}

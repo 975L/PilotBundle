@@ -195,6 +195,39 @@ class CardRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    // Cards holding any of the stems in their title, description, steps or feedback, those holding the most first, then the open ones, for Donovan to answer from; the steps read lowercased (their JSON column compares bytes), a stem also looked for as that JSON writes it, its accents escaped
+    /**
+     * @param list<string> $stems
+     *
+     * @return list<Card>
+     */
+    public function findHolding(array $stems, PilotScope $scope, int $limit = 40): array
+    {
+        if ([] === $stems) {
+            return [];
+        }
+
+        $builder = $scope->restrictCards($this->createQueryBuilder('c'))
+            ->addSelect('p')
+            ->join('c.project', 'p');
+        $holding = [];
+        foreach ($stems as $index => $stem) {
+            $holding[] = sprintf('c.title LIKE :stem%1$d OR c.note LIKE :stem%1$d OR LOWER(c.checklist) LIKE :stem%1$d OR LOWER(c.checklist) LIKE :json%1$d', $index);
+            $builder->setParameter('stem' . $index, '%' . addcslashes($stem, '%_\\') . '%')
+                ->setParameter('json' . $index, '%' . addcslashes(mb_strtolower(trim((string) json_encode($stem), '"')), '%_\\') . '%');
+        }
+
+        return $builder->addSelect('(' . implode(' + ', array_map(static fn (string $one): string => 'CASE WHEN ' . $one . ' THEN 1 ELSE 0 END', $holding)) . ') AS HIDDEN hits')
+            ->andWhere('(' . implode(') OR (', $holding) . ')')
+            ->orderBy('hits', \SortDirection::Descending)
+            ->addOrderBy('CASE WHEN c.status = :done THEN 1 ELSE 0 END', \SortDirection::Ascending)
+            ->setParameter('done', CardStatus::Done)
+            ->addOrderBy('c.id', \SortDirection::Descending)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     // Titles of a space's cards, to leave aside a line pasted again
     /** @return list<string> */
     public function titlesOf(Project $project): array

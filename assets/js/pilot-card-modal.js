@@ -11,7 +11,7 @@ import { notice } from "./pilot-notice.js";
 // Opens a card or a file over the page it was clicked on, its own page read and shown in a dialog; the address keeps it as #card-<id> or #doc-<slug>, so a link or the back button reopen it
 export default class extends Controller {
     static targets = ["dialog", "body", "confirm", "ask", "zoom", "zoomImage"];
-    static values = { url: String };
+    static values = { url: String, failedLabel: String };
 
     connect() {
         this.onClick = (event) => this.click(event);
@@ -26,7 +26,12 @@ export default class extends Controller {
         this.element.addEventListener("submit", this.onConfirm, true);
         // An open + or gear panel closes on a click beside it or on Escape, as a dialog would
         this.onOutside = (event) => this.fold(event.target);
-        this.onEscape = (event) => { if ("Escape" === event.key && this.fold(null)) event.preventDefault(); };
+        this.onEscape = (event) => {
+            if ("Escape" !== event.key) return;
+            if (this.fold(null)) event.preventDefault();
+            // A dialog shown without its backdrop (a guided project running) is not closed by Escape on its own
+            else if (this.dialogTarget.open && !this.dialogTarget.matches(":modal")) this.dialogTarget.close();
+        };
         document.addEventListener("click", this.onOutside);
         document.addEventListener("keydown", this.onEscape);
         this.dialogTarget.addEventListener("submit", (event) => this.submit(event));
@@ -93,9 +98,6 @@ export default class extends Controller {
 
         const link = event.target.closest("a[data-pilot-dialog]");
         if (!link || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-
-        // A guided project running keeps the card on its own page: a modal dialog would make its panel inert
-        if (document.querySelector(".guided-project-panel")) return;
 
         event.preventDefault();
         window.history.pushState(null, "", "#" + link.dataset.pilotDialog);
@@ -170,7 +172,7 @@ export default class extends Controller {
         else if (this.dialogTarget.open) this.dialogTarget.close();
     }
 
-    // The page fetched, its dialog part alone kept; a failure falls back to the page itself
+    // The page fetched, its dialog part alone kept; a failure said, the card's own address leading back here
     open(url) {
         this.current = url;
 
@@ -184,13 +186,14 @@ export default class extends Controller {
                 if (this.refocus) this.bodyTarget.querySelector(`form[action="${CSS.escape(this.refocus)}"] [data-pilot-refocus]`)?.focus();
                 this.refocus = null;
             })
-            .catch(() => { window.location.href = url; });
+            .catch(() => notice(this.failedLabelValue));
     }
 
-    // The dialog opened centred, then held by its top so a group folded or a card read again moves its bottom only
+    // The dialog opened centred, then held by its top so a group folded or a card read again moves its bottom only; left without the modal's backdrop while a guided project runs, which would make its panel inert, the card shown all the same as it is
     show() {
         const dialog = this.dialogTarget;
-        dialog.showModal();
+        if (document.querySelector(".guided-project-panel")) dialog.show();
+        else dialog.showModal();
         dialog.style.setProperty("--pilot-dialog-top", Math.max(8, dialog.getBoundingClientRect().top) + "px");
         dialog.classList.add("pilot-dialog-pinned");
     }

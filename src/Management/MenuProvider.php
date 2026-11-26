@@ -13,7 +13,7 @@ namespace c975L\PilotBundle\Management;
 use c975L\ConfigBundle\Management\MenuProviderInterface;
 use c975L\PilotBundle\Controller\PilotController;
 
-// A section without menus, carrying the link to the piloting pages, which list the search, the spaces and the settings in their own column
+// A section without menus, carrying the link to the piloting pages, which list the spaces and the settings in their own column, the search on the dashboard
 class MenuProvider implements MenuProviderInterface
 {
     public function getMenuSection(): array

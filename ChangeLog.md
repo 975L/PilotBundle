@@ -1,5 +1,26 @@
 # Changelog
 
+## v1.10.0
+
+Search on the dashboard, questions to Donovan
+
+- Search field on the dashboard, its results drawn under it while typing (`pilot-search.js`), its entry taken out of the column (26/11/2026)
+- Search results rendered alone by `_search_results.html.twig` for a request from the script (26/11/2026)
+- Search results limited to the cards, the files left to their cards and their space (26/11/2026)
+- Dashboard search headed by its own title (26/11/2026)
+- Donovan's button drawn as the back office's, its name and `Ctrl K` beside the robot (26/11/2026)
+- Donovan's conversation kept apart from the back office's, under `pilot_ask_key()` (26/11/2026)
+- A card opened in a browser sent to its space's page in its dialog, its own page read by the dialog alone (26/11/2026)
+- Card dialog opened without its backdrop during a guided project instead of the card's own page (26/11/2026)
+- A card the dialog fails to read said in a notice instead of opening its page (26/11/2026)
+- Added `PilotUrls::inSpace()`, a card on its space's page opened in its dialog, the address Donovan's links take (26/11/2026)
+- Donovan asked from a panel over the right of every page, as the back office has it, opened by its button of the column or Ctrl/Cmd+K, its conversation kept for the tab, answered from the cards and files the account sees, on the back office's AI key (`PilotAsk`, `PilotAskClient`, `pilot_ask` route answering in the back office assistant's JSON, UiBundle's `ai-assistant.js` on this shell's markup, `pilot_ask_enabled()`, `pilot_ask_key()`) (26/11/2026)
+- Added `CardRepository::findHolding()` and `DocRepository::findHolding()`, the cards and files holding any stem of a question (26/11/2026)
+- Guided project `pilot-search`, its Donovan step only once the AI key is filled in (26/11/2026)
+- Active entry of the column kept on its colour under the pointer (26/11/2026)
+- Dashboard entry taken out of the column, the brand leading there and titling the dashboard (26/11/2026)
+- Requires `c975l/core-bundle` ^1.101 (26/11/2026)
+
 ## v1.9.1
 
 Refusals said in a dialog

@@ -20,18 +20,38 @@
 </head>
 {# Turbo Drive left out: each page carries its own nonced <style>, which it fails to merge, leaving a card's own page unshown #}
 <body data-turbo="false">
-    <div class="pilot-shell" data-controller="pilot-card-modal pilot-card-drag pilot-fold" data-pilot-card-drag-order-url-value="{{ path('pilot_cards_order') }}" data-pilot-card-drag-order-token-value="{{ csrf_token('pilot_cards_order') }}" data-pilot-card-drag-failed-label-value="{{ 'label.drag_failed'|trans({}, 'pilot') }}" data-pilot-card-modal-url-value="{{ path('pilot_card', {id: 0}) }}">
+    <div class="pilot-shell" data-controller="pilot-card-modal pilot-card-drag pilot-fold" data-pilot-card-drag-order-url-value="{{ path('pilot_cards_order') }}" data-pilot-card-drag-order-token-value="{{ csrf_token('pilot_cards_order') }}" data-pilot-card-drag-failed-label-value="{{ 'label.drag_failed'|trans({}, 'pilot') }}" data-pilot-card-modal-url-value="{{ path('pilot_card', {id: 0}) }}" data-pilot-card-modal-failed-label-value="{{ 'label.card_open_failed'|trans({}, 'pilot') }}">
         <nav class="pilot-projects" aria-label="{{ 'label.projects'|trans({}, 'pilot') }}" data-controller="pilot-menu">
             <div class="pilot-row pilot-nav-pad pilot-mb-xs">
-                <a href="{{ path('pilot_dashboard') }}" class="pilot-brand">{{ pilot_icon('compass', 'pilot-icon-before') }}{{ 'label.pilot'|trans({}, 'pilot') }}</a>
-                <button type="button" class="pilot-btn pilot-btn-icon pilot-push pilot-phone-only pilot-menu-toggle" data-pilot-menu-target="toggle" data-action="pilot-menu#toggle" aria-expanded="false" aria-controls="pilot-menu" aria-label="{{ 'label.menu'|trans({}, 'pilot') }}" title="{{ 'label.menu'|trans({}, 'pilot') }}">{{ pilot_icon('bars') }}</button>
+                {# The way to the dashboard, current on it and on the search and questions asked from it #}
+                <a href="{{ path('pilot_dashboard') }}" class="pilot-brand"{{ app.request.attributes.get('_route') in ['pilot_dashboard', 'pilot_search', 'pilot_ask'] ? ' aria-current="page"' }}>{{ pilot_icon('compass', 'pilot-icon-before') }}{{ 'label.pilot'|trans({}, 'pilot') }}</a>
+                {# Donovan's button and panel, the back office's own (UiBundle's ai-assistant.js on its data attributes), drawn with this shell's classes: opened from here or by Ctrl/Cmd+K, its conversation and whether it is open kept for the tab under the account's key, a card it cites opened in its space #}
+                {% if pilot_ask_enabled() %}
+                    <div class="ai-assistant-panel pilot-push" data-ai-assistant-panel>
+                        <button type="button" class="pilot-btn pilot-ask-open" data-ai-assistant-panel-open aria-expanded="false" aria-controls="pilot-ask-panel" title="{{ 'label.ask'|trans({'%name%': ai_assistant_name()}, 'pilot') }}">{{ pilot_icon('robot') }}{{ ai_assistant_name() }}<kbd class="pilot-kbd" aria-hidden="true">Ctrl K</kbd></button>
+                        <aside class="ai-assistant-panel__body" id="pilot-ask-panel" aria-label="{{ ai_assistant_name() }}" hidden>
+                            <div class="pilot-row pilot-row-nowrap pilot-mb-sm">
+                                <strong class="pilot-grow">{{ pilot_icon('robot', 'pilot-icon-before') }}{{ ai_assistant_name() }}</strong>
+                                <button type="button" class="pilot-btn pilot-btn-ghost" data-ai-assistant-panel-clear>{{ 'label.ask_clear'|trans({}, 'pilot') }}</button>
+                                <button type="button" class="pilot-btn-close" data-ai-assistant-panel-fold aria-label="{{ 'label.close'|trans({}, 'pilot') }}" title="{{ 'label.close'|trans({}, 'pilot') }}">{{ pilot_icon('xmark') }}</button>
+                            </div>
+                            <p class="pilot-small pilot-muted">{{ 'label.info_ask'|trans({'%name%': ai_assistant_name()}, 'pilot') }}</p>
+                            <div class="ai-assistant" data-controller="aiAssistant" data-ai-assistant-ask-url-value="{{ path('pilot_ask') }}" data-ai-assistant-csrf-token-value="{{ csrf_token('pilot_ask') }}" data-ai-assistant-persist-value="{{ pilot_ask_key() }}" data-ai-assistant-link-target-value="_self">
+                                <div class="ai-assistant__log" data-ai-assistant-target="log"></div>
+                                <p class="pilot-small pilot-muted" data-ai-assistant-target="pending" hidden>{{ 'label.ask_pending'|trans({'%name%': ai_assistant_name()}, 'pilot') }}</p>
+                                <p class="pilot-small pilot-danger-text" data-ai-assistant-target="error" hidden>{{ 'label.ask_failed'|trans({'%name%': ai_assistant_name()}, 'pilot') }}</p>
+                                <form class="pilot-row pilot-row-nowrap" data-action="aiAssistant#ask">
+                                    <input type="text" class="pilot-grow" required maxlength="300" placeholder="{{ 'label.ask_placeholder'|trans({}, 'pilot') }}" aria-label="{{ 'label.ask_placeholder'|trans({}, 'pilot') }}" data-ai-assistant-target="input">
+                                    <button class="pilot-btn pilot-btn-primary" data-ai-assistant-target="submit">{{ 'label.ask_send'|trans({}, 'pilot') }}</button>
+                                </form>
+                            </div>
+                        </aside>
+                    </div>
+                {% endif %}
+                <button type="button" class="pilot-btn pilot-btn-icon{{ pilot_ask_enabled() ? '' : ' pilot-push' }} pilot-phone-only pilot-menu-toggle" data-pilot-menu-target="toggle" data-action="pilot-menu#toggle" aria-expanded="false" aria-controls="pilot-menu" aria-label="{{ 'label.menu'|trans({}, 'pilot') }}" title="{{ 'label.menu'|trans({}, 'pilot') }}">{{ pilot_icon('bars') }}</button>
             </div>
             <div id="pilot-menu" class="pilot-menu">
                 <p class="pilot-small pilot-muted pilot-nav-pad pilot-mb pilot-info">{{ 'label.info_pilot'|trans({}, 'pilot') }}</p>
-                <div class="pilot-list pilot-list-flush pilot-small">
-                    <a href="{{ path('pilot_dashboard') }}" class="pilot-list-item{{ app.request.attributes.get('_route') == 'pilot_dashboard' ? ' active' }}">{{ pilot_icon('gauge-high', 'pilot-icon-before') }}{{ 'label.dashboard'|trans({}, 'pilot') }}</a>
-                    <a href="{{ path('pilot_search') }}" class="pilot-list-item{{ app.request.attributes.get('_route') == 'pilot_search' ? ' active' }}">{{ pilot_icon('magnifying-glass', 'pilot-icon-before') }}{{ 'label.search'|trans({}, 'pilot') }}</a>
-                </div>
                 {# A new space made from the + beside their title, the admin's #}
                 <h2 class="pilot-nav-heading">{{ 'label.projects'|trans({}, 'pilot') }}{% if pilot_admin ?? false %}<a href="{{ path('pilot_settings_new', {kind: 'space'}) }}" class="pilot-push pilot-muted pilot-project-new" title="{{ 'label.project_new'|trans({}, 'pilot') }}" aria-label="{{ 'label.project_new'|trans({}, 'pilot') }}">{{ pilot_icon('plus') }}</a>{% endif %}</h2>
                 <div class="pilot-list pilot-list-flush pilot-small" data-controller="pilot-project-sort" data-pilot-project-sort-target="list" data-pilot-project-sort-url-value="{{ path('pilot_projects_order') }}" data-pilot-project-sort-token-value="{{ csrf_token('pilot_projects_order') }}" data-pilot-project-sort-failed-label-value="{{ 'label.order_failed'|trans({}, 'pilot') }}">

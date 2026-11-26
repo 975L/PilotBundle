@@ -3,17 +3,5 @@
 {% block pilot %}
     <h1>{{ 'label.search'|trans({}, 'pilot') }}</h1>
     <p class="pilot-muted">{{ 'label.info_search'|trans({}, 'pilot') }}</p>
-    <form method="get" class="pilot-mb-lg">
-        <input type="search" name="q" value="{{ words }}" placeholder="{{ 'label.search_placeholder'|trans({}, 'pilot') }}" autofocus>
-    </form>
-
-    {% if cards is not empty %}
-        <div class="pilot-cards pilot-mb-lg">
-            {% for card in cards %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% endfor %}
-        </div>
-    {% endif %}
-    {% for doc in docs %}{% include '@c975LPilot/pilot/_doc.html.twig' %}{% endfor %}
-    {% if words|length >= 2 and cards is empty and docs is empty %}
-        <p>{{ 'label.nothing_found'|trans({}, 'pilot') }}</p>
-    {% endif %}
+    {% include '@c975LPilot/pilot/_search.html.twig' %}
 {% endblock %}

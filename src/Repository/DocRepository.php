@@ -44,6 +44,34 @@ class DocRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    // Files holding any of the stems in their title, summary or detail, those holding the most first, for Donovan to answer from
+    /**
+     * @param list<string> $stems
+     *
+     * @return list<Doc>
+     */
+    public function findHolding(array $stems, PilotScope $scope, int $limit = 20): array
+    {
+        if ([] === $stems) {
+            return [];
+        }
+
+        $builder = $scope->restrictProjects($this->createQueryBuilder('d'), 'IDENTITY(d.project)');
+        $holding = [];
+        foreach ($stems as $index => $stem) {
+            $holding[] = sprintf('d.title LIKE :stem%1$d OR d.summary LIKE :stem%1$d OR d.detail LIKE :stem%1$d', $index);
+            $builder->setParameter('stem' . $index, '%' . addcslashes($stem, '%_\\') . '%');
+        }
+
+        return $builder->addSelect('(' . implode(' + ', array_map(static fn (string $one): string => 'CASE WHEN ' . $one . ' THEN 1 ELSE 0 END', $holding)) . ') AS HIDDEN hits')
+            ->andWhere('(' . implode(') OR (', $holding) . ')')
+            ->orderBy('hits', \SortDirection::Descending)
+            ->addOrderBy('d.title', \SortDirection::Ascending)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     // A project's references common to its work: its files but the one that belongs to a single open card (shown on that card), by title
     /**
      * @return list<Doc>

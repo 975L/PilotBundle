@@ -142,6 +142,18 @@
                 <source>narration.guided_step_pilot_run_space</source>
                 <target>Click the space of the card, in the left column.</target>
             </trans-unit>
+            <trans-unit id="U4i9ehW">
+                <source>narration.guided_step_pilot_search_ask</source>
+                <target>Click the Donovan button, or press Ctrl+K, then ask your question: it answers with the links of the cards it read.</target>
+            </trans-unit>
+            <trans-unit id="PvJqouY">
+                <source>narration.guided_step_pilot_search_open</source>
+                <target>Open the piloting pages, on their dashboard.</target>
+            </trans-unit>
+            <trans-unit id="Jbq4Cn7">
+                <source>narration.guided_step_pilot_search_words</source>
+                <target>Type a few words at the top of the dashboard: the results show below.</target>
+            </trans-unit>
             <trans-unit id="ErmIV1o">
                 <source>narration.guided_step_pilot_space_color</source>
                 <target>Pick its colour: its cards are tinted with it.</target>

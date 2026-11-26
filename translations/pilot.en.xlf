@@ -26,6 +26,14 @@
                 <source>description.guided_project_pilot_run</source>
                 <target>A step naming an action runs on a machine, then the feedback is handed to it.</target>
             </trans-unit>
+            <trans-unit id="cO..VFR">
+                <source>description.guided_project_pilot_search</source>
+                <target>The dashboard search finds a card by its words, even a done one; Donovan answers a question from the cards and files you see.</target>
+            </trans-unit>
+            <trans-unit id="r_OFpZK">
+                <source>description.guided_project_pilot_search_cards</source>
+                <target>The dashboard search finds a card by its words, even a done one.</target>
+            </trans-unit>
             <trans-unit id="SzPLCOQ">
                 <source>description.guided_project_pilot_space</source>
                 <target>A space gathers the cards of one project, shared between its members.</target>
@@ -178,6 +186,18 @@
                 <source>description.guided_step_pilot_run_space</source>
                 <target>Click the space of the card, in the left column.</target>
             </trans-unit>
+            <trans-unit id="XM7OH2q">
+                <source>description.guided_step_pilot_search_ask</source>
+                <target>The Donovan button at the top of the column, or Ctrl+K on any page, opens its panel on the right: it answers in a few sentences from the cards and files you see, with their links.</target>
+            </trans-unit>
+            <trans-unit id="XHbWEA5">
+                <source>description.guided_step_pilot_search_open</source>
+                <target>The dashboard carries the search at the top of the page.</target>
+            </trans-unit>
+            <trans-unit id="DgZLF4D">
+                <source>description.guided_step_pilot_search_words</source>
+                <target>A few words or a question: the cards holding them, even done, show below as you type.</target>
+            </trans-unit>
             <trans-unit id="oP7XhMF">
                 <source>description.guided_step_pilot_space_color</source>
                 <target>Its cards are tinted with it, so that each space is told at a glance.</target>
@@ -310,6 +330,34 @@
                 <source>label.ai_task</source>
                 <target>Here is a card from my piloting, in markdown below. What I hand you: “%step%”. Let's discuss it before implementing.</target>
             </trans-unit>
+            <trans-unit id="JHlt3eL">
+                <source>label.ask</source>
+                <target>Ask %name%</target>
+            </trans-unit>
+            <trans-unit id="zOnttFU">
+                <source>label.ask_clear</source>
+                <target>Clear</target>
+            </trans-unit>
+            <trans-unit id="AnLN17t">
+                <source>label.ask_failed</source>
+                <target>%name% could not answer, try again later.</target>
+            </trans-unit>
+            <trans-unit id="xcRTUGq">
+                <source>label.ask_not_found</source>
+                <target>No card nor file seems to mention it.</target>
+            </trans-unit>
+            <trans-unit id="JTLxFmv">
+                <source>label.ask_pending</source>
+                <target>%name% is reading the cards…</target>
+            </trans-unit>
+            <trans-unit id="sVCvBIf">
+                <source>label.ask_placeholder</source>
+                <target>Your question, for instance: what was decided for the backup?</target>
+            </trans-unit>
+            <trans-unit id="_gtUSxr">
+                <source>label.ask_send</source>
+                <target>Ask</target>
+            </trans-unit>
             <trans-unit id="owG9XLV">
                 <source>label.assignee_add</source>
                 <target>Give to…</target>
@@ -421,6 +469,10 @@
             <trans-unit id="p23QvIf">
                 <source>label.card_number_short</source>
                 <target>No. %id%</target>
+            </trans-unit>
+            <trans-unit id="_6mVmAQ">
+                <source>label.card_open_failed</source>
+                <target>The card could not be opened, try again.</target>
             </trans-unit>
             <trans-unit id="vaqVCcB">
                 <source>label.card_result</source>
@@ -601,10 +653,6 @@
             <trans-unit id="Y8lj63W">
                 <source>label.credits_refresh</source>
                 <target>Refresh the balances</target>
-            </trans-unit>
-            <trans-unit id="id1d4o4">
-                <source>label.dashboard</source>
-                <target>Dashboard</target>
             </trans-unit>
             <trans-unit id="N86zpT2">
                 <source>label.demo_action_export</source>
@@ -869,6 +917,14 @@
                 <source>label.guided_project_pilot_run</source>
                 <target>Run a step on a machine</target>
             </trans-unit>
+            <trans-unit id="4mDOVSr">
+                <source>label.guided_project_pilot_search</source>
+                <target>Find a card or ask Donovan</target>
+            </trans-unit>
+            <trans-unit id="j1oeDIv">
+                <source>label.guided_project_pilot_search_cards</source>
+                <target>Find a card</target>
+            </trans-unit>
             <trans-unit id="dLVFU5P">
                 <source>label.guided_project_pilot_space</source>
                 <target>Create a space</target>
@@ -1021,6 +1077,18 @@
                 <source>label.guided_step_pilot_run_space</source>
                 <target>Open a space</target>
             </trans-unit>
+            <trans-unit id="XndR8lL">
+                <source>label.guided_step_pilot_search_ask</source>
+                <target>Ask Donovan</target>
+            </trans-unit>
+            <trans-unit id="6baZCAr">
+                <source>label.guided_step_pilot_search_open</source>
+                <target>Open the piloting</target>
+            </trans-unit>
+            <trans-unit id="awTe5jo">
+                <source>label.guided_step_pilot_search_words</source>
+                <target>Type your words</target>
+            </trans-unit>
             <trans-unit id="FTS1fZ3">
                 <source>label.guided_step_pilot_space_color</source>
                 <target>Pick its colour</target>
@@ -1092,6 +1160,10 @@
             <trans-unit id="VRlFpmt">
                 <source>label.info_actions</source>
                 <target>The actions the machines can run, as they declare them. Choose on which spaces each one is offered.</target>
+            </trans-unit>
+            <trans-unit id="SZoFtZH">
+                <source>label.info_ask</source>
+                <target>%name% answers from the cards and files you see, with links to the ones it read.</target>
             </trans-unit>
             <trans-unit id="EvSaV0B">
                 <source>label.info_card_delete</source>
@@ -1203,7 +1275,7 @@
             </trans-unit>
             <trans-unit id="LnVyCF1">
                 <source>label.info_search</source>
-                <target>Find a card or a reference, even a done one.</target>
+                <target>Find a card, even a done one.</target>
             </trans-unit>
             <trans-unit id="xe6IW.S">
                 <source>label.info_step_after</source>
@@ -1497,9 +1569,13 @@
                 <source>label.search</source>
                 <target>Search</target>
             </trans-unit>
+            <trans-unit id="MeBIjoc">
+                <source>label.search_failed</source>
+                <target>The search could not be read, try again.</target>
+            </trans-unit>
             <trans-unit id="wuLVBeQ">
                 <source>label.search_placeholder</source>
-                <target>A card, a reference…</target>
+                <target>The words of a card…</target>
             </trans-unit>
             <trans-unit id="sKwVoqy">
                 <source>label.settings</source>

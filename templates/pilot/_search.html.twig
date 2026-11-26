@@ -1,0 +1,7 @@
+{# The search field, on the dashboard as on its results page: its results drawn under it while typing (pilot-search.js), the page itself reached without the script #}
+<div class="pilot-mb-lg" data-controller="pilot-search" data-pilot-search-url-value="{{ path('pilot_search') }}" data-pilot-search-failed-label-value="{{ 'label.search_failed'|trans({}, 'pilot') }}">
+    <form method="get" action="{{ path('pilot_search') }}" role="search" class="pilot-mb" data-action="pilot-search#submit">
+        <input type="search" name="q" value="{{ words }}" minlength="2" placeholder="{{ 'label.search_placeholder'|trans({}, 'pilot') }}" aria-label="{{ 'label.search'|trans({}, 'pilot') }}" data-pilot-search-target="field" data-action="input->pilot-search#type"{{ (focus ?? true) ? ' autofocus' }}>
+    </form>
+    <div aria-live="polite" data-pilot-search-target="results">{% if words|length >= 2 %}{% include '@c975LPilot/pilot/_search_results.html.twig' %}{% endif %}</div>
+</div>

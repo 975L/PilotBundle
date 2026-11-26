@@ -30,8 +30,8 @@ class PilotGuidedProjectProviderTest extends TestCase
     {
         $projects = $this->guidedProjects();
 
-        $this->assertSame(['pilot-space', 'pilot-card', 'pilot-steps', 'pilot-number', 'pilot-machine', 'pilot-template', 'pilot-run', 'pilot-credits', 'pilot-agent'], array_column($projects, 'slug'));
-        $this->assertSame([12010, 12020, 12030, 12040, 12050, 12060, 12070, 12080, 12090], array_column($projects, 'order'));
+        $this->assertSame(['pilot-space', 'pilot-card', 'pilot-steps', 'pilot-number', 'pilot-machine', 'pilot-template', 'pilot-run', 'pilot-credits', 'pilot-agent', 'pilot-search'], array_column($projects, 'slug'));
+        $this->assertSame([12010, 12020, 12030, 12040, 12050, 12060, 12070, 12080, 12090, 12100], array_column($projects, 'order'));
         foreach ($projects as $project) {
             $this->assertSame('pilot', $project['translation_domain']);
             $this->assertGreaterThanOrEqual(12000, $project['order']);
@@ -108,7 +108,7 @@ class PilotGuidedProjectProviderTest extends TestCase
         foreach (['fr', 'en', 'es'] as $locale) {
             $words = $this->sources('pilot', $locale);
             $narrations = $this->sources('pilot_narration', $locale);
-            foreach ($this->guidedProjects() as $project) {
+            foreach ([...$this->guidedProjects(), ...$this->guidedProjects(false)] as $project) {
                 $this->assertContains($project['label'], $words, $locale);
                 $this->assertContains($project['description'], $words, $locale);
                 foreach ($project['steps'] as $step) {
@@ -118,6 +118,20 @@ class PilotGuidedProjectProviderTest extends TestCase
                 }
             }
         }
+    }
+
+    // Without the back office's AI key, the search project leaves out Donovan's step and its words
+    public function testSearchWithoutDonovan(): void
+    {
+        $with = array_column($this->guidedProjects(), null, 'slug')['pilot-search'];
+        $without = array_column($this->guidedProjects(false), null, 'slug')['pilot-search'];
+
+        $this->assertSame(['open', 'words', 'ask'], array_map(static fn (array $step): string => substr($step['label'], \strlen('label.guided_step_pilot_search_')), $with['steps']));
+        $this->assertSame('label.guided_project_pilot_search', $with['label']);
+        $this->assertSame(['open', 'words'], array_map(static fn (array $step): string => substr($step['label'], \strlen('label.guided_step_pilot_search_')), $without['steps']));
+        $this->assertSame('label.guided_project_pilot_search_cards', $without['label']);
+        $this->assertSame('description.guided_project_pilot_search_cards', $without['description']);
+        $this->assertSame(12100, $without['order']);
     }
 
     // Every word a step needs is named after its project and its key

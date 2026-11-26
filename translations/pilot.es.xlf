@@ -26,6 +26,14 @@
                 <source>description.guided_project_pilot_run</source>
                 <target>Un paso que nombra una acción se lanza en una máquina y luego se le confían los comentarios.</target>
             </trans-unit>
+            <trans-unit id="cO..VFR">
+                <source>description.guided_project_pilot_search</source>
+                <target>La búsqueda del panel encuentra una tarjeta por sus palabras, aunque esté terminada; Donovan responde a una pregunta a partir de las tarjetas y los expedientes que ve.</target>
+            </trans-unit>
+            <trans-unit id="r_OFpZK">
+                <source>description.guided_project_pilot_search_cards</source>
+                <target>La búsqueda del panel encuentra una tarjeta por sus palabras, aunque esté terminada.</target>
+            </trans-unit>
             <trans-unit id="SzPLCOQ">
                 <source>description.guided_project_pilot_space</source>
                 <target>Un espacio reúne las tarjetas de un proyecto, compartidas entre sus miembros.</target>
@@ -178,6 +186,18 @@
                 <source>description.guided_step_pilot_run_space</source>
                 <target>Haga clic en el espacio de la tarjeta, en la columna de la izquierda.</target>
             </trans-unit>
+            <trans-unit id="XM7OH2q">
+                <source>description.guided_step_pilot_search_ask</source>
+                <target>El botón Donovan arriba de la columna, o Ctrl+K en cualquier página, abre su panel a la derecha: responde en pocas frases a partir de las tarjetas y los expedientes que ve, con sus enlaces.</target>
+            </trans-unit>
+            <trans-unit id="XHbWEA5">
+                <source>description.guided_step_pilot_search_open</source>
+                <target>El panel lleva la búsqueda arriba de la página.</target>
+            </trans-unit>
+            <trans-unit id="DgZLF4D">
+                <source>description.guided_step_pilot_search_words</source>
+                <target>Unas palabras o una pregunta: las tarjetas que las contienen, incluso terminadas, aparecen debajo al escribir.</target>
+            </trans-unit>
             <trans-unit id="oP7XhMF">
                 <source>description.guided_step_pilot_space_color</source>
                 <target>Sus tarjetas toman su tono, para reconocer cada espacio de un vistazo.</target>
@@ -310,6 +330,34 @@
                 <source>label.ai_task</source>
                 <target>Aquí tienes una tarjeta de mi pilotaje, en markdown abajo. Lo que te confío: « %step% ». Hablemos antes de implementar.</target>
             </trans-unit>
+            <trans-unit id="JHlt3eL">
+                <source>label.ask</source>
+                <target>Preguntar a %name%</target>
+            </trans-unit>
+            <trans-unit id="zOnttFU">
+                <source>label.ask_clear</source>
+                <target>Borrar</target>
+            </trans-unit>
+            <trans-unit id="AnLN17t">
+                <source>label.ask_failed</source>
+                <target>%name% no ha podido responder, inténtelo más tarde.</target>
+            </trans-unit>
+            <trans-unit id="xcRTUGq">
+                <source>label.ask_not_found</source>
+                <target>Ninguna tarjeta ni ningún expediente parece mencionarlo.</target>
+            </trans-unit>
+            <trans-unit id="JTLxFmv">
+                <source>label.ask_pending</source>
+                <target>%name% está leyendo las tarjetas…</target>
+            </trans-unit>
+            <trans-unit id="sVCvBIf">
+                <source>label.ask_placeholder</source>
+                <target>Su pregunta, por ejemplo: ¿qué se decidió para la copia de seguridad?</target>
+            </trans-unit>
+            <trans-unit id="_gtUSxr">
+                <source>label.ask_send</source>
+                <target>Preguntar</target>
+            </trans-unit>
             <trans-unit id="owG9XLV">
                 <source>label.assignee_add</source>
                 <target>Asignar a…</target>
@@ -421,6 +469,10 @@
             <trans-unit id="p23QvIf">
                 <source>label.card_number_short</source>
                 <target>N.º %id%</target>
+            </trans-unit>
+            <trans-unit id="_6mVmAQ">
+                <source>label.card_open_failed</source>
+                <target>No se ha podido abrir la tarjeta, inténtelo de nuevo.</target>
             </trans-unit>
             <trans-unit id="vaqVCcB">
                 <source>label.card_result</source>
@@ -601,10 +653,6 @@
             <trans-unit id="Y8lj63W">
                 <source>label.credits_refresh</source>
                 <target>Actualizar los saldos</target>
-            </trans-unit>
-            <trans-unit id="id1d4o4">
-                <source>label.dashboard</source>
-                <target>Panel</target>
             </trans-unit>
             <trans-unit id="N86zpT2">
                 <source>label.demo_action_export</source>
@@ -869,6 +917,14 @@
                 <source>label.guided_project_pilot_run</source>
                 <target>Lanzar un paso en una máquina</target>
             </trans-unit>
+            <trans-unit id="4mDOVSr">
+                <source>label.guided_project_pilot_search</source>
+                <target>Encontrar una tarjeta o preguntar a Donovan</target>
+            </trans-unit>
+            <trans-unit id="j1oeDIv">
+                <source>label.guided_project_pilot_search_cards</source>
+                <target>Encontrar una tarjeta</target>
+            </trans-unit>
             <trans-unit id="dLVFU5P">
                 <source>label.guided_project_pilot_space</source>
                 <target>Crear un espacio</target>
@@ -1021,6 +1077,18 @@
                 <source>label.guided_step_pilot_run_space</source>
                 <target>Abra un espacio</target>
             </trans-unit>
+            <trans-unit id="XndR8lL">
+                <source>label.guided_step_pilot_search_ask</source>
+                <target>Pregunte a Donovan</target>
+            </trans-unit>
+            <trans-unit id="6baZCAr">
+                <source>label.guided_step_pilot_search_open</source>
+                <target>Abra el pilotaje</target>
+            </trans-unit>
+            <trans-unit id="awTe5jo">
+                <source>label.guided_step_pilot_search_words</source>
+                <target>Escriba sus palabras</target>
+            </trans-unit>
             <trans-unit id="FTS1fZ3">
                 <source>label.guided_step_pilot_space_color</source>
                 <target>Elija su color</target>
@@ -1092,6 +1160,10 @@
             <trans-unit id="VRlFpmt">
                 <source>label.info_actions</source>
                 <target>Las acciones que las máquinas saben hacer, declaradas por ellas. Elija en qué espacios se propone cada una.</target>
+            </trans-unit>
+            <trans-unit id="SZoFtZH">
+                <source>label.info_ask</source>
+                <target>%name% responde a partir de las tarjetas y los expedientes que ve, con los enlaces a los que ha leído.</target>
             </trans-unit>
             <trans-unit id="EvSaV0B">
                 <source>label.info_card_delete</source>
@@ -1203,7 +1275,7 @@
             </trans-unit>
             <trans-unit id="LnVyCF1">
                 <source>label.info_search</source>
-                <target>Encontrar una tarjeta o una referencia, aunque esté terminada.</target>
+                <target>Encontrar una tarjeta, aunque esté terminada.</target>
             </trans-unit>
             <trans-unit id="xe6IW.S">
                 <source>label.info_step_after</source>
@@ -1497,9 +1569,13 @@
                 <source>label.search</source>
                 <target>Buscar</target>
             </trans-unit>
+            <trans-unit id="MeBIjoc">
+                <source>label.search_failed</source>
+                <target>No se ha podido leer la búsqueda, inténtelo de nuevo.</target>
+            </trans-unit>
             <trans-unit id="wuLVBeQ">
                 <source>label.search_placeholder</source>
-                <target>Una tarjeta, una referencia…</target>
+                <target>Las palabras de una tarjeta…</target>
             </trans-unit>
             <trans-unit id="sKwVoqy">
                 <source>label.settings</source>

@@ -33,6 +33,12 @@ class PilotUrls
     // A card as an absolute address handed on, its space's page opening it in its dialog: /pilot/{space}#card-{id}
     public function shared(Card $card): string
     {
-        return $this->urlGenerator->generate(self::SPACE_ROUTE, ['slug' => $card->getProject()->getSlug()], UrlGeneratorInterface::ABSOLUTE_URL) . '#card-' . $card->getId();
+        return $this->inSpace($card, UrlGeneratorInterface::ABSOLUTE_URL);
+    }
+
+    // A card on its space's page, opened there in its dialog: /pilot/{space}#card-{id}
+    public function inSpace(Card $card, int $referenceType = UrlGeneratorInterface::ABSOLUTE_PATH): string
+    {
+        return $this->urlGenerator->generate(self::SPACE_ROUTE, ['slug' => $card->getProject()->getSlug()], $referenceType) . '#card-' . $card->getId();
     }
 }

@@ -142,6 +142,18 @@
                 <source>narration.guided_step_pilot_run_space</source>
                 <target>Cliquez sur l'espace de la carte, dans la colonne de gauche.</target>
             </trans-unit>
+            <trans-unit id="U4i9ehW">
+                <source>narration.guided_step_pilot_search_ask</source>
+                <target>Cliquez sur le bouton Donovan, ou faites Ctrl+K, puis posez votre question : il répond avec les liens des cartes lues.</target>
+            </trans-unit>
+            <trans-unit id="PvJqouY">
+                <source>narration.guided_step_pilot_search_open</source>
+                <target>Ouvrez les pages du pilotage, sur leur tableau de bord.</target>
+            </trans-unit>
+            <trans-unit id="Jbq4Cn7">
+                <source>narration.guided_step_pilot_search_words</source>
+                <target>Tapez quelques mots en haut du tableau de bord : les résultats s'affichent dessous.</target>
+            </trans-unit>
             <trans-unit id="ErmIV1o">
                 <source>narration.guided_step_pilot_space_color</source>
                 <target>Choisissez sa couleur : ses cartes en prennent la teinte.</target>

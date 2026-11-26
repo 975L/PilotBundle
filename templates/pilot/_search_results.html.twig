@@ -1,0 +1,9 @@
+{# The results of a search, drawn on its page or fetched while typing on the dashboard: the cards holding the words, the files reached through their cards and their space #}
+{% if cards is not empty %}
+    <div class="pilot-cards pilot-mb-lg">
+        {% for card in cards %}{% include '@c975LPilot/pilot/_card.html.twig' %}{% endfor %}
+    </div>
+{% endif %}
+{% if words|length >= 2 and cards is empty %}
+    <p>{{ 'label.nothing_found'|trans({}, 'pilot') }}</p>
+{% endif %}

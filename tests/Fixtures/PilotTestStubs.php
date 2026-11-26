@@ -12,6 +12,7 @@ namespace c975L\PilotBundle\Tests\Fixtures;
 
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\PilotBundle\Management\PilotGuidedProjectProvider;
+use c975L\PilotBundle\Service\PilotAsk;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -44,15 +45,18 @@ trait PilotTestStubs
         return $urls;
     }
 
-    // The guided projects for an admin, their routes answered as their path
+    // The guided projects for an admin, their routes answered as their path, Donovan on or off
     /** @return list<array<string, mixed>> */
-    private function guidedProjects(): array
+    private function guidedProjects(bool $ask = true): array
     {
         $config = $this->createStub(ConfigServiceInterface::class);
         $config->method('get')->willReturn('ROLE_ADMIN');
         $urls = $this->createStub(UrlGeneratorInterface::class);
         $urls->method('generate')->willReturnCallback(static fn (string $route, array $parameters = []): string => '/pilot/' . $route . ('' !== implode('', $parameters) ? '/' . implode('/', $parameters) : ''));
 
-        return new PilotGuidedProjectProvider($config, $urls)->getGuidedProjects();
+        $pilotAsk = $this->createStub(PilotAsk::class);
+        $pilotAsk->method('isEnabled')->willReturn($ask);
+
+        return new PilotGuidedProjectProvider($config, $urls, $pilotAsk)->getGuidedProjects();
     }
 }

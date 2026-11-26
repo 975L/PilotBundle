@@ -26,6 +26,14 @@
                 <source>description.guided_project_pilot_run</source>
                 <target>Une étape qui nomme une action se lance sur une machine, puis les retours lui sont confiés.</target>
             </trans-unit>
+            <trans-unit id="cO..VFR">
+                <source>description.guided_project_pilot_search</source>
+                <target>La recherche du tableau de bord retrouve une carte par ses mots, même terminée ; Donovan répond à une question d'après les cartes et dossiers que vous voyez.</target>
+            </trans-unit>
+            <trans-unit id="r_OFpZK">
+                <source>description.guided_project_pilot_search_cards</source>
+                <target>La recherche du tableau de bord retrouve une carte par ses mots, même terminée.</target>
+            </trans-unit>
             <trans-unit id="SzPLCOQ">
                 <source>description.guided_project_pilot_space</source>
                 <target>Un espace réunit les cartes d'un projet, partagées entre ses membres.</target>
@@ -178,6 +186,18 @@
                 <source>description.guided_step_pilot_run_space</source>
                 <target>Cliquez sur l'espace de la carte, dans la colonne de gauche.</target>
             </trans-unit>
+            <trans-unit id="XM7OH2q">
+                <source>description.guided_step_pilot_search_ask</source>
+                <target>Le bouton Donovan en haut de la colonne, ou Ctrl+K sur toute page, ouvre son panneau à droite : il répond en quelques phrases d'après les cartes et dossiers que vous voyez, avec leurs liens.</target>
+            </trans-unit>
+            <trans-unit id="XHbWEA5">
+                <source>description.guided_step_pilot_search_open</source>
+                <target>Le tableau de bord porte la recherche en haut de page.</target>
+            </trans-unit>
+            <trans-unit id="DgZLF4D">
+                <source>description.guided_step_pilot_search_words</source>
+                <target>Quelques mots ou une question : les cartes qui les contiennent, même terminées, s'affichent dessous à la saisie.</target>
+            </trans-unit>
             <trans-unit id="oP7XhMF">
                 <source>description.guided_step_pilot_space_color</source>
                 <target>Ses cartes en prennent la teinte, pour reconnaître chaque espace d'un coup d'œil.</target>
@@ -310,6 +330,34 @@
                 <source>label.ai_task</source>
                 <target>Voici une carte de mon pilotage, en markdown ci-dessous. Ce que je te confie : « %step% ». Discutons-en avant d'implémenter.</target>
             </trans-unit>
+            <trans-unit id="JHlt3eL">
+                <source>label.ask</source>
+                <target>Demander à %name%</target>
+            </trans-unit>
+            <trans-unit id="zOnttFU">
+                <source>label.ask_clear</source>
+                <target>Effacer</target>
+            </trans-unit>
+            <trans-unit id="AnLN17t">
+                <source>label.ask_failed</source>
+                <target>%name% n'a pas pu répondre, réessayez plus tard.</target>
+            </trans-unit>
+            <trans-unit id="xcRTUGq">
+                <source>label.ask_not_found</source>
+                <target>Aucune carte ni aucun dossier ne semble en parler.</target>
+            </trans-unit>
+            <trans-unit id="JTLxFmv">
+                <source>label.ask_pending</source>
+                <target>%name% lit les cartes…</target>
+            </trans-unit>
+            <trans-unit id="sVCvBIf">
+                <source>label.ask_placeholder</source>
+                <target>Votre question, par exemple : qu'a-t-on décidé pour la sauvegarde ?</target>
+            </trans-unit>
+            <trans-unit id="_gtUSxr">
+                <source>label.ask_send</source>
+                <target>Demander</target>
+            </trans-unit>
             <trans-unit id="owG9XLV">
                 <source>label.assignee_add</source>
                 <target>Confier à…</target>
@@ -421,6 +469,10 @@
             <trans-unit id="p23QvIf">
                 <source>label.card_number_short</source>
                 <target>n° %id%</target>
+            </trans-unit>
+            <trans-unit id="_6mVmAQ">
+                <source>label.card_open_failed</source>
+                <target>La carte n'a pas pu être ouverte, réessayez.</target>
             </trans-unit>
             <trans-unit id="vaqVCcB">
                 <source>label.card_result</source>
@@ -601,10 +653,6 @@
             <trans-unit id="Y8lj63W">
                 <source>label.credits_refresh</source>
                 <target>Mettre à jour les soldes</target>
-            </trans-unit>
-            <trans-unit id="id1d4o4">
-                <source>label.dashboard</source>
-                <target>Tableau de bord</target>
             </trans-unit>
             <trans-unit id="N86zpT2">
                 <source>label.demo_action_export</source>
@@ -869,6 +917,14 @@
                 <source>label.guided_project_pilot_run</source>
                 <target>Lancer une étape sur une machine</target>
             </trans-unit>
+            <trans-unit id="4mDOVSr">
+                <source>label.guided_project_pilot_search</source>
+                <target>Retrouver une carte ou interroger Donovan</target>
+            </trans-unit>
+            <trans-unit id="j1oeDIv">
+                <source>label.guided_project_pilot_search_cards</source>
+                <target>Retrouver une carte</target>
+            </trans-unit>
             <trans-unit id="dLVFU5P">
                 <source>label.guided_project_pilot_space</source>
                 <target>Créer un espace</target>
@@ -1021,6 +1077,18 @@
                 <source>label.guided_step_pilot_run_space</source>
                 <target>Ouvrez un espace</target>
             </trans-unit>
+            <trans-unit id="XndR8lL">
+                <source>label.guided_step_pilot_search_ask</source>
+                <target>Demandez à Donovan</target>
+            </trans-unit>
+            <trans-unit id="6baZCAr">
+                <source>label.guided_step_pilot_search_open</source>
+                <target>Ouvrez le pilotage</target>
+            </trans-unit>
+            <trans-unit id="awTe5jo">
+                <source>label.guided_step_pilot_search_words</source>
+                <target>Tapez vos mots</target>
+            </trans-unit>
             <trans-unit id="FTS1fZ3">
                 <source>label.guided_step_pilot_space_color</source>
                 <target>Choisissez sa couleur</target>
@@ -1092,6 +1160,10 @@
             <trans-unit id="VRlFpmt">
                 <source>label.info_actions</source>
                 <target>Les actions que les machines savent faire, déclarées par elles. Choisissez sur quels espaces chacune est proposée.</target>
+            </trans-unit>
+            <trans-unit id="SZoFtZH">
+                <source>label.info_ask</source>
+                <target>%name% répond d'après les cartes et dossiers que vous voyez, avec les liens de ceux qu'il a lus.</target>
             </trans-unit>
             <trans-unit id="EvSaV0B">
                 <source>label.info_card_delete</source>
@@ -1203,7 +1275,7 @@
             </trans-unit>
             <trans-unit id="LnVyCF1">
                 <source>label.info_search</source>
-                <target>Retrouver une carte ou une référence, même terminée.</target>
+                <target>Retrouver une carte, même terminée.</target>
             </trans-unit>
             <trans-unit id="xe6IW.S">
                 <source>label.info_step_after</source>
@@ -1497,9 +1569,13 @@
                 <source>label.search</source>
                 <target>Rechercher</target>
             </trans-unit>
+            <trans-unit id="MeBIjoc">
+                <source>label.search_failed</source>
+                <target>La recherche n'a pas pu être lue, réessayez.</target>
+            </trans-unit>
             <trans-unit id="wuLVBeQ">
                 <source>label.search_placeholder</source>
-                <target>Une carte, une référence…</target>
+                <target>Les mots d'une carte…</target>
             </trans-unit>
             <trans-unit id="sKwVoqy">
                 <source>label.settings</source>

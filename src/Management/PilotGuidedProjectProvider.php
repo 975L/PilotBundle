@@ -13,6 +13,7 @@ namespace c975L\PilotBundle\Management;
 use c975L\ConfigBundle\Management\GuidedProjectProviderInterface;
 use c975L\ConfigBundle\Service\ConfigServiceInterface;
 use c975L\PilotBundle\Controller\PilotController;
+use c975L\PilotBundle\Service\PilotAsk;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 // This bundle's guided projects, in the 12000 block GuidedProjectProviderInterface reserves them, walked on the piloting pages where the layout mounts the panel. Only the opening step carries an url: the space and the card are then the ones the user clicks, a project never guessing which
@@ -30,6 +31,7 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
     public function __construct(
         private readonly ConfigServiceInterface $configService,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly PilotAsk $pilotAsk,
     ) {
     }
 
@@ -108,6 +110,25 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
                 ['key' => 'watch', 'highlight' => '.pilot-checklist'],
                 ['key' => 'feedback', 'highlight' => '.pilot-feedback-add'],
             ]),
+            $this->searchProject(),
+        ];
+    }
+
+    // A card found by its words from the dashboard, then a question asked to Donovan from the column or by Ctrl+K; without the back office's AI key, the search alone, Donovan's button being absent
+    private function searchProject(): array
+    {
+        $steps = [
+            ['key' => 'open', 'url' => $this->dashboard()],
+            ['key' => 'words', 'highlight' => 'form[role="search"] input[name="q"]'],
+        ];
+        if ($this->pilotAsk->isEnabled()) {
+            return self::project('pilot_search', 12100, null, [...$steps, ['key' => 'ask', 'highlight' => '.pilot-ask-open']]);
+        }
+
+        return [
+            ...self::project('pilot_search', 12100, null, $steps),
+            'label' => 'label.guided_project_pilot_search_cards',
+            'description' => 'description.guided_project_pilot_search_cards',
         ];
     }
 
