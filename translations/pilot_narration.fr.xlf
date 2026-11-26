@@ -120,7 +120,7 @@
             </trans-unit>
             <trans-unit id="lY3qk4G">
                 <source>narration.guided_step_pilot_run_action</source>
-                <target>Cliquez sur le texte de l'étape, choisissez son action, sauf si elle vient du modèle de la carte, puis saisissez ses paramètres.</target>
+                <target>Cliquez sur le texte de l'étape, choisissez son action, puis saisissez ses paramètres, sauf pour une étape venue du modèle de la carte.</target>
             </trans-unit>
             <trans-unit id="6Z6IMzN">
                 <source>narration.guided_step_pilot_run_card</source>

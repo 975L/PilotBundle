@@ -3,6 +3,16 @@
         "date": "2026-11-26",
         "description": [
             {
+                "en": "Piloting: on a card laid from a checklist template, the steps of the template can only be ticked; their text, action and parameters are changed on the template, which lays them on its cards.",
+                "fr": "Pilotage : sur une carte issue d'un modèle, les étapes du modèle se cochent seulement ; leur texte, leur action et leurs paramètres se changent sur le modèle, qui les pose sur ses cartes.",
+                "es": "Pilotaje: en una tarjeta creada a partir de una plantilla, los pasos de la plantilla solo se marcan; su texto, su acción y sus parámetros se cambian en la plantilla, que los pone en sus tarjetas."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-26",
+        "description": [
+            {
                 "en": "Piloting: under a step, each folder of the files it made is folded behind its arrow; open it to see its files, the folder itself opening on the computer.",
                 "fr": "Pilotage : sous une étape, chaque dossier des fichiers produits est replié derrière sa flèche ; dépliez-le pour voir ses fichiers, le dossier lui-même s'ouvrant sur l'ordinateur.",
                 "es": "Pilotaje: bajo un paso, cada carpeta de los archivos producidos está plegada tras su flecha; despliéguela para ver sus archivos, la carpeta misma abriéndose en el ordenador."

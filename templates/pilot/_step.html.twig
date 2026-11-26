@@ -14,9 +14,10 @@
         <input type="hidden" name="index" value="{{ index }}">
         <input type="checkbox" data-pilot-autosubmit aria-label="{{ step.t }}"{{ (step.done ?? false) ? ' checked' }}>
     </form>
-    {# The step's text edited in place like the card's other fields, emptied to remove the step #}
-    <span data-controller="pilot-inline-edit" class="pilot-step-body">
-        <span class="pilot-inline-view pilot-step-text{{ (step.done ?? false) ? ' pilot-step-done' }}{{ waiting ? ' pilot-step-waiting' }}" data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.step_edit'|trans({}, 'pilot') }}">{{ step.t }}</span>
+    {# The step's text edited in place like the card's other fields, emptied to remove the step; a step laid by the card's template is written on the template alone, only ticked here #}
+    {% set locked = card.isTemplateStep(index) %}
+    <span{% if not locked %} data-controller="pilot-inline-edit"{% endif %} class="pilot-step-body">
+        <span class="{{ locked ? '' : 'pilot-inline-view ' }}pilot-step-text{{ (step.done ?? false) ? ' pilot-step-done' }}{{ waiting ? ' pilot-step-waiting' }}"{% if locked %} title="{{ 'label.info_step_template'|trans({}, 'pilot') }}"{% else %} data-pilot-inline-edit-target="view" data-action="click->pilot-inline-edit#edit keydown.enter->pilot-inline-edit#edit" tabindex="0" title="{{ 'label.step_edit'|trans({}, 'pilot') }}"{% endif %}>{{ step.t }}</span>
         {# When the step was last made and by whom: its run's files and the machine, else the moment it was ticked and the initials of who ticked it; marked to redo when an earlier step was redone after its files #}
         {% set run_made = step_run and step_run.status.value == 'done' and step_run.files is not empty %}
         {% set made_at = run_made ? step_run.finishedAt : ((step.done ?? false) ? step.doneAt ?? null : null) %}
@@ -24,19 +25,19 @@
         {% set with_time = run_made ? step_run.machine is not null : made_at|length > 10 %}
         {% if made_at %}<span class="pilot-step-date">{{ made_at|date(with_time ? 'd/m/Y H:i' : 'd/m/Y') }}{% if made_by %} - {{ made_by }}{% endif %}</span>{% endif %}
         {% if stale %}<span class="pilot-tag pilot-tag-warning pilot-step-stale" title="{{ 'label.info_step_stale'|trans({}, 'pilot') }}">{{ 'label.step_stale'|trans({}, 'pilot') }}</span>{% endif %}
-        <form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'stepedit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
+        {% if not locked %}<form method="post" action="{{ path('pilot_card_gesture', {id: card.id, gesture: 'stepedit'}) }}" hidden data-pilot-inline-edit-target="form" data-action="focusout->pilot-inline-edit#leave keydown->pilot-inline-edit#key" class="pilot-inline-form">
             <input type="hidden" name="_token" value="{{ token }}">
             <input type="hidden" name="index" value="{{ index }}">
             <input name="text" value="{{ step.t }}" maxlength="500" class="pilot-grow pilot-auto" aria-label="{{ 'label.step_edit'|trans({}, 'pilot') }}" placeholder="{{ 'label.info_step_edit'|trans({}, 'pilot') }}">
-            {# The machine action the step hands the card to, among those the machines declared; a step laid by the card's template keeps the template's #}
-            {% if not card.isTemplateStep(index) %}<select name="action" class="pilot-auto" aria-label="{{ 'label.step_action'|trans({}, 'pilot') }}">
+            {# The machine action the step hands the card to, among those the machines declared #}
+            <select name="action" class="pilot-auto" aria-label="{{ 'label.step_action'|trans({}, 'pilot') }}">
                 <option value="">{{ 'label.step_no_action'|trans({}, 'pilot') }}</option>
                 {% for key, label in action_labels %}<option value="{{ key }}"{{ key == (step.action ?? null) ? ' selected' }}>{{ label }}</option>{% endfor %}
                 {% if step.action is defined and action_labels[step.action] is not defined %}<option value="{{ step.action }}" selected>{{ step.action }}</option>{% endif %}
-            </select>{% endif %}
+            </select>
             {# The values the action asks, kept with the step and sent with its run #}
             <input name="params" value="{{ (step.params ?? {})|map((value, name) => name ~ '=' ~ value)|join('; ') }}" maxlength="500" class="pilot-auto" aria-label="{{ 'label.step_params'|trans({}, 'pilot') }}" placeholder="{{ 'label.info_step_params_line'|trans({}, 'pilot') }}">
-        </form>
+        </form>{% endif %}
         {# Why the step's run stopped, written under the step rather than hidden in a tooltip #}
         {% if step_failed and step_run.message and not (step.done ?? false) %}<span class="pilot-block pilot-small pilot-danger-text pilot-step-failed-reason">{{ step_run.message }}</span>{% endif %}
         {# Where the files its last run wrote live on the machine, greyed when an earlier step was redone since: each folder by its name, its whole path on hover, folded with its files one by one behind its arrow, each opened on the computer when the site sets an opening scheme #}

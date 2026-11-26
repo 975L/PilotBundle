@@ -165,14 +165,16 @@ class PilotControllerEditTest extends TestCase
         $this->assertSame(['t' => 'step-3', 'action' => 'build', 'params' => ['item' => 'a;b']], $card->getChecklist()[0]);
     }
 
-    // A step laid by the card's checklist template keeps the template's action when its line posts another, its parameters still edited there
+    // A step laid by the card's checklist template keeps its text, action and parameters when its line posts others, and is never removed there
     public function testTemplateStepKeepsItsActionOnItsLine(): void
     {
         $controller = $this->controller($this->createStub(ProjectRepository::class), $this->createStub(PilotAccess::class));
         $card = $this->card()->setChecklist([['t' => 'step-1', 'action' => 'build']])->follow(new PlanTemplate('catalog', [['title' => 'step-1', 'action' => 'build']]));
 
-        $this->gesture($controller, 'stepEdit', $card, ['index' => '0', 'text' => 'step-1', 'action' => 'publish', 'params' => 'item=item-1']);
-        $this->assertSame(['t' => 'step-1', 'action' => 'build', 'params' => ['item' => 'item-1']], $card->getChecklist()[0]);
+        $this->gesture($controller, 'stepEdit', $card, ['index' => '0', 'text' => 'step-2', 'action' => 'publish', 'params' => 'item=item-1']);
+        $this->assertSame(['t' => 'step-1', 'action' => 'build'], $card->getChecklist()[0]);
+        $this->gesture($controller, 'stepEdit', $card, ['index' => '0', 'text' => '']);
+        $this->assertSame('step-1', $card->getChecklist()[0]['t']);
     }
 
     // A machine action is handed only by a step, the card page no longer taking a free one

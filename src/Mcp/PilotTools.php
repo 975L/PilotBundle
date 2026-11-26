@@ -253,8 +253,11 @@ class PilotTools
         if (!isset($found->getSteps()[$step])) {
             throw new ToolCallException(sprintf('The card has no step %d.', $step));
         }
+        if ((null !== $action || null !== $params || null !== $text) && $found->isTemplateStep($step)) {
+            throw new ToolCallException('This step comes from the checklist template the card follows: it is changed on the template.');
+        }
         if (null !== $action) {
-            $this->guardStepAction($found, $step, $action);
+            $this->guardStepAction($action);
             $found->setStepAction($step, $action);
         }
         if (null !== $params) {
@@ -269,14 +272,11 @@ class PilotTools
         return ['index' => $step, 'text' => $line['t'], 'action' => $line['action'] ?? null, 'params' => $line['params'] ?? []];
     }
 
-    // An action a machine declares, never another than the one a step laid by the card's checklist template names
-    private function guardStepAction(Card $card, int $step, string $action): void
+    // An action a machine declares
+    private function guardStepAction(string $action): void
     {
         if ('' !== trim($action) && null === $this->actionRepository->findOneBy(['key' => trim($action)])) {
             throw new ToolCallException(sprintf('No machine declares the action %s.', $action));
-        }
-        if (trim($action) !== ($card->getChecklist()[$step]['action'] ?? '') && $card->isTemplateStep($step)) {
-            throw new ToolCallException('This step comes from the checklist template the card follows: its action is changed on the template.');
         }
     }
 

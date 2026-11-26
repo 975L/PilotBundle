@@ -301,7 +301,7 @@ class PilotMcpProviderTest extends TestCase
         $this->assertSame('The card has no step 5.', $this->toolError('pilot_edit_step', ['card' => $id, 'step' => 5]));
     }
 
-    // A step laid by the card's checklist template keeps the template's action, its parameters still given on the card
+    // A step laid by the card's checklist template is changed on the template alone: its action, parameters and text refused
     public function testEditStepKeepsTheTemplateAction(): void
     {
         $template = new PlanTemplate('catalog', [['title' => 'step-1', 'action' => 'action-1']]);
@@ -310,8 +310,11 @@ class PilotMcpProviderTest extends TestCase
         $this->entityManager->flush();
         $id = (int) $this->card->getId();
 
-        $this->assertSame('This step comes from the checklist template the card follows: its action is changed on the template.', $this->toolError('pilot_edit_step', ['card' => $id, 'step' => 0, 'action' => 'action-2']));
-        $this->assertSame(['index' => 0, 'text' => 'step-1', 'action' => 'action-1', 'params' => ['item' => 'item-1']], $this->tool('pilot_edit_step', ['card' => $id, 'step' => 0, 'params' => ['item' => 'item-1']]));
+        foreach ([['action' => 'action-2'], ['params' => ['item' => 'item-1']], ['text' => 'step-2']] as $change) {
+            $this->assertSame('This step comes from the checklist template the card follows: it is changed on the template.', $this->toolError('pilot_edit_step', ['card' => $id, 'step' => 0, ...$change]));
+        }
+        $step = $this->tool('pilot_card', ['card' => $id])['steps'][0];
+        $this->assertSame(['step-1', 'action-1'], [$step['text'], $step['action']]);
     }
 
     // A run queued then withdrawn, the card back to do; nothing left to withdraw refused, as is an account that may not run

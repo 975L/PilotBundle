@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.10.3
+
+Template steps only ticked on their card
+
+- A step laid by the card's checklist template keeps its text and parameters and is never removed on the card, in `Card::renameStep()`, `setStepParams()` and pilot_edit_step, its line on the card page shown without its edit form (26/11/2026)
+
 ## v1.10.2
 
 Step folders folded behind their arrow

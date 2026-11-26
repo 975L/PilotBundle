@@ -164,7 +164,7 @@
             </trans-unit>
             <trans-unit id="sbnSf8Z">
                 <source>description.guided_step_pilot_run_action</source>
-                <target>Click a step's text: its line names the machine action and its parameters, typed name=value; name=value; on a card laid from a template, the action of a template step is changed on the template.</target>
+                <target>Click a step's text: its line names the machine action and its parameters, typed name=value; name=value; on a card laid from a template, a template step is changed on the template and only ticked here.</target>
             </trans-unit>
             <trans-unit id="TdWIM_A">
                 <source>description.guided_step_pilot_run_card</source>
@@ -1304,6 +1304,10 @@
             <trans-unit id="bo1fgQe">
                 <source>label.info_step_stale</source>
                 <target>An earlier step was redone after these files, they will be replaced</target>
+            </trans-unit>
+            <trans-unit id="F70vhZc">
+                <source>label.info_step_template</source>
+                <target>Template step: it is changed on the template</target>
             </trans-unit>
             <trans-unit id="IaYl.9w">
                 <source>label.info_template_projects</source>

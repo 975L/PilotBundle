@@ -164,7 +164,7 @@
             </trans-unit>
             <trans-unit id="sbnSf8Z">
                 <source>description.guided_step_pilot_run_action</source>
-                <target>Haga clic en el texto de un paso: su línea nombra la acción de máquina y sus parámetros, escritos nombre=valor; nombre=valor; en una tarjeta creada a partir de una plantilla, la acción de un paso de la plantilla se cambia en la plantilla.</target>
+                <target>Haga clic en el texto de un paso: su línea nombra la acción de máquina y sus parámetros, escritos nombre=valor; nombre=valor; en una tarjeta creada a partir de una plantilla, un paso de la plantilla se cambia en la plantilla y aquí solo se marca.</target>
             </trans-unit>
             <trans-unit id="TdWIM_A">
                 <source>description.guided_step_pilot_run_card</source>
@@ -1304,6 +1304,10 @@
             <trans-unit id="bo1fgQe">
                 <source>label.info_step_stale</source>
                 <target>Un paso anterior se rehízo después de estos archivos, serán reemplazados</target>
+            </trans-unit>
+            <trans-unit id="F70vhZc">
+                <source>label.info_step_template</source>
+                <target>Paso de la plantilla: se cambia en la plantilla</target>
             </trans-unit>
             <trans-unit id="IaYl.9w">
                 <source>label.info_template_projects</source>

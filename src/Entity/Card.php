@@ -233,7 +233,7 @@ class Card implements \Stringable
         return null === $this->getTemplate();
     }
 
-    // Whether a step was laid by the checklist template the card follows: its machine action is then set on the template, never on the card
+    // Whether a step was laid by the checklist template the card follows: its text, machine action and parameters are then set on the template, never on the card
     public function isTemplateStep(int $index): bool
     {
         $step = $this->checklist[$index] ?? null;
@@ -584,7 +584,8 @@ class Card implements \Stringable
     // Rewrites the text of a step, keeping what it spends, names and whether it is done; an empty text removes it, its run under way withdrawn
     public function renameStep(int $index, string $text, \DateTimeImmutable $now): static
     {
-        if (!isset($this->checklist[$index])) {
+        // A step laid by the checklist template the card follows is written, and removed, on the template alone
+        if (!isset($this->checklist[$index]) || $this->isTemplateStep($index)) {
             return $this;
         }
         $text = mb_substr(trim($text), 0, 500);
@@ -769,7 +770,7 @@ class Card implements \Stringable
     /** @param array<string, string> $params */
     public function setStepParams(int $index, array $params): static
     {
-        if (!isset($this->checklist[$index]['action'])) {
+        if (!isset($this->checklist[$index]['action']) || $this->isTemplateStep($index)) {
             return $this;
         }
         $step = $this->checklist[$index];

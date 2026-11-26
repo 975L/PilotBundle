@@ -207,7 +207,7 @@ class CardTest extends TestCase
         $this->assertSame([['t' => 'step-1', 'action' => 'publish'], ['t' => 'step-2']], $card->getChecklist());
     }
 
-    // On a card following a checklist template, a step it laid keeps the template's action, by its action or by its title, a {variable} standing for any words; its own steps and its feedback stay free
+    // On a card following a checklist template, a step it laid keeps the template's action, text and parameters, by its action or by its title, a {variable} standing for any words; its own steps and its feedback stay free
     public function testTemplateStepKeepsItsAction(): void
     {
         $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1', 'action' => 'build'], ['t' => 'Check item-1'], ['t' => 'step-9'], ['t' => 'feedback-1', 'feedback' => true]]);
@@ -218,6 +218,12 @@ class CardTest extends TestCase
 
         $card->setStepAction(0, 'publish')->setStepAction(1, 'publish')->setStepAction(2, 'copy');
         $this->assertSame(['build', null, 'copy'], array_map(static fn (array $step): ?string => $step['action'] ?? null, \array_slice($card->getChecklist(), 0, 3)));
+
+        // Its text, its parameters and its removal stay the template's too
+        $now = new \DateTimeImmutable('2026-11-26');
+        $card->renameStep(0, 'step-2', $now)->renameStep(1, '', $now)->setStepParams(0, ['item' => 'item-1'])->renameStep(2, 'step-3', $now);
+        $this->assertSame(['step-1', 'Check item-1', 'step-3'], array_column(\array_slice($card->getChecklist(), 0, 3), 't'));
+        $this->assertArrayNotHasKey('params', $card->getChecklist()[0]);
     }
 
     // A step's key fits a template's key as it is, or with each {variable} standing for any words, an action never fitting a text
