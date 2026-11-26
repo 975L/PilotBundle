@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.12.0
+
+Queue reordered by dragging
+
+- The queued runs are dragged into another order in the runs under way, the machines taking the highest ranked first, the runs of one card keeping their order, in `Run::$priority` (26/11/2026)
+- Added `RunOrder` and the route `pilot_runs_order` (26/11/2026)
+- Added pilot_order_runs, the queue read or reordered (26/11/2026)
+- The runs under way list the runs held first, then the queue in its order (26/11/2026)
+
 ## v1.11.3
 
 Recipe agent closes its browser tabs

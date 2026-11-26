@@ -180,7 +180,7 @@
             </trans-unit>
             <trans-unit id="N5bCdjQ">
                 <source>description.guided_step_pilot_run_run</source>
-                <target>El botón ▶ lleva el nombre de la acción; espera a que los pasos de los que depende estén marcados.</target>
+                <target>El botón ▶ lleva el nombre de la acción; espera a que los pasos de los que depende estén marcados. En cola, su ejecución se arrastra más arriba o más abajo en la lista en curso.</target>
             </trans-unit>
             <trans-unit id="h1b53wk">
                 <source>description.guided_step_pilot_run_space</source>

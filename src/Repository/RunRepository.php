@@ -28,16 +28,20 @@ class RunRepository extends ServiceEntityRepository
         parent::__construct($registry, Run::class);
     }
 
-    // Runs waiting in the queue or held by a machine, of one project or all, on the cards the account sees, oldest first
+    // Runs waiting in the queue or held by a machine, of one project or all, on the cards the account sees: those held first, then the queue in the order the machines take it
     /** @return list<Run> */
     public function findActive(PilotScope $scope, ?Project $project = null): array
     {
         $builder = $this->createQueryBuilder('r')
             ->addSelect('c')
+            ->addSelect('CASE WHEN r.status = :held THEN 0 ELSE 1 END AS HIDDEN waiting')
             ->join('r.card', 'c')
             ->where('r.status IN (:active)')
             ->setParameter('active', [RunStatus::Queued, RunStatus::Claimed])
-            ->orderBy('r.id', \SortDirection::Ascending);
+            ->setParameter('held', RunStatus::Claimed)
+            ->orderBy('waiting', \SortDirection::Ascending)
+            ->addOrderBy('r.priority', \SortDirection::Descending)
+            ->addOrderBy('r.id', \SortDirection::Ascending);
         if (null !== $project) {
             $builder->andWhere('c.project = :project')->setParameter('project', $project);
         }
@@ -58,7 +62,7 @@ class RunRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // Oldest queued run ids whose action the machine declared, of the spaces it serves, candidates for a claim: one run of a card at a time, the next one waiting until the one taken and those queued before it are gone
+    // Queued run ids, the highest ranked then the oldest, whose action the machine declared, of the spaces it serves, candidates for a claim: one run of a card at a time, the next one waiting until the one taken and those queued before it are gone
     /**
      * @param list<string> $actions
      * @param list<int>    $projects spaces the machine serves, empty for every space
@@ -84,7 +88,8 @@ class RunRepository extends ServiceEntityRepository
             ->setParameter('queued', RunStatus::Queued)
             ->setParameter('claimed', RunStatus::Claimed)
             ->setParameter('actions', $actions)
-            ->orderBy('r.id', \SortDirection::Ascending)
+            ->orderBy('r.priority', \SortDirection::Descending)
+            ->addOrderBy('r.id', \SortDirection::Ascending)
             ->setMaxResults($limit);
         if ([] !== $projects) {
             $builder->andWhere('IDENTITY(c.project) IN (:projects)')->setParameter('projects', $projects);

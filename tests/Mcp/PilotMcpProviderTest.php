@@ -35,6 +35,7 @@ use c975L\PilotBundle\Repository\DocRepository;
 use c975L\PilotBundle\Repository\MachineRepository;
 use c975L\PilotBundle\Repository\PlanTemplateRepository;
 use c975L\PilotBundle\Repository\ProjectRepository;
+use c975L\PilotBundle\Repository\RunRepository;
 use c975L\PilotBundle\Security\PilotAccess;
 use c975L\PilotBundle\Security\PilotScope;
 use c975L\PilotBundle\Service\CardFiller;
@@ -46,6 +47,7 @@ use c975L\PilotBundle\Service\CreditOutlook;
 use c975L\PilotBundle\Service\PilotUrls;
 use c975L\PilotBundle\Service\PlanFactory;
 use c975L\PilotBundle\Service\Planning;
+use c975L\PilotBundle\Service\RunOrder;
 use c975L\PilotBundle\Service\RunOutputs;
 use c975L\PilotBundle\Service\StepOrder;
 use c975L\PilotBundle\Tests\Fixtures\TestEntityManager;
@@ -112,7 +114,7 @@ class PilotMcpProviderTest extends TestCase
         $this->assertStringContainsString('Cards are tasks grouped in spaces', $initialized['result']['instructions']);
 
         $tools = array_column($this->call(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'])['result']['tools'], null, 'name');
-        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_add_card', 'pilot_tick_step', 'pilot_comment', 'pilot_edit_card', 'pilot_add_steps', 'pilot_edit_step', 'pilot_close_card', 'pilot_run_step', 'pilot_cancel_run', 'pilot_merge_cards', 'pilot_delete_card', 'pilot_docs', 'pilot_doc', 'pilot_write_doc', 'pilot_templates', 'pilot_template', 'pilot_template_save', 'pilot_actions', 'pilot_action_offer', 'pilot_machines', 'pilot_machine_edit', 'pilot_collection_save', 'pilot_credit_outlook', 'pilot_credit_set'], array_keys($tools));
+        $this->assertSame(['pilot_spaces', 'pilot_cards', 'pilot_card', 'pilot_add_card', 'pilot_tick_step', 'pilot_comment', 'pilot_edit_card', 'pilot_add_steps', 'pilot_edit_step', 'pilot_close_card', 'pilot_run_step', 'pilot_cancel_run', 'pilot_order_runs', 'pilot_merge_cards', 'pilot_delete_card', 'pilot_docs', 'pilot_doc', 'pilot_write_doc', 'pilot_templates', 'pilot_template', 'pilot_template_save', 'pilot_actions', 'pilot_action_offer', 'pilot_machines', 'pilot_machine_edit', 'pilot_collection_save', 'pilot_credit_outlook', 'pilot_credit_set'], array_keys($tools));
         $this->assertTrue($tools['pilot_card']['annotations']['readOnlyHint']);
         $this->assertFalse($tools['pilot_add_card']['annotations']['readOnlyHint']);
         $this->assertFalse($tools['pilot_edit_card']['annotations']['destructiveHint']);
@@ -391,6 +393,23 @@ class PilotMcpProviderTest extends TestCase
         $this->assertSame('This account may not do that on card ' . $id . '.', $this->toolError('pilot_cancel_run', ['card' => $id]));
     }
 
+    // The queue read, then put in a new order, the first given taken first
+    public function testOrderRuns(): void
+    {
+        $other = new Card($this->catalog, 'item-3')->addStep('step-1')->setStepAction(0, 'action-1');
+        $this->entityManager->persist($other);
+        $this->entityManager->flush();
+        $first = $this->tool('pilot_run_step', ['card' => $this->card->getId(), 'step' => 0])['run'];
+        $second = $this->tool('pilot_run_step', ['card' => $other->getId(), 'step' => 0])['run'];
+
+        $this->assertSame([$first, $second], array_column($this->tool('pilot_order_runs'), 'run'));
+        $queue = $this->tool('pilot_order_runs', ['runs' => [$second]]);
+        $this->assertSame([$first, $second], array_column($queue, 'run'));
+        $queue = $this->tool('pilot_order_runs', ['runs' => [$second, $first]]);
+        $this->assertSame([$second, $first], array_column($queue, 'run'));
+        $this->assertSame(['item-3', 'step-1'], [$queue[0]['title'], $queue[0]['step']]);
+    }
+
     // Files listed and read within the spaces served, one added, one rewritten floor by floor and attached to a card
     public function testDocs(): void
     {
@@ -517,7 +536,7 @@ class PilotMcpProviderTest extends TestCase
         $root = sys_get_temp_dir() . '/pilot-mcp';
         $removal = new CardRemoval($this->entityManager, new CardImages($root), new RunOutputs($root));
         $access = $this->access();
-        $tools = new PilotTools(new ProjectRepository($registry), $cards, new CardFiller($cards, new PlanFactory($flow)), $flow, new CardMarkdown($urls), new PilotUrls($urls), $this->entityManager, new MockClock('2026-11-20 10:00'), new CardSetRepository($registry), $removal, $translator, new DocRepository($registry), $access, new ActionRepository($registry));
+        $tools = new PilotTools(new ProjectRepository($registry), $cards, new CardFiller($cards, new PlanFactory($flow)), $flow, new CardMarkdown($urls), new PilotUrls($urls), $this->entityManager, new MockClock('2026-11-20 10:00'), new CardSetRepository($registry), $removal, $translator, new DocRepository($registry), $access, new ActionRepository($registry), new RunOrder(new RunRepository($registry), $access));
         $docs = new PilotDocTools(new ProjectRepository($registry), new DocRepository($registry), $this->entityManager, $urls, $access);
         $credits = new PilotCreditTools(new Planning($cards, $this->createStub(ConfigServiceInterface::class), new MockClock('2026-11-20 10:00')), new CreditRepository($registry), new CreditOutlook(), $access, new PilotUrls($urls), $this->entityManager, new MockClock('2026-11-20 10:00'));
 

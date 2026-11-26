@@ -180,7 +180,7 @@
             </trans-unit>
             <trans-unit id="N5bCdjQ">
                 <source>description.guided_step_pilot_run_run</source>
-                <target>The ▶ button bears the action's name; it waits until the steps it depends on are ticked.</target>
+                <target>The ▶ button bears the action's name; it waits until the steps it depends on are ticked. Once queued, its run is dragged higher or lower in the list under way.</target>
             </trans-unit>
             <trans-unit id="h1b53wk">
                 <source>description.guided_step_pilot_run_space</source>

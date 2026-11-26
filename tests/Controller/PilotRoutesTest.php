@@ -61,6 +61,17 @@ class PilotRoutesTest extends TestCase
         $this->matcher()->match('/pilot/search/ask');
     }
 
+    // The queue's new order is posted only, at an address no space can take
+    public function testRunsOrderIsPostedOnly(): void
+    {
+        $matcher = $this->matcher();
+        $matcher->setContext(new RequestContext(method: 'POST'));
+
+        $this->assertSame(PilotController::RUNS_ORDER_ROUTE, $matcher->match('/pilot/run/order')['_route']);
+        $this->expectException(MethodNotAllowedException::class);
+        $this->matcher()->match('/pilot/run/order');
+    }
+
     // A space never takes the name of one of the piloting pages' own words
     public function testReservedSlugs(): void
     {

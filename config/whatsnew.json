@@ -3,6 +3,16 @@
         "date": "2026-11-26",
         "description": [
             {
+                "en": "Piloting: the steps waiting in the queue are put in another order by dragging them in the list under way, the machines taking the first one first.",
+                "fr": "Pilotage : les étapes en file se réordonnent en les glissant dans la liste « En cours », les machines prenant la première en premier.",
+                "es": "Pilotaje: los pasos en cola se reordenan arrastrándolos en la lista en curso, las máquinas tomando primero el primero."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-26",
+        "description": [
+            {
                 "en": "Piloting: a failed step no longer withdraws the other steps queued on its card, the card shown failed until that step is run again or ticked.",
                 "fr": "Pilotage : une étape en échec ne retire plus les autres étapes en file sur sa carte, la carte restant en échec jusqu'à ce que cette étape soit relancée ou cochée.",
                 "es": "Pilotaje: un paso fallido ya no retira los demás pasos en cola de su tarjeta, la tarjeta mostrada en fallo hasta que ese paso se vuelva a lanzar o se marque."

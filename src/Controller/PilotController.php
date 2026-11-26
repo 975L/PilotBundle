@@ -45,6 +45,7 @@ use c975L\PilotBundle\Service\PilotUrls;
 use c975L\PilotBundle\Service\PlanFactory;
 use c975L\PilotBundle\Service\Planning;
 use c975L\PilotBundle\Service\ProjectOrder;
+use c975L\PilotBundle\Service\RunOrder;
 use c975L\PilotBundle\Service\RunOutputs;
 use c975L\PilotBundle\Service\StepOrder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -76,6 +77,7 @@ class PilotController extends AbstractController
     public const string ASK_ROUTE = 'pilot_ask';
     public const string GESTURE_ROUTE = 'pilot_card_gesture';
     public const string ORDER_ROUTE = 'pilot_projects_order';
+    public const string RUNS_ORDER_ROUTE = 'pilot_runs_order';
     public const string NEW_CARD_ROUTE = 'pilot_card_new';
     public const string REPORT_ROUTE = 'pilot_report_run';
     public const string DONE_ROUTE = 'pilot_project_done';
@@ -393,6 +395,20 @@ class PilotController extends AbstractController
         }
         $ids = array_values(array_map(intval(...), array_filter($request->request->all('ids'), is_numeric(...))));
         $projectOrder->apply($this->projectRepository->findOrdered(), $ids);
+        $this->entityManager->flush();
+
+        return new Response(null, Response::HTTP_NO_CONTENT);
+    }
+
+    // The queued runs in the order they were dragged into, the machines taking the first one first, the token travelling as a header
+    #[Route('/pilot/run/order', name: self::RUNS_ORDER_ROUTE, methods: ['POST'])]
+    public function runsOrder(Request $request, RunOrder $runOrder): Response
+    {
+        $this->denyAccess();
+        if (!$this->isCsrfTokenValid(self::RUNS_ORDER_ROUTE, $request->headers->get('X-CSRF-Token'))) {
+            return new Response(null, Response::HTTP_FORBIDDEN);
+        }
+        $runOrder->reorder(array_values(array_map(intval(...), array_filter($request->request->all('ids'), is_numeric(...)))));
         $this->entityManager->flush();
 
         return new Response(null, Response::HTTP_NO_CONTENT);

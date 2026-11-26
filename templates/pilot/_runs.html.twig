@@ -1,13 +1,15 @@
-{# The machine work under way: waiting in the queue or held by a machine, with its progress; one still waiting withdrawn, one taken stopped #}
+{# The machine work under way: held by a machine with its progress, then the queue in the order the machines take it, reordered by dragging (pilot-run-sort); one still waiting withdrawn, one taken stopped #}
 {% if runs is not empty %}
     <section class="pilot-mb-lg pilot-runs" data-pilot-fold="runs">
         <h2 class="pilot-title pilot-fold-head">{{ 'label.runs_active'|trans({}, 'pilot') }}</h2>
         {# Read again every few seconds, the progress moving in place and the page reloaded once a run ends or starts (pilot-run-watch) #}
         <div hidden data-controller="pilot-run-watch" data-pilot-run-watch-url-value="{{ app.request.requestUri }}" data-pilot-run-watch-every-value="10000" data-pilot-run-watch-runs-value="{{ runs|map(run => run.id)|join('|') }}" data-pilot-run-watch-state-value="{{ runs|map(run => run.id ~ ':' ~ run.status.value ~ ':' ~ pilot_run_progress(run).value ~ ':' ~ run.message)|join('|') }}"></div>
-        <ul class="pilot-list">
+        <ul class="pilot-list" data-controller="pilot-run-sort" data-pilot-run-sort-target="list" data-pilot-run-sort-url-value="{{ path('pilot_runs_order') }}" data-pilot-run-sort-token-value="{{ csrf_token('pilot_runs_order') }}" data-pilot-run-sort-failed-label-value="{{ 'label.order_failed'|trans({}, 'pilot') }}">
             {% for run in runs %}
                 {% set card = run.card %}
-                <li class="pilot-list-item pilot-row">
+                {% set queued = run.status.value == 'queued' %}
+                <li class="pilot-list-item pilot-row"{% if queued %} data-pilot-run-sort-target="item" data-run-id="{{ run.id }}"{% endif %}>
+                    {% if queued %}<span class="pilot-sort-handle" data-pilot-run-sort-handle title="{{ 'label.order_drag'|trans({}, 'pilot') }}">{{ pilot_icon('grip-vertical') }}</span>{% else %}<span class="pilot-sort-handle pilot-invisible" aria-hidden="true">{{ pilot_icon('grip-vertical') }}</span>{% endif %}
                     <span class="pilot-dot pilot-color-{{ card.project.slug }}"></span>
                     <a href="{{ pilot_card_path(card) }}" data-pilot-dialog="card-{{ card.id }}" class="pilot-card-open">{{ card.title }}</a>
                     <span class="pilot-tag pilot-tag-info">{{ run.status.label|trans }}</span>

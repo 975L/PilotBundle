@@ -24,10 +24,10 @@ export default class extends Controller {
         return this.hasRunsValue ? this.element.closest(".pilot-runs") : this.element.closest("[data-pilot-card-modal-target=body], .pilot-dialog-page");
     }
 
-    // Whether the content must stay as it is: a field being edited in it, or a card open over the list
+    // Whether the content must stay as it is: a field being edited in it, a card open over the list or a run being dragged in it
     held(box) {
         const scope = this.hasRunsValue ? document : box;
-        if (this.hasRunsValue && document.querySelector("dialog[open]")) return true;
+        if (this.hasRunsValue && (document.querySelector("dialog[open]") || box.querySelector(".pilot-faded"))) return true;
 
         return scope.contains(document.activeElement) && document.activeElement.matches("input, textarea, select");
     }
@@ -58,11 +58,12 @@ export default class extends Controller {
         box.replaceChildren(...page.childNodes);
     }
 
-    // The list swapped in while the same runs move on, the whole page reloaded once one ended or started, its cards showing it
+    // The list swapped in while the same runs move on, whatever their order, the whole page reloaded once one ended or started, its cards showing it
     list(fetched, box) {
         const section = fetched.querySelector(".pilot-runs");
         const watch = section?.querySelector("[data-controller~='pilot-run-watch']");
-        if (watch?.dataset.pilotRunWatchRunsValue !== this.runsValue) {
+        const ids = (value) => (value ?? "").split("|").sort().join("|");
+        if (!watch || ids(watch.dataset.pilotRunWatchRunsValue) !== ids(this.runsValue)) {
             window.location.reload();
             return;
         }

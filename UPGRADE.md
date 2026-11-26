@@ -1,5 +1,11 @@
 # UPGRADE
 
+## v1.12.0
+
+Queue reordered by dragging.
+
+- Run `doctrine:migrations:diff` then `migrate`, which adds `pilot_run.priority` (0 for every run, the queue keeping its order of arrival).
+
 ## v1.8.0
 
 Machine actions launched only from the steps naming them.

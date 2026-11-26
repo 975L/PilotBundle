@@ -92,6 +92,26 @@ class QueryTest extends TestCase
         $this->assertSame([$second->getId(), $other->getId()], $repository->queuedIds(['build']));
     }
 
+    // The queue goes by rank, the highest first, the runs never moved after them by arrival; the runs held come first on the list under way
+    public function testQueueGoesByRank(): void
+    {
+        $first = new Run($this->card('item-1'), 'build', [], 0);
+        $second = new Run($this->card('item-2'), 'build', [], 0);
+        $third = new Run($this->card('item-3'), 'build', [], 0)->setPriority(2);
+        $held = new Run($this->card('item-4'), 'build', [], 0);
+        $this->entityManager->flush();
+        $repository = new RunRepository($this->registry);
+
+        $this->assertSame([$third->getId(), $first->getId(), $second->getId(), $held->getId()], $repository->queuedIds(['build']));
+
+        $machine = new Machine('machine-1', str_repeat('c', 64));
+        $this->entityManager->persist($machine);
+        $held->claim($machine, new \DateTimeImmutable());
+        $second->setPriority(1);
+        $this->entityManager->flush();
+        $this->assertSame([$held, $third, $second, $first], $repository->findActive(new PilotScope(true)));
+    }
+
     // An action's usual time is the median of its last runs done, from the moment a machine took each, none before a run is done
     public function testTypicalSecondsIsTheMedianOfTheRunsDone(): void
     {

@@ -48,7 +48,7 @@ class RunQueue
         return \count($expired);
     }
 
-    // Gives the oldest queued run among the declared actions, of the spaces it serves, to the machine, null when there is nothing to do; $only narrows the actions to those the runner can start now, an exclusive one waiting while others run, and none given while an exclusive one waits so that the machine empties for it
+    // Gives the queued run ranked highest, then the oldest, among the declared actions, of the spaces it serves, to the machine, null when there is nothing to do; $only narrows the actions to those the runner can start now, an exclusive one waiting while others run, and none given while an exclusive one waits so that the machine empties for it
     /**
      * @param array<string, array{label: string, params: list<string>, card?: bool, help?: ?string}> $capabilities
      * @param list<string>|null                                                                      $only

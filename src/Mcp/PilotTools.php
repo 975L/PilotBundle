@@ -28,6 +28,7 @@ use c975L\PilotBundle\Service\CardFlow;
 use c975L\PilotBundle\Service\CardMarkdown;
 use c975L\PilotBundle\Service\CardRemoval;
 use c975L\PilotBundle\Service\PilotUrls;
+use c975L\PilotBundle\Service\RunOrder;
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Server\Exception\ToolCallException;
 use Psr\Clock\ClockInterface;
@@ -56,6 +57,7 @@ class PilotTools
         private readonly DocRepository $docRepository,
         private readonly PilotAccess $pilotAccess,
         private readonly ActionRepository $actionRepository,
+        private readonly RunOrder $runOrder,
     ) {
     }
 
@@ -330,6 +332,20 @@ class PilotTools
         $this->entityManager->flush();
 
         return ['url' => $this->url($found), 'run' => $cancelled->getId(), 'status' => $cancelled->getStatus()->value, 'cardStatus' => $found->getStatus()->value];
+    }
+
+    // The queue of the runs waiting for a machine, the first taken first; the runs given, by id, take in that order the places they held, the others keeping theirs
+    /**
+     * @param list<int> $runs ids of the queued runs put in their new order, none to read the queue only
+     *
+     * @return list<array{run: ?int, card: ?int, title: string, step: ?string, url: string}>
+     */
+    public function orderRuns(array $runs = []): array
+    {
+        $queue = $this->runOrder->reorder($runs);
+        $this->entityManager->flush();
+
+        return array_map(fn (Run $run): array => ['run' => $run->getId(), 'card' => $run->getCard()->getId(), 'title' => $run->getCard()->getTitle(), 'step' => $run->getStepText() ?? $run->getAction(), 'url' => $this->url($run->getCard())], $queue);
     }
 
     // A card merged into another one and deleted: its note, steps (ticked ones staying so) and feedback carried over; refused while a machine works on either or past the checklist's ceiling

@@ -52,6 +52,10 @@ class Run
     #[ORM\Column]
     private int $progress = 0;
 
+    // Rank in the queue set by dragging, the highest taken first, 0 for a run never moved, which waits after the ranked ones in order of arrival
+    #[ORM\Column(options: ['default' => 0])]
+    private int $priority = 0;
+
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255)]
     private ?string $message = null;
@@ -204,6 +208,19 @@ class Run
     public function getProgress(): int
     {
         return $this->progress;
+    }
+
+    // Rank in the queue, the highest taken first
+    public function getPriority(): int
+    {
+        return $this->priority;
+    }
+
+    public function setPriority(int $priority): static
+    {
+        $this->priority = max(0, $priority);
+
+        return $this;
     }
 
     // Last message from the machine
