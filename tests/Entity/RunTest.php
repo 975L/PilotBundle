@@ -54,6 +54,15 @@ class RunTest extends TestCase
         $this->assertSame([], $run->setFiles(['/catalog/posts/list.json'])->getFilesByFolder());
     }
 
+    // A path ending with « / » names a folder alone, its content left on the machine, beside the files of its parent
+    public function testFilesByFolderNameAFolderAlone(): void
+    {
+        $run = new Run($this->card, 'copy', [], 0)->setFiles(['/catalog/item-1/', '/catalog/item-1.pdf']);
+
+        $this->assertSame(['/catalog/item-1' => [], '/catalog' => ['item-1.pdf']], $run->getFilesByFolder());
+        $this->assertSame(['/' => []], $run->setFiles(['/'])->getFilesByFolder());
+    }
+
     // The links a run leaves keep http(s) addresses only, once each, named by their host without words, at most MAX_LINKS
     public function testLinksKept(): void
     {

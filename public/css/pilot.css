@@ -1025,6 +1025,19 @@ a.pilot-list-item:hover {
   font-weight: 600;
 }
 
+.pilot-step-folder {
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+}
+
+.pilot-step-folder > summary {
+  cursor: pointer;
+}
+
+.pilot-step-folder > .pilot-step-files {
+  margin-inline-start: 1rem;
+}
+
 .pilot-drop {
   min-height: 3.5rem;
   border-radius: 0.5rem;

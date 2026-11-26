@@ -253,13 +253,15 @@ class Run
         return $this;
     }
 
-    // The files by folder, each folder named once with the names it holds, for the step that shows them, the machine's own data left out with a folder holding nothing else
+    // The files by folder, each folder named once with the names it holds, for the step that shows them, the machine's own data left out with a folder holding nothing else; a path ending with « / » names a folder alone, its content left on the machine
     /** @return array<string, list<string>> */
     public function getFilesByFolder(): array
     {
         $folders = [];
         foreach ($this->files as $path) {
-            if (!\in_array(strtolower(pathinfo($path, \PATHINFO_EXTENSION)), self::HIDDEN_FILES, true)) {
+            if (str_ends_with($path, '/')) {
+                $folders[rtrim($path, '/') ?: '/'] ??= [];
+            } elseif (!\in_array(strtolower(pathinfo($path, \PATHINFO_EXTENSION)), self::HIDDEN_FILES, true)) {
                 $folders[\dirname($path)][] = basename($path);
             }
         }

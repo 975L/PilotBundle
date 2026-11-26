@@ -3,6 +3,16 @@
         "date": "2026-11-26",
         "description": [
             {
+                "en": "Piloting: under a step, each folder of the files it made is folded behind its arrow; open it to see its files, the folder itself opening on the computer.",
+                "fr": "Pilotage : sous une étape, chaque dossier des fichiers produits est replié derrière sa flèche ; dépliez-le pour voir ses fichiers, le dossier lui-même s'ouvrant sur l'ordinateur.",
+                "es": "Pilotaje: bajo un paso, cada carpeta de los archivos producidos está plegada tras su flecha; despliéguela para ver sus archivos, la carpeta misma abriéndose en el ordenador."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-26",
+        "description": [
+            {
                 "en": "Piloting: on a card laid from a checklist template, a step coming from the template keeps the machine action the template gives it; change it on the template, its parameters staying editable on the card.",
                 "fr": "Pilotage : sur une carte issue d'un modèle, une étape venant du modèle garde l'action machine que lui donne le modèle ; elle se change sur le modèle, ses paramètres restant modifiables sur la carte.",
                 "es": "Pilotaje: en una tarjeta creada a partir de una plantilla, un paso que viene de la plantilla conserva la acción de máquina que esta le da; se cambia en la plantilla, y sus parámetros siguen editables en la tarjeta."

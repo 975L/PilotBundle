@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.10.2
+
+Step folders folded behind their arrow
+
+- A step's files folded by folder behind its arrow, closed at first (`.pilot-step-folder`) (26/11/2026)
+- A run's path ending with « / » shown as a folder alone by `Run::getFilesByFolder()` (26/11/2026)
+
 ## v1.10.1
 
 Template steps keep their action, recipes leave links

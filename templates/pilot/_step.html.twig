@@ -39,20 +39,27 @@
         </form>
         {# Why the step's run stopped, written under the step rather than hidden in a tooltip #}
         {% if step_failed and step_run.message and not (step.done ?? false) %}<span class="pilot-block pilot-small pilot-danger-text pilot-step-failed-reason">{{ step_run.message }}</span>{% endif %}
-        {# Where the files its last run wrote live on the machine, greyed when an earlier step was redone since: each folder by its name, its whole path on hover, and its files one by one, each opened on the computer when the site sets an opening scheme #}
+        {# Where the files its last run wrote live on the machine, greyed when an earlier step was redone since: each folder by its name, its whole path on hover, folded with its files one by one behind its arrow, each opened on the computer when the site sets an opening scheme #}
         {% if run_made %}
             {% for folder, names in step_run.filesByFolder %}
-                <span class="pilot-step-files{{ stale ? ' pilot-faded' }}">
-                    {% set open = pilot_open_url(folder) %}
-                    {% if open %}<a href="{{ open }}" class="pilot-file-folder" title="{{ folder }}">{{ pilot_icon('folder-open', 'pilot-icon-before') }}{{ folder|split('/')|last }}</a>{% else %}<span class="pilot-file-folder" title="{{ folder }}">{{ pilot_icon('folder-open', 'pilot-icon-before') }}{{ folder|split('/')|last }}</span>{% endif %}
-                    {% for name in names %}
-                        {% set extension = name|split('.')|last|lower %}
-                        {% set kind = extension in ['jpg', 'jpeg', 'png', 'webp', 'gif'] ? 'image' : (extension in ['mp4', 'mov', 'mkv', 'webm'] ? 'video' : (extension == 'pdf' ? 'pdf' : 'other')) %}
-                        {% set icon = {image: 'file-image', video: 'file-video', pdf: 'file-pdf', other: 'file'}[kind] %}
-                        {% set open = pilot_open_url(folder ~ '/' ~ name) %}
-                        {% if open %}<a href="{{ open }}" class="pilot-file-{{ kind }}" title="{{ folder ~ '/' ~ name }}">{{ pilot_icon(icon, 'pilot-icon-before') }}{{ name }}</a>{% else %}<span class="pilot-file-{{ kind }}" title="{{ folder ~ '/' ~ name }}">{{ pilot_icon(icon, 'pilot-icon-before') }}{{ name }}</span>{% endif %}
-                    {% endfor %}
-                </span>
+                {% set open = pilot_open_url(folder) %}
+                {% set folder_link %}{% if open %}<a href="{{ open }}" class="pilot-file-folder" title="{{ folder }}">{{ pilot_icon('folder-open', 'pilot-icon-before') }}{{ folder|split('/')|last ?: folder }}</a>{% else %}<span class="pilot-file-folder" title="{{ folder }}">{{ pilot_icon('folder-open', 'pilot-icon-before') }}{{ folder|split('/')|last ?: folder }}</span>{% endif %}{% endset %}
+                {% if names is empty %}
+                    <span class="pilot-step-files{{ stale ? ' pilot-faded' }}">{{ folder_link }}</span>
+                {% else %}
+                    <details class="pilot-step-folder{{ stale ? ' pilot-faded' }}">
+                        <summary>{{ folder_link }}</summary>
+                        <span class="pilot-step-files">
+                            {% for name in names %}
+                                {% set extension = name|split('.')|last|lower %}
+                                {% set kind = extension in ['jpg', 'jpeg', 'png', 'webp', 'gif'] ? 'image' : (extension in ['mp4', 'mov', 'mkv', 'webm'] ? 'video' : (extension == 'pdf' ? 'pdf' : 'other')) %}
+                                {% set icon = {image: 'file-image', video: 'file-video', pdf: 'file-pdf', other: 'file'}[kind] %}
+                                {% set open = pilot_open_url(folder ~ '/' ~ name) %}
+                                {% if open %}<a href="{{ open }}" class="pilot-file-{{ kind }}" title="{{ folder ~ '/' ~ name }}">{{ pilot_icon(icon, 'pilot-icon-before') }}{{ name }}</a>{% else %}<span class="pilot-file-{{ kind }}" title="{{ folder ~ '/' ~ name }}">{{ pilot_icon(icon, 'pilot-icon-before') }}{{ name }}</span>{% endif %}
+                            {% endfor %}
+                        </span>
+                    </details>
+                {% endif %}
             {% endfor %}
         {% endif %}
         {# The links its last run left, a draft to approve for instance, each opened in a new tab #}
