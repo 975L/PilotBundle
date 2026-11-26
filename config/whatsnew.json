@@ -3,6 +3,16 @@
         "date": "2026-11-26",
         "description": [
             {
+                "en": "Piloting: the runs under way name the step they do, the action key shown on hover.",
+                "fr": "Pilotage : les exécutions en cours nomment l'étape qu'elles font, la clé de l'action affichée au survol.",
+                "es": "Pilotaje: las ejecuciones en curso nombran el paso que hacen, la clave de la acción mostrada al pasar el ratón."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-26",
+        "description": [
+            {
                 "en": "Piloting: an AI agent reads and changes the settings as their pages do: the checklist templates, laid on their open cards once saved, the spaces offering each machine action, the machines' spaces and runs at once, and the collections of a space.",
                 "fr": "Pilotage : un agent IA lit et change les réglages comme leurs pages : les modèles de checklist, posés sur leurs cartes ouvertes une fois enregistrés, les espaces qui proposent chaque action machine, les espaces et exécutions simultanées des machines, et les collections d'un espace.",
                 "es": "Pilotaje: un agente de IA lee y cambia los ajustes como sus páginas: las plantillas de checklist, puestas en sus tarjetas abiertas una vez guardadas, los espacios que ofrecen cada acción de máquina, los espacios y ejecuciones simultáneas de las máquinas, y las colecciones de un espacio."

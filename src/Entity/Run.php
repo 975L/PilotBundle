@@ -145,6 +145,18 @@ class Run
         return $this->step;
     }
 
+    // Text of the checklist step the run does, null for a run without one or whose step left the checklist
+    public function getStepText(): ?string
+    {
+        return null === $this->step ? null : ($this->card->getChecklist()[$this->step]['t'] ?? null);
+    }
+
+    // Key of the credit its step's cost names, the account its machine spends on, null for a step without a cost
+    public function getStepCredit(): ?string
+    {
+        return null === $this->step ? null : ($this->card->getChecklist()[$this->step]['cost']['credit'] ?? null);
+    }
+
     // Follows its step moved elsewhere in the checklist, null when the step left it
     public function moveToStep(?int $step): static
     {

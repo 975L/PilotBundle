@@ -134,7 +134,7 @@ class RunQueue
      */
     private function stepSpent(Run $run, array $spent): array
     {
-        $credit = $run->getCard()->getChecklist()[$run->getStep() ?? Run::LEFT_STEP]['cost']['credit'] ?? null;
+        $credit = $run->getStepCredit();
 
         return null === $credit ? [] : array_intersect_key($spent, [$credit => true]);
     }

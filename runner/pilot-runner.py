@@ -316,10 +316,10 @@ def prompt(action, run, params, workdir):
     return '\n\n'.join([*parts, PROTOCOL.format(workdir=workdir)]) + '\n'
 
 
-# Runs the command in the card's folder with its sign of life, relaying its progress, the site's address and who asked for the run in PILOT_URL and PILOT_REQUESTER, stopped past its timeout in seconds when one is valid; returns its exit code (127 when it cannot start), its last lines and what its lines told
+# Runs the command in the card's folder with its sign of life, relaying its progress, the site's address, who asked for the run and the credit its step spends in PILOT_URL, PILOT_REQUESTER and PILOT_CREDIT, stopped past its timeout in seconds when one is valid; returns its exit code (127 when it cannot start), its last lines and what its lines told
 def follow(site, run, argv, prompt_path, workdir, timeout=None):
     stdin = open(prompt_path, 'rb') if prompt_path else None
-    env = {**os.environ, 'PILOT_URL': site['url'], 'PILOT_REQUESTER': str(run.get('requester') or '')}
+    env = {**os.environ, 'PILOT_URL': site['url'], 'PILOT_REQUESTER': str(run.get('requester') or ''), 'PILOT_CREDIT': str(run.get('credit') or '')}
     said = {'title': None, 'result': None, 'feedback': {}, 'spent': {}, 'files': [], 'links': [], 'failed': None}
     try:
         process = subprocess.Popen(argv, cwd=workdir, env=env, start_new_session=True, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,

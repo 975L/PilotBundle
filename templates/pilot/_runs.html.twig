@@ -12,7 +12,7 @@
                     <a href="{{ pilot_card_path(card) }}" data-pilot-dialog="card-{{ card.id }}" class="pilot-card-open">{{ card.title }}</a>
                     <span class="pilot-tag pilot-tag-info">{{ run.status.label|trans }}</span>
                     {% if run.machine %}<span class="pilot-small pilot-muted">{{ pilot_icon('desktop', 'pilot-icon-before') }}{{ run.machine.name }}</span>{% endif %}
-                    <span class="pilot-small pilot-muted">{{ run.action }} · {{ 'label.runs_since'|trans({'%date%': run.createdAt|format_datetime('short', 'short')}, 'pilot') }}</span>
+                    <span class="pilot-small pilot-muted" title="{{ run.action }}">{{ run.stepText ?? run.action }} · {{ 'label.runs_since'|trans({'%date%': run.createdAt|format_datetime('short', 'short')}, 'pilot') }}</span>
                     {% if run.message %}<span class="pilot-small">{{ run.message }}</span>{% endif %}
                     {% if run.status.value == 'claimed' %}{% set shown = pilot_run_progress(run) %}<progress class="pilot-grow" max="100" value="{{ shown.value }}" title="{{ shown.estimated ? '≈ ' }}{{ shown.value }} %">{{ shown.estimated ? '≈ ' }}{{ shown.value }} %</progress>{% endif %}
                     {% if run.status.value in ['queued', 'claimed'] %}

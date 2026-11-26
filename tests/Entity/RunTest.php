@@ -88,6 +88,26 @@ class RunTest extends TestCase
         $this->assertNull($run->moveToStep(null)->getStep());
     }
 
+    // A run names the text of its step, none without a step or once its step left
+    public function testStepText(): void
+    {
+        $this->card->setChecklist([['t' => 'Copy the catalog', 'action' => 'copy']]);
+        $run = new Run($this->card, 'copy', [], 0);
+
+        $this->assertSame('Copy the catalog', $run->getStepText());
+        $this->assertNull($run->moveToStep(null)->getStepText());
+        $this->assertNull($run->moveToStep(5)->getStepText());
+    }
+
+    // A run names the credit its step's cost spends, none for a step without a cost
+    public function testStepCredit(): void
+    {
+        $this->card->setChecklist([['t' => 'Copy the catalog', 'action' => 'copy', 'cost' => ['credit' => 'credit-1', 'amount' => 10]], ['t' => 'Check the catalog']]);
+
+        $this->assertSame('credit-1', new Run($this->card, 'copy', [], 0)->getStepCredit());
+        $this->assertNull(new Run($this->card, 'copy', [], 1)->getStepCredit());
+    }
+
     // A run withdrawn is cancelled, not failed, and over
     public function testCancelIsNotAFailure(): void
     {

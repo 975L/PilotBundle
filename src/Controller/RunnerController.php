@@ -79,6 +79,7 @@ class RunnerController extends AbstractController
             'doc' => $card->getDoc()?->getSlug() ?? '',
             'docMarkdown' => $card->getDoc()?->toMarkdown() ?? '',
             'requester' => $run->getRequester() ?? '',
+            'credit' => $run->getStepCredit() ?? '',
             'lease' => Run::LEASE_SECONDS,
             'maxBytes' => RunOutputs::MAX_BYTES,
         ], Response::HTTP_OK, $headers);

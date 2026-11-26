@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.11.1
+
+Step name in the runs under way, credit of the step given to the runner
+
+- The runs under way name their step, its action key on hover (26/11/2026)
+- A claimed run carries the credit its step spends, given to its command in `PILOT_CREDIT` by the runner (26/11/2026)
+
 ## v1.11.0
 
 Piloting settings through the MCP

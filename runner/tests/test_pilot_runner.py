@@ -210,13 +210,13 @@ class RunTest(unittest.TestCase):
 
         self.assertEqual(('done', ['/tmp/said.txt']), (status, said['files']))
 
-    # Checks a script reads the site's address and who asked for the run in its environment
+    # Checks a script reads the site's address, who asked for the run and the credit its step spends in its environment
     def test_environment(self):
-        run = {'id': 5, 'card': 8, 'action': 'env', 'params': {}, 'requester': 'Member'}
-        action = {'argv': [sys.executable, '-c', 'import os; print("FILE /tmp/" + os.environ["PILOT_REQUESTER"] + "@" + os.environ["PILOT_URL"].split("//")[1])']}
+        run = {'id': 5, 'card': 8, 'action': 'env', 'params': {}, 'requester': 'Member', 'credit': 'credit-1'}
+        action = {'argv': [sys.executable, '-c', 'import os; print("FILE /tmp/" + os.environ["PILOT_CREDIT"] + "/" + os.environ["PILOT_REQUESTER"] + "@" + os.environ["PILOT_URL"].split("//")[1])']}
         said = runner.execute(self.site, {'env': action}, run)[3]
 
-        self.assertEqual(['/tmp/Member@pilot.example.com'], said['files'])
+        self.assertEqual(['/tmp/credit-1/Member@pilot.example.com'], said['files'])
 
     # Checks a command running past its timeout is stopped and fails with that reason
     def test_timeout(self):
