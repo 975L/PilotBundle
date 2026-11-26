@@ -188,17 +188,33 @@ class CardFlowTest extends TestCase
         $this->assertSame(CardStatus::Ready, $this->card->getStatus());
     }
 
-    // A failed step's run stops the chain: what was still queued is withdrawn and the card failed
-    public function testStepRunFailureStopsTheChain(): void
+    // A failed step's run leaves the other calls queued, the card failing once nothing else runs
+    public function testStepRunFailureLeavesTheOthersQueued(): void
     {
         [$first, $second] = $this->queueTwoSteps();
         $this->finish($first, RunStatus::Failed);
         $this->flow->runFinished($first);
 
-        $this->assertSame(RunStatus::Cancelled, $second->getStatus());
+        $this->assertSame(RunStatus::Queued, $second->getStatus());
+        $this->assertSame(CardStatus::Running, $this->card->getStatus());
+        $this->finish($second, RunStatus::Done);
+        $this->flow->runFinished($second);
         $this->assertSame(CardStatus::Failed, $this->card->getStatus());
         $this->assertFalse($this->card->getChecklist()[0]['done'] ?? false);
         $this->assertSame($first, $this->card->stepRun(0));
+    }
+
+    // A failed step ticked by hand since then no longer fails the card when another run ends well
+    public function testStepRunFailureTickedByHandLeavesTheCardReady(): void
+    {
+        [$first, $second] = $this->queueTwoSteps();
+        $this->finish($first, RunStatus::Failed);
+        $this->flow->runFinished($first);
+        $this->flow->tick($this->card, 0);
+        $this->finish($second, RunStatus::Done);
+        $this->flow->runFinished($second);
+
+        $this->assertSame(CardStatus::Ready, $this->card->getStatus());
     }
 
     // One queued step among others is withdrawn alone, the card running on

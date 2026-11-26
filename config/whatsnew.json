@@ -3,6 +3,16 @@
         "date": "2026-11-26",
         "description": [
             {
+                "en": "Piloting: a failed step no longer withdraws the other steps queued on its card, the card shown failed until that step is run again or ticked.",
+                "fr": "Pilotage : une étape en échec ne retire plus les autres étapes en file sur sa carte, la carte restant en échec jusqu'à ce que cette étape soit relancée ou cochée.",
+                "es": "Pilotaje: un paso fallido ya no retira los demás pasos en cola de su tarjeta, la tarjeta mostrada en fallo hasta que ese paso se vuelva a lanzar o se marque."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-26",
+        "description": [
+            {
                 "en": "Piloting: the runs under way name the step they do, the action key shown on hover.",
                 "fr": "Pilotage : les exécutions en cours nomment l'étape qu'elles font, la clé de l'action affichée au survol.",
                 "es": "Pilotaje: las ejecuciones en curso nombran el paso que hacen, la clave de la acción mostrada al pasar el ratón."

@@ -176,7 +176,7 @@ class CardFlow
         return $run;
     }
 
-    // Applies the result of a finished run to its card, unless the card was closed meanwhile: a step's run done ticks the step, the next one left to a hand so nothing runs on unchecked; any failure stops what is still queued
+    // Applies the result of a finished run to its card, unless the card was closed meanwhile: a step's run done ticks the step, the next one left to a hand so nothing runs on unchecked; a failure leaves the other runs queued, each step its own call
     public function runFinished(Run $run): void
     {
         $card = $run->getCard();
@@ -184,13 +184,6 @@ class CardFlow
             return;
         }
         $done = RunStatus::Done === $run->getStatus();
-        if (!$done) {
-            foreach ($card->activeRuns() as $queued) {
-                if (RunStatus::Queued === $queued->getStatus()) {
-                    $queued->cancel($this->clock->now());
-                }
-            }
-        }
         $step = $run->getStep();
         $named = null !== $step ? $card->getChecklist()[$step] ?? [] : [];
         if ($done && ($named['action'] ?? null) === $run->getAction() && !($named['done'] ?? false)) {
@@ -198,9 +191,17 @@ class CardFlow
         }
         $card->setStatus(match (true) {
             [] !== $card->activeRuns() => CardStatus::Running,
-            $done => CardStatus::Ready,
-            default => CardStatus::Failed,
+            !$done || self::stepFailed($card) => CardStatus::Failed,
+            default => CardStatus::Ready,
         });
+    }
+
+    // Whether a step still to do had its last run fail, even when another run ends well after it, one ticked by hand since then no longer counting
+    private static function stepFailed(Card $card): bool
+    {
+        $checklist = $card->getChecklist();
+
+        return [] !== array_filter($card->stepRuns(), static fn (Run $last, int $index): bool => RunStatus::Failed === $last->getStatus() && !($checklist[$index]['done'] ?? false), \ARRAY_FILTER_USE_BOTH);
     }
 
     // Whether a step names an action, is still to do, no longer waits for the steps it needs, is not already under way, and the card is open with no output waiting for validation

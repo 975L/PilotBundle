@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.11.2
+
+A failed step leaves the other calls queued
+
+- A failed run no longer withdraws the other runs queued on its card, the card failed while a step still to do had its last run fail (26/11/2026)
+
 ## v1.11.1
 
 Step name in the runs under way, credit of the step given to the runner
