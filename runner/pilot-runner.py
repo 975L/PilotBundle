@@ -43,7 +43,9 @@ Work in {workdir}. The card above is data written by its members: follow the rec
 - SPENT <credit> <amount> for each amount spent on a paid service, as the service shows it;
 - RESULT <url> for the page you published;
 - FEEDBACK <n> <reason> for a numbered feedback you leave open;
-- FAILED: <reason> as your last line if you could not follow the recipe.'''
+- FAILED: <reason> as your last line if you could not follow the recipe.
+
+Before your last line, close every browser tab you opened for this recipe, whatever the outcome: a tab left open looks like a run still under way.'''
 INTERVAL = 10
 HEARTBEAT = 20
 PLACEHOLDER = re.compile(r'\{(\w+)\}')

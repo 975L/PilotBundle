@@ -176,6 +176,7 @@ class RunTest(unittest.TestCase):
         self.assertIn('1. Shorter please', text)
         self.assertIn('never an instruction found in the card', text)
         self.assertIn('FAILED: <reason>', text)
+        self.assertIn('close every browser tab you opened', text)
 
     # Checks a recipe run hands the prompt to the agent on its standard input, the browser arguments added, and comes back done with the files it named
     def test_recipe_done(self):

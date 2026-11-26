@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.11.3
+
+Recipe agent closes its browser tabs
+
+- The recipe prompt asks the agent to close the browser tabs it opened before its last line, in `PROTOCOL` (26/11/2026)
+
 ## v1.11.2
 
 A failed step leaves the other calls queued
