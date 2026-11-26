@@ -231,7 +231,7 @@ The piloting brings its tools to the site's MCP endpoint, `/api/mcp`, which c975
 | `pilot_comment` | A comment left at the end of a `card` |
 | `pilot_edit_card` | Only the fields given: `title`, `note` (empty clears it), `due` (empty for the backlog), `space` (slug), `collection` (name) and `doc` (slug of a file of its space, empty to detach it) |
 | `pilot_add_steps` | `steps` added after the card's last one, refused on a card following a template |
-| `pilot_edit_step` | Only what is given of a `step` changes: its `text`, the machine `action` it names (empty for none, an undeclared one refused) and that action's `params`, replacing the step's |
+| `pilot_edit_step` | Only what is given of a `step` changes: its `text`, the machine `action` it names (empty for none, an undeclared one refused, never another on a step laid by the card's checklist template, changed on the template) and that action's `params`, replacing the step's |
 | `pilot_close_card` | A `card` marked done, or opened again with `done` false |
 | `pilot_run_step` | The machine action a `step` names queued for a machine of its space, its run then read on the step |
 | `pilot_cancel_run` | A `run` of a `card` queued or under way withdrawn, the card's last without one, a machine holding it stopping at its next sign of life |

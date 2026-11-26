@@ -120,7 +120,7 @@
             </trans-unit>
             <trans-unit id="lY3qk4G">
                 <source>narration.guided_step_pilot_run_action</source>
-                <target>Haga clic en el texto del paso, elija su acción y luego escriba sus parámetros.</target>
+                <target>Haga clic en el texto del paso, elija su acción, salvo si viene de la plantilla de la tarjeta, y luego escriba sus parámetros.</target>
             </trans-unit>
             <trans-unit id="6Z6IMzN">
                 <source>narration.guided_step_pilot_run_card</source>

@@ -233,6 +233,20 @@ class Card implements \Stringable
         return null === $this->getTemplate();
     }
 
+    // Whether a step was laid by the checklist template the card follows: its machine action is then set on the template, never on the card
+    public function isTemplateStep(int $index): bool
+    {
+        $step = $this->checklist[$index] ?? null;
+        $template = $this->getTemplate();
+        if (null === $step || null === $template || $this->isFeedback($index)) {
+            return false;
+        }
+
+        $key = self::stepKey($step);
+
+        return [] !== array_filter($template->getSteps(), static fn (array $laid): bool => self::keyFits(self::stepKey(['t' => $laid['title'], 'action' => $laid['action'] ?? '']), $key));
+    }
+
     // Whether the card is done
     public function isDone(): bool
     {
@@ -596,6 +610,17 @@ class Card implements \Stringable
         return '' !== ($step['action'] ?? '') ? 'action:' . $step['action'] : 'text:' . $step['t'];
     }
 
+    // Whether a step's key is the one a template step's key names, each {variable} of the template's standing for any words
+    public static function keyFits(string $templateKey, string $key): bool
+    {
+        if ($templateKey === $key) {
+            return true;
+        }
+        $pattern = '/^' . preg_replace('/\\\\\{\w+\\\\\}/', '.+', preg_quote($templateKey, '/')) . '$/su';
+
+        return 1 === preg_match('/\{\w+\}/', $templateKey) && 1 === preg_match($pattern, $key);
+    }
+
     // Indices of the steps a step waits for: those its "after" names by their key, or the step before when it names none; a feedback waits for nothing
     /** @return list<int> */
     public function stepNeeds(int $index): array
@@ -723,6 +748,11 @@ class Card implements \Stringable
         }
         $action = '' === trim((string) $action) ? null : mb_substr(trim((string) $action), 0, 64);
         $step = $this->checklist[$index];
+
+        // A step laid by the checklist template the card follows takes its action from the template alone
+        if ($this->isTemplateStep($index)) {
+            return $this;
+        }
         if ($action === ($step['action'] ?? null)) {
             return $this;
         }

@@ -207,6 +207,29 @@ class CardTest extends TestCase
         $this->assertSame([['t' => 'step-1', 'action' => 'publish'], ['t' => 'step-2']], $card->getChecklist());
     }
 
+    // On a card following a checklist template, a step it laid keeps the template's action, by its action or by its title, a {variable} standing for any words; its own steps and its feedback stay free
+    public function testTemplateStepKeepsItsAction(): void
+    {
+        $card = new Card(new Project('catalog', 'Catalog'), 'item-1')->setChecklist([['t' => 'step-1', 'action' => 'build'], ['t' => 'Check item-1'], ['t' => 'step-9'], ['t' => 'feedback-1', 'feedback' => true]]);
+        $this->assertFalse($card->isTemplateStep(0));
+
+        $card->follow(new PlanTemplate('catalog', [['title' => 'Build', 'action' => 'build'], ['title' => 'Check {item}']]));
+        $this->assertSame([true, true, false, false], array_map($card->isTemplateStep(...), [0, 1, 2, 3]));
+
+        $card->setStepAction(0, 'publish')->setStepAction(1, 'publish')->setStepAction(2, 'copy');
+        $this->assertSame(['build', null, 'copy'], array_map(static fn (array $step): ?string => $step['action'] ?? null, \array_slice($card->getChecklist(), 0, 3)));
+    }
+
+    // A step's key fits a template's key as it is, or with each {variable} standing for any words, an action never fitting a text
+    public function testKeyFits(): void
+    {
+        $this->assertTrue(Card::keyFits('action:build', 'action:build'));
+        $this->assertTrue(Card::keyFits('text:Check {item}', 'text:Check item-1'));
+        $this->assertFalse(Card::keyFits('text:Check {item}', 'text:Check '));
+        $this->assertFalse(Card::keyFits('text:Check {item}', 'action:Check item-1'));
+        $this->assertFalse(Card::keyFits('text:step-1', 'text:step-12'));
+    }
+
     // A step's parameters are replaced as a whole, emptied by none, each value cut to what a runner takes, and kept only on a step naming an action
     public function testSetStepParams(): void
     {

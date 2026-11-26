@@ -120,7 +120,7 @@
             </trans-unit>
             <trans-unit id="lY3qk4G">
                 <source>narration.guided_step_pilot_run_action</source>
-                <target>Click the step's text, pick its action, then type its parameters.</target>
+                <target>Click the step's text, pick its action, unless it comes from the card's template, then type its parameters.</target>
             </trans-unit>
             <trans-unit id="6Z6IMzN">
                 <source>narration.guided_step_pilot_run_card</source>

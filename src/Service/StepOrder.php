@@ -200,9 +200,8 @@ class StepOrder
         if (1 !== preg_match('/\{\w+\}/', $key)) {
             return null;
         }
-        $pattern = '/^' . preg_replace('/\\\\\{\w+\\\\\}/', '.+', preg_quote($key, '/')) . '$/su';
         foreach ($free as $index => $candidate) {
-            if (1 === preg_match($pattern, $candidate)) {
+            if (Card::keyFits($key, $candidate)) {
                 unset($free[$index]);
 
                 return $candidate;

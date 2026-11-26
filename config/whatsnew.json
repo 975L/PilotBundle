@@ -3,6 +3,16 @@
         "date": "2026-11-26",
         "description": [
             {
+                "en": "Piloting: on a card laid from a checklist template, a step coming from the template keeps the machine action the template gives it; change it on the template, its parameters staying editable on the card.",
+                "fr": "Pilotage : sur une carte issue d'un modèle, une étape venant du modèle garde l'action machine que lui donne le modèle ; elle se change sur le modèle, ses paramètres restant modifiables sur la carte.",
+                "es": "Pilotaje: en una tarjeta creada a partir de una plantilla, un paso que viene de la plantilla conserva la acción de máquina que esta le da; se cambia en la plantilla, y sus parámetros siguen editables en la tarjeta."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-26",
+        "description": [
+            {
                 "en": "Piloting: the search is now at the top of the dashboard, the cards it finds showing below it as you type, the dashboard staying in place; it is no longer in the column on the left.",
                 "fr": "Pilotage : la recherche est désormais en haut du tableau de bord, les cartes trouvées s'affichant dessous à la saisie sans quitter le tableau de bord ; elle n'est plus dans la colonne de gauche.",
                 "es": "Pilotaje: la búsqueda está ahora arriba del panel, las tarjetas encontradas aparecen debajo al escribir sin salir del panel; ya no está en la columna de la izquierda."

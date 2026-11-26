@@ -164,7 +164,7 @@
             </trans-unit>
             <trans-unit id="sbnSf8Z">
                 <source>description.guided_step_pilot_run_action</source>
-                <target>Click a step's text: its line names the machine action and its parameters, typed name=value; name=value.</target>
+                <target>Click a step's text: its line names the machine action and its parameters, typed name=value; name=value; on a card laid from a template, the action of a template step is changed on the template.</target>
             </trans-unit>
             <trans-unit id="TdWIM_A">
                 <source>description.guided_step_pilot_run_card</source>

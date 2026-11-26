@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.10.1
+
+Template steps keep their action, recipes leave links
+
+- Added `Card::isTemplateStep()`, a step laid by the card's checklist template keeping the template's action on its line, in `setStepAction()` and in pilot_edit_step (26/11/2026)
+- Agent protocol of the runner taking `LINK <url> <words>` for a page a recipe made or changed, shown under its step (26/11/2026)
+- Added `Card::keyFits()`, a step's key fitting a template's, its {variables} standing for any words, shared with `StepOrder` (26/11/2026)
+
 ## v1.10.0
 
 Search on the dashboard, questions to Donovan

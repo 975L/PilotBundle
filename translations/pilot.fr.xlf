@@ -164,7 +164,7 @@
             </trans-unit>
             <trans-unit id="sbnSf8Z">
                 <source>description.guided_step_pilot_run_action</source>
-                <target>Cliquez sur le texte d'une étape : sa ligne nomme l'action de machine et ses paramètres, saisis nom=valeur; nom=valeur.</target>
+                <target>Cliquez sur le texte d'une étape : sa ligne nomme l'action de machine et ses paramètres, saisis nom=valeur; nom=valeur ; sur une carte issue d'un modèle, l'action d'une étape du modèle se change sur le modèle.</target>
             </trans-unit>
             <trans-unit id="TdWIM_A">
                 <source>description.guided_step_pilot_run_card</source>

@@ -28,12 +28,12 @@
             <input type="hidden" name="_token" value="{{ token }}">
             <input type="hidden" name="index" value="{{ index }}">
             <input name="text" value="{{ step.t }}" maxlength="500" class="pilot-grow pilot-auto" aria-label="{{ 'label.step_edit'|trans({}, 'pilot') }}" placeholder="{{ 'label.info_step_edit'|trans({}, 'pilot') }}">
-            {# The machine action the step hands the card to, among those the machines declared #}
-            <select name="action" class="pilot-auto" aria-label="{{ 'label.step_action'|trans({}, 'pilot') }}">
+            {# The machine action the step hands the card to, among those the machines declared; a step laid by the card's template keeps the template's #}
+            {% if not card.isTemplateStep(index) %}<select name="action" class="pilot-auto" aria-label="{{ 'label.step_action'|trans({}, 'pilot') }}">
                 <option value="">{{ 'label.step_no_action'|trans({}, 'pilot') }}</option>
                 {% for key, label in action_labels %}<option value="{{ key }}"{{ key == (step.action ?? null) ? ' selected' }}>{{ label }}</option>{% endfor %}
                 {% if step.action is defined and action_labels[step.action] is not defined %}<option value="{{ step.action }}" selected>{{ step.action }}</option>{% endif %}
-            </select>
+            </select>{% endif %}
             {# The values the action asks, kept with the step and sent with its run #}
             <input name="params" value="{{ (step.params ?? {})|map((value, name) => name ~ '=' ~ value)|join('; ') }}" maxlength="500" class="pilot-auto" aria-label="{{ 'label.step_params'|trans({}, 'pilot') }}" placeholder="{{ 'label.info_step_params_line'|trans({}, 'pilot') }}">
         </form>
