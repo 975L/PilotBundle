@@ -294,6 +294,10 @@
                 <source>flow.not_now</source>
                 <target>Ce geste ne vaut pas pour cette carte maintenant.</target>
             </trans-unit>
+            <trans-unit id="XHUHvDO">
+                <source>flow.not_offered</source>
+                <target>Cette action n'est pas proposée à l'espace de cette carte.</target>
+            </trans-unit>
             <trans-unit id="twd7VSI">
                 <source>flow.template_steps</source>
                 <target>Les étapes de cette carte viennent de son modèle : ajoutez-les au modèle.</target>

@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.12.1
+
+Refusal of an action not offered named
+
+- An action the card's space is not offered is refused with its own message, `flow.not_offered`, instead of the generic one (27/11/2026)
+
 ## v1.12.0
 
 Queue reordered by dragging

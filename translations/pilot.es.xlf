@@ -294,6 +294,10 @@
                 <source>flow.not_now</source>
                 <target>Este gesto no vale para esta tarjeta ahora.</target>
             </trans-unit>
+            <trans-unit id="XHUHvDO">
+                <source>flow.not_offered</source>
+                <target>Esta acción no se ofrece al espacio de esta tarjeta.</target>
+            </trans-unit>
             <trans-unit id="twd7VSI">
                 <source>flow.template_steps</source>
                 <target>Los pasos de esta tarjeta vienen de su plantilla: añádalos a la plantilla.</target>

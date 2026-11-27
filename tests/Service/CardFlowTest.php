@@ -99,7 +99,8 @@ class CardFlowTest extends TestCase
         foreach ([fn (): Run => $flow->entrust(new Card($this->card->getProject(), 'item-3'), 'action-2', [], 'Action 2'), fn (): Run => $flow->runStep($other, 0)] as $gesture) {
             try {
                 $gesture();
-            } catch (FlowException) {
+            } catch (FlowException $exception) {
+                $this->assertSame('flow.not_offered', $exception->getMessage());
                 ++$refused;
             }
         }

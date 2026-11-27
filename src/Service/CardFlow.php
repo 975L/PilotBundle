@@ -238,7 +238,7 @@ class CardFlow
         }
         $offered = $this->actionRepository->findOneBy(['key' => $action]);
         if (!$offered instanceof Action || !$offered->isOfferedTo($card->getProject())) {
-            throw new FlowException(t('flow.not_now', [], 'pilot'));
+            throw new FlowException(t('flow.not_offered', [], 'pilot'));
         }
     }
 

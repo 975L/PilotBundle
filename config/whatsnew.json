@@ -1,5 +1,15 @@
 [
     {
+        "date": "2026-11-27",
+        "description": [
+            {
+                "en": "Piloting: an action not offered to the card's space is refused with a message saying so, rather than a generic one.",
+                "fr": "Pilotage : une action non proposée à l'espace de la carte est refusée avec un message qui le dit, plutôt qu'un message générique.",
+                "es": "Pilotaje: una acción no ofrecida al espacio de la tarjeta se rechaza con un mensaje que lo dice, en lugar de uno genérico."
+            }
+        ]
+    },
+    {
         "date": "2026-11-26",
         "description": [
             {

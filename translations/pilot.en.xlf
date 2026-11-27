@@ -294,6 +294,10 @@
                 <source>flow.not_now</source>
                 <target>This gesture does not apply to this card now.</target>
             </trans-unit>
+            <trans-unit id="XHUHvDO">
+                <source>flow.not_offered</source>
+                <target>This action is not offered to this card's space.</target>
+            </trans-unit>
             <trans-unit id="twd7VSI">
                 <source>flow.template_steps</source>
                 <target>This card's steps come from its template: add them to the template.</target>
