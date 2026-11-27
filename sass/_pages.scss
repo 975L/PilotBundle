@@ -236,11 +236,14 @@
     max-height: calc(100vh - 2rem);
 }
 
+// The arrows to the cards beside and the close button, held at the top right while the card scrolls
 .pilot-dialog-close {
     position: sticky;
     top: 0;
     float: right;
     z-index: 3;
+    display: flex;
+    gap: .25rem;
     padding: .5rem;
     background: var(--pilot-surface);
     border-radius: 0 0 0 .5rem;

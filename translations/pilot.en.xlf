@@ -150,6 +150,10 @@
                 <source>description.guided_step_pilot_number_card</source>
                 <target>Its tile shows its number; a click on it opens the card over the page.</target>
             </trans-unit>
+            <trans-unit id="Gu7fqUb">
+                <source>description.guided_step_pilot_number_next</source>
+                <target>The arrows at the top of the card, the ← → keys or a swipe go to the card beside on the page, without closing.</target>
+            </trans-unit>
             <trans-unit id="vqCn_pw">
                 <source>description.guided_step_pilot_number_number</source>
                 <target>A click on the number, above the title, copies it, ready to paste for an agent.</target>
@@ -454,6 +458,10 @@
                 <source>label.card_new</source>
                 <target>New card</target>
             </trans-unit>
+            <trans-unit id="i7Lm51k">
+                <source>label.card_next</source>
+                <target>Next card</target>
+            </trans-unit>
             <trans-unit id="k5QpgJF">
                 <source>label.card_no_collection</source>
                 <target>In no collection</target>
@@ -477,6 +485,10 @@
             <trans-unit id="_6mVmAQ">
                 <source>label.card_open_failed</source>
                 <target>The card could not be opened, try again.</target>
+            </trans-unit>
+            <trans-unit id="mRnVWm0">
+                <source>label.card_previous</source>
+                <target>Previous card</target>
             </trans-unit>
             <trans-unit id="vaqVCcB">
                 <source>label.card_result</source>
@@ -1044,6 +1056,10 @@
             <trans-unit id="rL_.D1.">
                 <source>label.guided_step_pilot_number_card</source>
                 <target>Open a card</target>
+            </trans-unit>
+            <trans-unit id="GnhJcaQ">
+                <source>label.guided_step_pilot_number_next</source>
+                <target>Go to the next card</target>
             </trans-unit>
             <trans-unit id="tCTrn.m">
                 <source>label.guided_step_pilot_number_number</source>

@@ -3,6 +3,16 @@
         "date": "2026-11-27",
         "description": [
             {
+                "en": "Piloting: an open card goes to the card beside on the page by the arrows at its top, the ← → keys or a swipe, without closing.",
+                "fr": "Pilotage : une carte ouverte passe à la carte voisine de la page par les flèches en haut, les touches ← → ou un glissement du doigt, sans refermer.",
+                "es": "Pilotaje: una tarjeta abierta pasa a la tarjeta contigua de la página con las flechas de arriba, las teclas ← → o un deslizamiento del dedo, sin cerrar."
+            }
+        ]
+    },
+    {
+        "date": "2026-11-27",
+        "description": [
+            {
                 "en": "Piloting: an action not offered to the card's space is refused with a message saying so, rather than a generic one.",
                 "fr": "Pilotage : une action non proposée à l'espace de la carte est refusée avec un message qui le dit, plutôt qu'un message générique.",
                 "es": "Pilotaje: una acción no ofrecida al espacio de la tarjeta se rechaza con un mensaje que lo dice, en lugar de uno genérico."

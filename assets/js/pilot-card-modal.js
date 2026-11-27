@@ -10,7 +10,7 @@ import { notice } from "./pilot-notice.js";
 
 // Opens a card or a file over the page it was clicked on, its own page read and shown in a dialog; the address keeps it as #card-<id> or #doc-<slug>, so a link or the back button reopen it
 export default class extends Controller {
-    static targets = ["dialog", "body", "confirm", "ask", "zoom", "zoomImage"];
+    static targets = ["dialog", "body", "confirm", "ask", "zoom", "zoomImage", "previous", "next"];
     static values = { url: String, failedLabel: String };
 
     connect() {
@@ -34,6 +34,8 @@ export default class extends Controller {
         };
         document.addEventListener("click", this.onOutside);
         document.addEventListener("keydown", this.onEscape);
+        this.onArrow = (event) => this.arrowed(event);
+        document.addEventListener("keydown", this.onArrow);
         this.dialogTarget.addEventListener("submit", (event) => this.submit(event));
         // A line being added (data-pilot-refocus) is sent when focus leaves it, as a field edited in place is saved; a press inside its own form (its picture button) keeps it
         this.dialogTarget.addEventListener("pointerdown", (event) => { this.pressed = event.target; }, true);
@@ -41,6 +43,9 @@ export default class extends Controller {
         window.addEventListener("popstate", this.onPopState);
         this.dialogTarget.addEventListener("close", () => this.closed());
         this.dialogTarget.addEventListener("click", (event) => { if (event.target === this.dialogTarget) this.dialogTarget.close(); });
+        // A horizontal swipe on the dialog goes to the card beside, as its arrows do
+        this.dialogTarget.addEventListener("touchstart", (event) => this.touched(event), { passive: true });
+        this.dialogTarget.addEventListener("touchend", (event) => this.swiped(event));
         // The card read again by pilot-run-watch changed: the page behind shows it once the dialog closes
         this.dialogTarget.addEventListener("pilot:changed", () => { this.changed = true; });
         this.follow();
@@ -53,6 +58,7 @@ export default class extends Controller {
         window.removeEventListener("popstate", this.onPopState);
         document.removeEventListener("click", this.onOutside);
         document.removeEventListener("keydown", this.onEscape);
+        document.removeEventListener("keydown", this.onArrow);
     }
 
     // The asking shown with the form's question, the form held until it is answered
@@ -172,17 +178,90 @@ export default class extends Controller {
         else if (this.dialogTarget.open) this.dialogTarget.close();
     }
 
-    // The page fetched, its dialog part alone kept; a failure said, the card's own address leading back here
+    // The cards of the page the dialog steps through, in their order, once each: those shown, never one inside the dialog itself
+    neighbours() {
+        const names = [...this.element.querySelectorAll('a[data-pilot-dialog^="card-"]')]
+            .filter((link) => !this.dialogTarget.contains(link) && 0 < link.getClientRects().length)
+            .map((link) => link.dataset.pilotDialog);
+
+        return [...new Set(names)];
+    }
+
+    // The card before (-1) or after (1) the one shown, or null at either end, for a file, or for a card the page does not list
+    beside(step) {
+        const names = this.neighbours();
+        const index = names.indexOf(window.location.hash.slice(1));
+
+        return -1 === index ? null : (names[index + step] ?? null);
+    }
+
+    // The arrows shown only where a card is beside
+    arrows() {
+        this.previousTarget.hidden = null === this.beside(-1);
+        this.nextTarget.hidden = null === this.beside(1);
+    }
+
+    // The arrows' actions
+    previous() {
+        this.go(-1);
+    }
+
+    next() {
+        this.go(1);
+    }
+
+    // The card beside shown in the dialog, the address naming it in place of the one it replaces, so the back button still closes the dialog; a field saved by the click that leaves it is waited for
+    go(step) {
+        const name = this.beside(step);
+        if (!name) return;
+
+        const link = this.element.querySelector(`a[data-pilot-dialog="${name}"]`);
+        window.history.replaceState(null, "", "#" + name);
+        Promise.resolve(this.pending).finally(() => this.open(link.href));
+    }
+
+    // Left and right arrow keys step through the cards while the dialog is the one on top, never while a field is typed in nor with a modifier
+    arrowed(event) {
+        const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
+        if (!step || !this.dialogTarget.open || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        if (event.target.closest?.("input, textarea, select, [contenteditable]") || document.querySelector("dialog[open]:not(.pilot-dialog-pinned)")) return;
+
+        event.preventDefault();
+        this.go(step);
+    }
+
+    // Where a swipe starts, left aside when it starts on a field, a handle dragging a step or a block scrolling sideways
+    touched(event) {
+        const start = event.touches[0];
+        this.swipe = 1 === event.touches.length && !event.target.closest("input, textarea, select, [contenteditable], .pilot-sort-handle, pre, table") ? { x: start.clientX, y: start.clientY } : null;
+    }
+
+    // A swipe clearly sideways, long enough and with no text selected, goes to the card after (to the left) or before (to the right)
+    swiped(event) {
+        const start = this.swipe;
+        this.swipe = null;
+        if (!start || "" !== String(window.getSelection())) return;
+
+        const dx = event.changedTouches[0].clientX - start.x;
+        const dy = event.changedTouches[0].clientY - start.y;
+        if (60 > Math.abs(dx) || Math.abs(dx) < 2 * Math.abs(dy)) return;
+
+        this.go(0 > dx ? 1 : -1);
+    }
+
+    // The page fetched, its dialog part alone kept, a reply overtaken by a later opening (arrows pressed in a row) dropped; a failure said, the card's own address leading back here
     open(url) {
         this.current = url;
 
         return fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
             .then((response) => (response.ok ? response.text() : Promise.reject(new Error(response.statusText))))
             .then((html) => {
+                if (url !== this.current) return;
                 const content = new DOMParser().parseFromString(html, "text/html").querySelector(".pilot-dialog-page");
                 if (!content) throw new Error(url);
                 this.bodyTarget.replaceChildren(...content.childNodes);
                 if (!this.dialogTarget.open) this.show();
+                this.arrows();
                 if (this.refocus) this.bodyTarget.querySelector(`form[action="${CSS.escape(this.refocus)}"] [data-pilot-refocus]`)?.focus();
                 this.refocus = null;
             })

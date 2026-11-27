@@ -84,7 +84,12 @@
         </main>
         {# A card opened from a tile shows here, over the page it was clicked on #}
         <dialog class="pilot-dialog" data-pilot-card-modal-target="dialog" aria-label="{{ 'label.card'|trans({}, 'pilot') }}">
-            <form method="dialog" class="pilot-dialog-close"><button class="pilot-btn-close" aria-label="{{ 'label.close'|trans({}, 'pilot') }}">{{ pilot_icon('xmark') }}</button></form>
+            {# The cards beside the one shown, outside the body the dialog empties and outside the form that closes it #}
+            <div class="pilot-dialog-close">
+                <button type="button" class="pilot-btn-close" hidden data-pilot-card-modal-target="previous" data-action="pilot-card-modal#previous" aria-label="{{ 'label.card_previous'|trans({}, 'pilot') }}" title="{{ 'label.card_previous'|trans({}, 'pilot') }}">{{ pilot_icon('chevron-left') }}</button>
+                <button type="button" class="pilot-btn-close pilot-dialog-next" hidden data-pilot-card-modal-target="next" data-action="pilot-card-modal#next" aria-label="{{ 'label.card_next'|trans({}, 'pilot') }}" title="{{ 'label.card_next'|trans({}, 'pilot') }}">{{ pilot_icon('chevron-right') }}</button>
+                <form method="dialog"><button class="pilot-btn-close" aria-label="{{ 'label.close'|trans({}, 'pilot') }}">{{ pilot_icon('xmark') }}</button></form>
+            </div>
             <div class="pilot-dialog-body" data-pilot-card-modal-target="body"></div>
         </dialog>
         {# A screenshot opened full size over the page or the card's dialog, closed by a click anywhere #}

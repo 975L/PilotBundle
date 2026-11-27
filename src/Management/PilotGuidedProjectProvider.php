@@ -66,6 +66,7 @@ class PilotGuidedProjectProvider implements GuidedProjectProviderInterface
                 ['key' => 'space', 'highlight' => self::SPACE],
                 ['key' => 'card', 'highlight' => self::CARD],
                 ['key' => 'number', 'highlight' => '.pilot-card-number'],
+                ['key' => 'next', 'highlight' => '.pilot-dialog-next'],
             ]),
             self::project('pilot_machine', 12050, $admin, [
                 ['key' => 'open', 'url' => $this->urlGenerator->generate('pilot_settings_new', ['kind' => 'machine'])],

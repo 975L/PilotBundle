@@ -106,6 +106,10 @@
                 <source>narration.guided_step_pilot_number_card</source>
                 <target>Haga clic en el mosaico de una tarjeta: se abre sobre la página.</target>
             </trans-unit>
+            <trans-unit id="p61Q_cO">
+                <source>narration.guided_step_pilot_number_next</source>
+                <target>Haga clic en la flecha derecha, o deslice la tarjeta: la siguiente se abre en su lugar.</target>
+            </trans-unit>
             <trans-unit id="9T4QoUs">
                 <source>narration.guided_step_pilot_number_number</source>
                 <target>Haga clic en el número encima del título: queda copiado, listo para pegar.</target>

@@ -837,6 +837,8 @@ a.pilot-list-item:hover {
   top: 0;
   float: right;
   z-index: 3;
+  display: flex;
+  gap: 0.25rem;
   padding: 0.5rem;
   background: var(--pilot-surface);
   border-radius: 0 0 0 0.5rem;

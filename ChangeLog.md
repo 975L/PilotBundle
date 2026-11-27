@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.13.0
+
+Open card browsed by arrows and swipe
+
+- An open card goes to the card beside on the page by its arrows, the ← → keys or a horizontal swipe, in `pilot-card-modal.js` (27/11/2026)
+- Added the `chevron-left` and `chevron-right` icons (27/11/2026)
+- Added a last step to the guided project of a card's number, going to the next card (27/11/2026)
+
 ## v1.12.1
 
 Refusal of an action not offered named

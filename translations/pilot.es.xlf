@@ -150,6 +150,10 @@
                 <source>description.guided_step_pilot_number_card</source>
                 <target>Su mosaico muestra su número; un clic en él abre la tarjeta sobre la página.</target>
             </trans-unit>
+            <trans-unit id="Gu7fqUb">
+                <source>description.guided_step_pilot_number_next</source>
+                <target>Las flechas arriba de la tarjeta, las teclas ← → o un deslizamiento del dedo pasan a la tarjeta contigua de la página, sin cerrar.</target>
+            </trans-unit>
             <trans-unit id="vqCn_pw">
                 <source>description.guided_step_pilot_number_number</source>
                 <target>Un clic en el número, encima del título, lo copia, listo para pegar para un agente.</target>
@@ -454,6 +458,10 @@
                 <source>label.card_new</source>
                 <target>Nueva tarjeta</target>
             </trans-unit>
+            <trans-unit id="i7Lm51k">
+                <source>label.card_next</source>
+                <target>Tarjeta siguiente</target>
+            </trans-unit>
             <trans-unit id="k5QpgJF">
                 <source>label.card_no_collection</source>
                 <target>Sin colección</target>
@@ -477,6 +485,10 @@
             <trans-unit id="_6mVmAQ">
                 <source>label.card_open_failed</source>
                 <target>No se ha podido abrir la tarjeta, inténtelo de nuevo.</target>
+            </trans-unit>
+            <trans-unit id="mRnVWm0">
+                <source>label.card_previous</source>
+                <target>Tarjeta anterior</target>
             </trans-unit>
             <trans-unit id="vaqVCcB">
                 <source>label.card_result</source>
@@ -1044,6 +1056,10 @@
             <trans-unit id="rL_.D1.">
                 <source>label.guided_step_pilot_number_card</source>
                 <target>Abra una tarjeta</target>
+            </trans-unit>
+            <trans-unit id="GnhJcaQ">
+                <source>label.guided_step_pilot_number_next</source>
+                <target>Pase a la tarjeta contigua</target>
             </trans-unit>
             <trans-unit id="tCTrn.m">
                 <source>label.guided_step_pilot_number_number</source>

@@ -145,6 +145,15 @@ class PilotGuidedProjectProviderTest extends TestCase
         $this->assertSame('.pilot-card-number', $step['highlight']);
     }
 
+    // The card's number project ends on the arrow going to the card beside
+    public function testTheNumberProjectEndsOnTheNextArrow(): void
+    {
+        $step = $this->guidedProjects()[3]['steps'][4];
+
+        $this->assertSame('label.guided_step_pilot_number_next', $step['label']);
+        $this->assertSame('.pilot-dialog-next', $step['highlight']);
+    }
+
     // The keys a translation file carries
     /** @return list<string> */
     private function sources(string $domain, string $locale): array
